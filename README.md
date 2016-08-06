@@ -1,0 +1,2 @@
+# golib
+my golang lib
