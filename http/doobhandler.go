@@ -115,14 +115,14 @@ type urlMacthPara struct {
 
 func (this urlMacthPara) macth(para string) (bool,string) {
 	switch this.matchInfo {
-	case "*":
-		return true,"*"
-	case "{}":
-		return true,para
-	case "":
-		return this.urlPara == para , ""
+	case ALL:
+		return true,ALL
+	case URL_PARA_FLAG:
+		return true,URL_PARA_FLAG
+	case EMPTY:
+		return this.urlPara == para , EMPTY
 	default:
-		return this.urlPara == para , ""
+		return this.urlPara == para , EMPTY
 	}
 }
 
@@ -140,23 +140,23 @@ func (this *urlInfo) len() int  {
 }
 
 func (this *urlInfo) match(url string) (*restHandlerFunc,map[string]string,error) {
-	var urlParavalueMap map[string]string
+	urlParavalueMap := map[string]string{}
 	urlParas := utils.Split(url,"/")
-	for i , _ := range urlParas {
+	for i , _ := range this.urlParas {
 		should := this.urlParas[i]
 		real := urlParas[i]
-		if macth,res:=should.macth(real);macth{
-			switch res {
-			case "*":
-				urlParavalueMap["*"]=strings.Join(urlParas[i:],"/")
+		if ismacth,flag:=should.macth(real); ismacth {
+			switch flag {
+			case ALL:
+				urlParavalueMap["*"]=strings.Join(urlParas[i-1:],"/")
 				return this.handler,urlParavalueMap,nil
-			case "{}":
+			case URL_PARA_FLAG:
 				urlParavalueMap[should.urlPara] = real
 			default :
 
 			}
 		}else {
-			return nil,nil,fmt.Errorf("not macth")
+			return nil,nil,fmt.Errorf("url not macth")
 		}
 	}
 	return this.handler,urlParavalueMap,nil
@@ -172,7 +172,7 @@ func AddHandlerFunc(url string,methodStr string, handler http.HandlerFunc){
 		para := strings.TrimSpace(v)
 		//para = strings.ToLower(para)
 		if para[0] == URL_PARA_PREFIX_FLAG[0] && para[len(para) - 1] == URL_PARA_LAST_FLAG[0] {
-			urlinfo.addUrlPara(urlMacthPara{urlPara:para[1:len(para)],matchInfo:URL_PARA_FLAG})
+			urlinfo.addUrlPara(urlMacthPara{urlPara:para[1:len(para)-1],matchInfo:URL_PARA_FLAG})
 		}else if para == ALL {
 			if i == len(paras) - 1 {
 				urlinfo.addUrlPara(urlMacthPara{urlPara:para,matchInfo:ALL})
@@ -193,7 +193,6 @@ func AddHandlerFunc(url string,methodStr string, handler http.HandlerFunc){
 		fmt.Println(urlinfo)
 		handlerMap.rest.urls[len] = append(handlerMap.rest.urls[len],urlinfo)
 	}
-
 }
 
 func init()  {

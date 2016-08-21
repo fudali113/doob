@@ -10,7 +10,7 @@ func TestAddHandlerFunc(t *testing.T) {
 	AddHandlerFunc("/oo/aa/bb","get,post", func(http.ResponseWriter , *http.Request) {
 		fmt.Println("oo/aa/bb")
 	})
-	AddHandlerFunc("/oo/{aa}/cc","PUT", func(http.ResponseWriter , *http.Request) {
+	AddHandlerFunc("/oo/{aa}/cc/{bb}","PUT", func(http.ResponseWriter , *http.Request) {
 		fmt.Println("oo/{aa}/cc")
 	})
 	AddHandlerFunc("/oo/aa/bb/*","get", func(http.ResponseWriter , *http.Request) {
@@ -25,11 +25,20 @@ func TestAddHandlerFunc(t *testing.T) {
 	if !handler1.matchMethod("Get") {
 		t.Errorf("match mothod bug")
 	}
-	handler2,paras := handlerMap.rest.getHandler("/sssss/eooeoeo/cc")
+	handler2,paras := handlerMap.rest.getHandler("/oo/eooeoeo/cc/kkkkkkkk")
 	if handler2 == nil {
 		t.Errorf("match url bug")
 	}else{
 		if !handler2.matchMethod("put") {
+			t.Errorf("match mothod bug")
+		}
+		fmt.Println(paras)
+	}
+	handler3,paras := handlerMap.rest.getHandler("oo/aa/bb/123456/edefed/4324242312")
+	if handler3 == nil {
+		t.Errorf("match url bug")
+	}else{
+		if !handler3.matchMethod("get") {
 			t.Errorf("match mothod bug")
 		}
 		fmt.Println(paras)
