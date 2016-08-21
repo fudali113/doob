@@ -19,6 +19,13 @@ import (
 	"fmt"
 )
 
+const (
+	ALL = "*"
+	URL_PARA_PREFIX_FLAG = "{"
+	URL_PARA_LAST_FLAG = "}"
+	URL_PARA_FLAG = "{}"
+	EMPTY = ""
+)
 
 var (
 	handlerMap handleFuncMap
@@ -32,20 +39,20 @@ func (this DoobHandler) ServeHTTP(res http.ResponseWriter, req *http.Request)  {
 	handler,err := handlerMap.getHandler(req)
 	if err != nil{
 		fmt.Println(err)
-		res.Write(http.ErrNotSupported)
+		res.WriteHeader(404)
 	}
 	handler(res,req)
 }
 
 type handleFuncMap struct {
-	simple map[string]restHandlerFunc
+	simple map[string]*restHandlerFunc
 	rest *restHandlerMap
 }
 
 func (this handleFuncMap) getHandler(req *http.Request) (http.HandlerFunc,error)  {
 	var err error
 	url := req.URL.Path
-	method := req.Method
+	method := strings.ToLower(req.Method)
 	rest,ok:=this.simple[url]
 	if ok {
 		if rest.matchMethod(method) {
@@ -84,7 +91,7 @@ type restHandlerMap struct {
 	urls map[int][]urlInfo
 }
 
-func (this restHandlerMap) getHandler(url string) (restHandlerFunc,map[string]string) {
+func (this restHandlerMap) getHandler(url string) (*restHandlerFunc,map[string]string) {
 	urlParaLen := len(utils.Split(url,"/"))
 	urlInfos,ok := this.urls[urlParaLen]
 	if ok {
@@ -120,7 +127,7 @@ func (this urlMacthPara) macth(para string) (bool,string) {
 
 type urlInfo struct {
 	urlParas []urlMacthPara
-	handler restHandlerFunc
+	handler *restHandlerFunc
 }
 
 func (this urlInfo) addUrlPara(v urlMacthPara)  {
@@ -131,7 +138,7 @@ func (this urlInfo) len() int  {
 	return len(this.urlParas)
 }
 
-func (this urlInfo) match(url string) (http.HandlerFunc,map[string]string,error) {
+func (this urlInfo) match(url string) (*restHandlerFunc,map[string]string,error) {
 	var urlParavalueMap map[string]string
 	urlParas := utils.Split(url,"/")
 	for i , _ := range urlParas {
@@ -156,22 +163,41 @@ func (this urlInfo) match(url string) (http.HandlerFunc,map[string]string,error)
 
 func AddHandlerFunc(url string,methodStr string, handler http.HandlerFunc){
 	paras := utils.Split(url,"/")
+	matchParaCount := 0
+	urlinfo := urlInfo{}
 	for i,v := range paras{
-		urlinfo := urlInfo{}
+		matchParaCount++
 		para := strings.TrimSpace(v)
-		if para[0] == "{" && para[len(para) - 1] == "}" {
-			urlinfo.addUrlPara(urlMacthPara{urlPara:para[1:len(para)],matchInfo:"{}"})
-		}else if para == "*" {
+		para = strings.ToLower(para)
+		if para[0] == URL_PARA_PREFIX_FLAG[0] && para[len(para) - 1] == URL_PARA_LAST_FLAG[0] {
+			urlinfo.addUrlPara(urlMacthPara{urlPara:para[1:len(para)],matchInfo:URL_PARA_FLAG})
+		}else if para == ALL {
 			if i == len(paras) - 1 {
-				urlinfo.addUrlPara(urlMacthPara{urlPara:para,matchInfo:"*"})
+				urlinfo.addUrlPara(urlMacthPara{urlPara:para,matchInfo:ALL})
 			}else {
-				urlinfo.addUrlPara(urlMacthPara{urlPara:para,matchInfo:"{}"})
+				urlinfo.addUrlPara(urlMacthPara{urlPara:para,matchInfo:URL_PARA_FLAG})
 			}
 		}else {
-			urlinfo.addUrlPara(urlMacthPara{urlPara:para,matchInfo:""})
+			matchParaCount--
+			urlinfo.addUrlPara(urlMacthPara{urlPara:para,matchInfo:EMPTY})
 		}
-		urlinfo.handler = restHandlerFunc{function:handler,methodStr:methodStr}
+	}
+	restHandler := &restHandlerFunc{function:handler,methodStr:methodStr}
+	if matchParaCount == 0 {
+		handlerMap.simple[url] = restHandler
+	}else {
+		urlinfo.handler = restHandler
 		len := urlinfo.len()
 		handlerMap.rest.urls[len] = append(handlerMap.rest.urls[len],urlinfo)
+	}
+
+}
+
+func init()  {
+	simple := map[string]*restHandlerFunc{}
+	rest := &restHandlerMap{urls:map[int][]urlInfo{}}
+	handlerMap = handleFuncMap{
+		simple:simple,
+		rest:rest,
 	}
 }
