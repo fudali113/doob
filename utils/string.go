@@ -1,4 +1,4 @@
-package golib
+package utils
 
 import "strings"
 func Split(s, sep string) []string {
