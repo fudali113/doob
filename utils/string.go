@@ -20,6 +20,6 @@ func Split(s, sep string) []string {
 		}
 	}
 
-	if last:=s[start:];last!=""{a[na] = last}
+	if last := s[start:] ; last != "" { a[na] = last ; na++}
 	return a[: na]
 }
