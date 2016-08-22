@@ -14,7 +14,7 @@ package http
 
 import (
 	"net/http"
-	"golib/utils"
+	"github.com/fudali113/golib/utils"
 	"strings"
 	"fmt"
 )
@@ -28,12 +28,12 @@ const (
 )
 
 var (
-	handlerMap handleFuncMap
+	handlerMap *handleFuncMap
 	filters []Filter
 )
 
-func Get_doob_Handler()  {
-	return DoobHandler{filters:filters,handlerMap:handlerMap}
+func Get_doob_Handler() *DoobHandler  {
+	return &DoobHandler{filters:filters,handlerMap:handlerMap}
 }
 
 func AddHandlerFunc(url string,methodStr string, handler http.HandlerFunc){
@@ -242,7 +242,7 @@ func init()  {
 	simple := map[string]*restHandlerFunc{}
 	rest := &restHandlerMap{urls:map[int][]*urlInfo{}}
 	last := map[string]*restHandlerFunc{}
-	handlerMap = handleFuncMap{
+	handlerMap = &handleFuncMap{
 		simple:simple,
 		rest:rest,
 		lastAllMatch:last,
