@@ -32,7 +32,7 @@ var (
 )
 
 type DoobHandler struct {
-
+	handlerMap handleFuncMap
 }
 
 func (this DoobHandler) ServeHTTP(res http.ResponseWriter, req *http.Request)  {
@@ -53,11 +53,12 @@ func (this DoobHandler) ServeHTTP(res http.ResponseWriter, req *http.Request)  {
 type handleFuncMap struct {
 	simple map[string]*restHandlerFunc
 	rest *restHandlerMap
+	lastAllMatch map[string]*restHandlerFunc
 }
 
 func (this handleFuncMap) getHandler(req *http.Request) (http.HandlerFunc,error)  {
-	var err error
 	url := req.URL.Path
+	err := fmt.Errorf("url:%s;not found macth url",url)
 	method := strings.ToLower(req.Method)
 	rest,ok:=this.simple[url]
 	if ok {
@@ -80,9 +81,17 @@ func (this handleFuncMap) getHandler(req *http.Request) (http.HandlerFunc,error)
 		}else {
 			err = fmt.Errorf("url:%s;method not match:methodStr is %s but %s",url,restHandler.methodStr,method)
 		}
-	}else {
-		err = fmt.Errorf("url:%s;not found macth url",url)
 	}
+	for k,v:=range this.lastAllMatch  {
+		if index:=strings.Index(url,k);index == 0 || index == 1{
+			if v.matchMethod(method){
+				return v.function,nil
+			}else {
+				err = fmt.Errorf("url:%s;method not match:methodStr is %s but %s",url,rest.methodStr,method)
+			}
+		}
+	}
+
 	return nil,err
 }
 
@@ -178,6 +187,7 @@ func AddHandlerFunc(url string,methodStr string, handler http.HandlerFunc){
 	paras := utils.Split(url,"/")
 	matchParaCount := 0
 	urlinfo := &urlInfo{}
+	restHandler := &restHandlerFunc{function:handler,methodStr:strings.ToLower(methodStr)}
 	fmt.Println(paras,len(paras))
 	for i,v := range paras{
 		matchParaCount++
@@ -188,6 +198,7 @@ func AddHandlerFunc(url string,methodStr string, handler http.HandlerFunc){
 		}else if para == ALL {
 			if i == len(paras) - 1 {
 				urlinfo.addUrlPara(urlMacthPara{urlPara:para,matchInfo:ALL})
+				handlerMap.lastAllMatch[url[:len(url)-1]] = restHandler
 			}else {
 				urlinfo.addUrlPara(urlMacthPara{urlPara:para,matchInfo:URL_PARA_FLAG})
 			}
@@ -196,7 +207,6 @@ func AddHandlerFunc(url string,methodStr string, handler http.HandlerFunc){
 			urlinfo.addUrlPara(urlMacthPara{urlPara:para,matchInfo:EMPTY})
 		}
 	}
-	restHandler := &restHandlerFunc{function:handler,methodStr:strings.ToLower(methodStr)}
 	if matchParaCount == 0 {
 		handlerMap.simple[url] = restHandler
 	}else {
@@ -210,8 +220,10 @@ func AddHandlerFunc(url string,methodStr string, handler http.HandlerFunc){
 func init()  {
 	simple := map[string]*restHandlerFunc{}
 	rest := &restHandlerMap{urls:map[int][]*urlInfo{}}
+	last := map[string]*restHandlerFunc{}
 	handlerMap = handleFuncMap{
 		simple:simple,
 		rest:rest,
+		lastAllMatch:last,
 	}
 }
