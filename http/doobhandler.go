@@ -29,14 +29,69 @@ const (
 
 var (
 	handlerMap handleFuncMap
+	filters []Filter
 )
 
-type DoobHandler struct {
-	handlerMap handleFuncMap
+func Get_doob_Handler()  {
+	return DoobHandler{filters:filters,handlerMap:handlerMap}
 }
 
-func (this DoobHandler) ServeHTTP(res http.ResponseWriter, req *http.Request)  {
-	handler,err := handlerMap.getHandler(req)
+func AddHandlerFunc(url string,methodStr string, handler http.HandlerFunc){
+	paras := utils.Split(url,"/")
+	matchParaCount := 0
+	urlinfo := &urlInfo{}
+	restHandler := &restHandlerFunc{function:handler,methodStr:strings.ToLower(methodStr)}
+	fmt.Println(paras,len(paras))
+	for i,v := range paras{
+		matchParaCount++
+		para := strings.TrimSpace(v)
+		//para = strings.ToLower(para)
+		if para[0] == URL_PARA_PREFIX_FLAG[0] && para[len(para) - 1] == URL_PARA_LAST_FLAG[0] {
+			urlinfo.addUrlPara(urlMacthPara{urlPara:para[1:len(para)-1],matchInfo:URL_PARA_FLAG})
+		}else if para == ALL {
+			if i == len(paras) - 1 {
+				urlinfo.addUrlPara(urlMacthPara{urlPara:para,matchInfo:ALL})
+				handlerMap.lastAllMatch[url[:len(url)-1]] = restHandler
+			}else {
+				urlinfo.addUrlPara(urlMacthPara{urlPara:para,matchInfo:URL_PARA_FLAG})
+			}
+		}else {
+			matchParaCount--
+			urlinfo.addUrlPara(urlMacthPara{urlPara:para,matchInfo:EMPTY})
+		}
+	}
+	if matchParaCount == 0 {
+		handlerMap.simple[url] = restHandler
+	}else {
+		urlinfo.handler = restHandler
+		len := urlinfo.len()
+		fmt.Println(urlinfo)
+		handlerMap.rest.urls[len] = append(handlerMap.rest.urls[len],urlinfo)
+	}
+}
+
+func AddFilter(f Filter)  {
+	filters = append(filters,f)
+}
+
+type Filter interface {
+	Filter(http.ResponseWriter,*http.Request) bool
+}
+
+type DoobHandler struct {
+	filters []Filter
+	handlerMap *handleFuncMap
+}
+
+func (this *DoobHandler) ServeHTTP(res http.ResponseWriter, req *http.Request)  {
+	for i,_ := range this.filters{
+		if this.filters[i].Filter(res,req) {
+			continue
+		}else {
+			return
+		}
+	}
+	handler,err := this.handlerMap.getHandler(req)
 	if err != nil{
 		fmt.Println(err)
 		errStr := err.Error()
@@ -183,40 +238,6 @@ func (this *urlInfo) match(url string) (*restHandlerFunc,map[string]string,error
 	return this.handler,urlParavalueMap,nil
 }
 
-func AddHandlerFunc(url string,methodStr string, handler http.HandlerFunc){
-	paras := utils.Split(url,"/")
-	matchParaCount := 0
-	urlinfo := &urlInfo{}
-	restHandler := &restHandlerFunc{function:handler,methodStr:strings.ToLower(methodStr)}
-	fmt.Println(paras,len(paras))
-	for i,v := range paras{
-		matchParaCount++
-		para := strings.TrimSpace(v)
-		//para = strings.ToLower(para)
-		if para[0] == URL_PARA_PREFIX_FLAG[0] && para[len(para) - 1] == URL_PARA_LAST_FLAG[0] {
-			urlinfo.addUrlPara(urlMacthPara{urlPara:para[1:len(para)-1],matchInfo:URL_PARA_FLAG})
-		}else if para == ALL {
-			if i == len(paras) - 1 {
-				urlinfo.addUrlPara(urlMacthPara{urlPara:para,matchInfo:ALL})
-				handlerMap.lastAllMatch[url[:len(url)-1]] = restHandler
-			}else {
-				urlinfo.addUrlPara(urlMacthPara{urlPara:para,matchInfo:URL_PARA_FLAG})
-			}
-		}else {
-			matchParaCount--
-			urlinfo.addUrlPara(urlMacthPara{urlPara:para,matchInfo:EMPTY})
-		}
-	}
-	if matchParaCount == 0 {
-		handlerMap.simple[url] = restHandler
-	}else {
-		urlinfo.handler = restHandler
-		len := urlinfo.len()
-		fmt.Println(urlinfo)
-		handlerMap.rest.urls[len] = append(handlerMap.rest.urls[len],urlinfo)
-	}
-}
-
 func init()  {
 	simple := map[string]*restHandlerFunc{}
 	rest := &restHandlerMap{urls:map[int][]*urlInfo{}}
@@ -226,4 +247,5 @@ func init()  {
 		rest:rest,
 		lastAllMatch:last,
 	}
+	filters = []Filter{}
 }
