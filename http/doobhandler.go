@@ -39,7 +39,13 @@ func (this DoobHandler) ServeHTTP(res http.ResponseWriter, req *http.Request)  {
 	handler,err := handlerMap.getHandler(req)
 	if err != nil{
 		fmt.Println(err)
-		res.WriteHeader(404)
+		errStr := err.Error()
+		if strings.Index(errStr,"method not match") >= 0 {
+			res.WriteHeader(405)
+		}else{
+			res.WriteHeader(404)
+		}
+		return
 	}
 	handler(res,req)
 }
@@ -65,12 +71,18 @@ func (this handleFuncMap) getHandler(req *http.Request) (http.HandlerFunc,error)
 	if restHandler != nil {
 		if restHandler.matchMethod(method){
 			for k,v:=range urlValues{
+				if req.Form == nil {
+					req.Form = map[string][]string{}
+				}
 				req.Form.Add(k,v)
 			}
 			return restHandler.function,nil
+		}else {
+			err = fmt.Errorf("url:%s;method not match:methodStr is %s but %s",url,restHandler.methodStr,method)
 		}
+	}else {
+		err = fmt.Errorf("url:%s;not found macth url",url)
 	}
-	err = fmt.Errorf("url:%s;not found macth url",url)
 	return nil,err
 }
 
@@ -148,7 +160,7 @@ func (this *urlInfo) match(url string) (*restHandlerFunc,map[string]string,error
 		if ismacth,flag:=should.macth(real); ismacth {
 			switch flag {
 			case ALL:
-				urlParavalueMap["*"]=strings.Join(urlParas[i-1:],"/")
+				urlParavalueMap["*"]=strings.Join(urlParas[i:],"/")
 				return this.handler,urlParavalueMap,nil
 			case URL_PARA_FLAG:
 				urlParavalueMap[should.urlPara] = real

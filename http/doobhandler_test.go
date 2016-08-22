@@ -10,8 +10,8 @@ func TestAddHandlerFunc(t *testing.T) {
 	AddHandlerFunc("/oo/aa/bb","get,post", func(http.ResponseWriter , *http.Request) {
 		fmt.Println("oo/aa/bb")
 	})
-	AddHandlerFunc("/oo/{aa}/cc/{bb}","PUT", func(http.ResponseWriter , *http.Request) {
-		fmt.Println("oo/{aa}/cc")
+	AddHandlerFunc("/oo/{aa}/cc/{bb}","get", func(w http.ResponseWriter ,r *http.Request) {
+		fmt.Println(r.Form.Get("aa"),r.Form.Get("bb"))
 	})
 	AddHandlerFunc("/oo/aa/bb/*","get", func(http.ResponseWriter , *http.Request) {
 		fmt.Println("oo/aa/bb/*")
@@ -29,12 +29,12 @@ func TestAddHandlerFunc(t *testing.T) {
 	if handler2 == nil {
 		t.Errorf("match url bug")
 	}else{
-		if !handler2.matchMethod("put") {
+		if !handler2.matchMethod("GET") {
 			t.Errorf("match mothod bug")
 		}
 		fmt.Println(paras)
 	}
-	handler3,paras := handlerMap.rest.getHandler("oo/aa/bb/123456/edefed/4324242312")
+	handler3,paras := handlerMap.rest.getHandler("oo/aa/bb/123456")
 	if handler3 == nil {
 		t.Errorf("match url bug")
 	}else{
@@ -43,5 +43,18 @@ func TestAddHandlerFunc(t *testing.T) {
 		}
 		fmt.Println(paras)
 	}
+	req,err:=http.NewRequest("GET","http://localhost:8080/oo/eooeoeo/cc/kkkkkkkk",nil)
+	req.Form = map[string][]string{}
+	if err!=nil{
+		return
+	}
+	handler,err1:=handlerMap.getHandler(req)
+	var handlerFunc func(http.ResponseWriter,*http.Request) = handler
+	if err1 != nil {
+		t.Error(err1)
+	}else{
+		handlerFunc(nil,req)
+	}
+
 
 }
