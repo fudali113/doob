@@ -11,7 +11,7 @@ func main()  {
 		w.Write([]byte(who+":"+do))
 	})
 	myhandler.AddHandlerFunc("/test/*","get,post", func(w http.ResponseWriter,r *http.Request) {
-		w.Write([]byte("***"))
+		w.Write([]byte(r.Form.Get("*")))
 	})
-	http.ListenAndServe(":3333",myhandler.Get_doob_Handler())
+	http.ListenAndServe(":3333",myhandler.GetDoobHandler())
 }

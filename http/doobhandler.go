@@ -32,7 +32,7 @@ var (
 	filters []Filter
 )
 
-func Get_doob_Handler() *DoobHandler  {
+func GetDoobHandler() *DoobHandler  {
 	return &DoobHandler{filters:filters,handlerMap:handlerMap}
 }
 
