@@ -18,8 +18,8 @@ func main() {
 	doob.AddHandlerFunc("/test/*", "get,post", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(r.Form.Get("*")))
 	})
-	doob.AddHandlerFunc("/", "get", func(w http.ResponseWriter, r *http.Request) {
+	doob.AddHandlerFunc("", "get", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("oo"))
 	})
-	doob.Start()
+	doob.Start(8888)
 }

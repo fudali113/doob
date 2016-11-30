@@ -14,6 +14,7 @@ package http
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
@@ -34,8 +35,12 @@ var (
 	filters    []Filter
 )
 
-func Start() {
-	http.ListenAndServe(":3333", &DoobHandler{filters: filters, handlerMap: handlerMap})
+func Start(port int) {
+	log.Printf("server is starting , listen port is %d", port)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", port), &DoobHandler{filters: filters, handlerMap: handlerMap})
+	if err != nil {
+		log.Printf("start is fail => %s", err.Error())
+	}
 }
 
 /**
@@ -46,7 +51,6 @@ func AddHandlerFunc(url string, methodStr string, handler http.HandlerFunc) {
 	matchParaCount := 0
 	urlinfo := &urlInfo{}
 	restHandler := &restHandlerFunc{function: handler, methodStr: strings.ToLower(methodStr)}
-	fmt.Println(paras, len(paras))
 	for i, v := range paras {
 		matchParaCount++
 		para := strings.TrimSpace(v)
@@ -70,7 +74,6 @@ func AddHandlerFunc(url string, methodStr string, handler http.HandlerFunc) {
 	} else {
 		urlinfo.handler = restHandler
 		len := urlinfo.len()
-		fmt.Println(urlinfo)
 		handlerMap.rest.urls[len] = append(handlerMap.rest.urls[len], urlinfo)
 	}
 }
