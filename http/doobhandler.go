@@ -28,6 +28,7 @@ const (
 	EMPTY                = ""
 )
 
+//handler与filter容器
 var (
 	handlerMap *handleFuncMap
 	filters    []Filter
@@ -37,6 +38,9 @@ func GetDoobHandler() *DoobHandler {
 	return &DoobHandler{filters: filters, handlerMap: handlerMap}
 }
 
+/**
+ * 注册一个handler
+ */
 func AddHandlerFunc(url string, methodStr string, handler http.HandlerFunc) {
 	paras := utils.Split(url, "/")
 	matchParaCount := 0
@@ -71,10 +75,16 @@ func AddHandlerFunc(url string, methodStr string, handler http.HandlerFunc) {
 	}
 }
 
+/**
+ * 添加一个过滤器
+ */
 func AddFilter(f Filter) {
 	filters = append(filters, f)
 }
 
+/**
+ * 实现http接口
+ */
 func (this *DoobHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	for i := range this.filters {
 		if this.filters[i].Filter(res, req) {
@@ -95,113 +105,6 @@ func (this *DoobHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	handler(res, req)
-}
-
-func (this handleFuncMap) getHandler(req *http.Request) (http.HandlerFunc, error) {
-	url := req.URL.Path
-	err := fmt.Errorf("url:%s;not found macth url", url)
-	method := strings.ToLower(req.Method)
-	rest, ok := this.simple[url]
-	if ok {
-		if rest.matchMethod(method) {
-			return rest.function, nil
-		} else {
-			err = fmt.Errorf("url:%s;method not match:methodStr is %s but %s", url, rest.methodStr, method)
-		}
-	}
-	restHandler, urlValues := this.rest.getHandler(url)
-	if restHandler != nil {
-		if restHandler.matchMethod(method) {
-			for k, v := range urlValues {
-				if req.Form == nil {
-					req.Form = map[string][]string{}
-				}
-				req.Form.Add(k, v)
-			}
-			return restHandler.function, nil
-		} else {
-			err = fmt.Errorf("url:%s;method not match:methodStr is %s but %s", url, restHandler.methodStr, method)
-		}
-	}
-	for k, v := range this.lastAllMatch {
-		if index := strings.Index(url, k); index == 0 || index == 1 {
-			if v.matchMethod(method) {
-				return v.function, nil
-			} else {
-				err = fmt.Errorf("url:%s;method not match:methodStr is %s but %s", url, rest.methodStr, method)
-			}
-		}
-	}
-
-	return nil, err
-}
-
-func (this restHandlerFunc) matchMethod(method string) bool {
-	method = strings.ToLower(method)
-	if this.methodStr == "" || this.methodStr == "*" {
-		return true
-	}
-	return strings.Index(this.methodStr, method) >= 0
-}
-
-func (this restHandlerMap) getHandler(url string) (*restHandlerFunc, map[string]string) {
-	urlParaLen := len(utils.Split(url, "/"))
-	urlInfos, ok := this.urls[urlParaLen]
-	if ok {
-		for _, v := range urlInfos {
-			handler, urlPara, err := v.match(url)
-			if err != nil {
-				continue
-			} else {
-				return handler, urlPara
-			}
-		}
-	}
-	return nil, nil
-}
-
-func (this urlMacthPara) macth(para string) (bool, string) {
-	switch this.matchInfo {
-	case ALL:
-		return true, ALL
-	case URL_PARA_FLAG:
-		return true, URL_PARA_FLAG
-	case EMPTY:
-		return this.urlPara == para, EMPTY
-	default:
-		return this.urlPara == para, EMPTY
-	}
-}
-
-func (this *urlInfo) addUrlPara(v urlMacthPara) {
-	this.urlParas = append(this.urlParas, v)
-}
-
-func (this *urlInfo) len() int {
-	return len(this.urlParas)
-}
-
-func (this *urlInfo) match(url string) (*restHandlerFunc, map[string]string, error) {
-	urlParavalueMap := map[string]string{}
-	urlParas := utils.Split(url, "/")
-	for i, _ := range this.urlParas {
-		should := this.urlParas[i]
-		real := urlParas[i]
-		if ismacth, flag := should.macth(real); ismacth {
-			switch flag {
-			case ALL:
-				urlParavalueMap["*"] = strings.Join(urlParas[i:], "/")
-				return this.handler, urlParavalueMap, nil
-			case URL_PARA_FLAG:
-				urlParavalueMap[should.urlPara] = real
-			default:
-
-			}
-		} else {
-			return nil, nil, fmt.Errorf("url not macth")
-		}
-	}
-	return this.handler, urlParavalueMap, nil
 }
 
 func init() {
