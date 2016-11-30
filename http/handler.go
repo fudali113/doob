@@ -17,6 +17,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/fudali113/golib/utils"
 )
@@ -89,6 +90,8 @@ func AddFilter(f Filter) {
  * 实现http接口
  */
 func (this *DoobHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+	startTime := time.Now()
+	defer log.Printf("程序处理共消耗:%d ns", time.Now().Sub(startTime).Nanoseconds())
 	for i := range this.filters {
 		if this.filters[i].Filter(res, req) {
 			continue
@@ -98,7 +101,7 @@ func (this *DoobHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 	handler, err := this.handlerMap.getHandler(req)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("error => ", err.Error())
 		errStr := err.Error()
 		if strings.Index(errStr, "method not match") >= 0 {
 			res.WriteHeader(405)
