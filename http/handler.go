@@ -34,8 +34,8 @@ var (
 	filters    []Filter
 )
 
-func GetDoobHandler() *DoobHandler {
-	return &DoobHandler{filters: filters, handlerMap: handlerMap}
+func Start() {
+	http.ListenAndServe(":3333", &DoobHandler{filters: filters, handlerMap: handlerMap})
 }
 
 /**
@@ -117,4 +117,7 @@ func init() {
 		lastAllMatch: last,
 	}
 	filters = []Filter{}
+	AddHandlerFunc("/", "", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("doob "))
+	})
 }
