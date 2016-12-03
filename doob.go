@@ -13,18 +13,19 @@ package doob
 */
 
 import (
-	"fmt"
 	"log"
 	"net/http"
-	"strings"
 
-	"github.com/fudali113/doob/utils"
+	"github.com/fudali113/doob/core"
 )
 
-//handler与filter容器
-var (
-	handlerMap *handleFuncMap
-	filters    []Filter
+const (
+	GET     core.HttpMethod = "get"
+	POST    core.HttpMethod = "post"
+	PUT     core.HttpMethod = "put"
+	DELETE  core.HttpMethod = "delete"
+	OPTIONS core.HttpMethod = "options"
+	HEAD    core.HttpMethod = "head"
 )
 
 /**
@@ -32,7 +33,7 @@ var (
  */
 func Start(port int) {
 	log.Printf("server is starting , listen port is %d", port)
-	err := http.ListenAndServe(fmt.Sprintf(":%d", port), &DoobHandler{filters: filters, handlerMap: handlerMap})
+	err := core.Listen(port)
 	if err != nil {
 		log.Printf("start is fail => %s", err.Error())
 	}
@@ -41,73 +42,32 @@ func Start(port int) {
 /**
  * 注册一个handler
  */
-func AddHandlerFunc(url string, methodStr string, handler http.HandlerFunc) {
-	paras := utils.Split(url, "/")
-	matchParaCount := 0
-	urlinfo := &urlInfo{}
-	restHandler := &restHandlerFunc{function: handler, methodStr: strings.ToLower(methodStr)}
-	for i, v := range paras {
-		matchParaCount++
-		para := strings.TrimSpace(v)
-		//para = strings.ToLower(para)
-		if para[0] == URL_PARA_PREFIX_FLAG[0] && para[len(para)-1] == URL_PARA_LAST_FLAG[0] {
-			urlinfo.addUrlPara(urlMacthPara{urlPara: para[1 : len(para)-1], matchInfo: URL_PARA_FLAG})
-		} else if para == ALL {
-			if i == len(paras)-1 {
-				urlinfo.addUrlPara(urlMacthPara{urlPara: para, matchInfo: ALL})
-				handlerMap.lastAllMatch[url[:len(url)-1]] = restHandler
-			} else {
-				urlinfo.addUrlPara(urlMacthPara{urlPara: para, matchInfo: URL_PARA_FLAG})
-			}
-		} else {
-			matchParaCount--
-			urlinfo.addUrlPara(urlMacthPara{urlPara: para, matchInfo: EMPTY})
-		}
-	}
-	if matchParaCount == 0 {
-		handlerMap.simple[url] = restHandler
-	} else {
-		urlinfo.handler = restHandler
-		len := urlinfo.len()
-		handlerMap.rest.urls[len] = append(handlerMap.rest.urls[len], urlinfo)
-	}
+func AddHandlerFunc(url string, handler http.HandlerFunc, tms ...core.HttpMethod) {
+	core.AddHandlerFunc(url, handler, tms...)
 }
 
 func Get(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, "get", handler)
+	AddHandlerFunc(url, handler, GET)
 }
 func Post(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, "post", handler)
+	AddHandlerFunc(url, handler, POST)
 }
 func Put(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, "put", handler)
+	AddHandlerFunc(url, handler, PUT)
 }
 func Delete(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, "delete", handler)
+	AddHandlerFunc(url, handler, DELETE)
 }
 
 /**
  * 添加一个过滤器
  */
-func AddFilter(f Filter) {
-	filters = append(filters, f)
+func AddFilter(f core.Filter) {
+	core.AddFilter(f)
 }
 
-func AddFilters(fs []Filter) {
-	filters = append(fs)
-}
-
-func init() {
-	simple := map[string]*restHandlerFunc{}
-	rest := &restHandlerMap{urls: map[int][]*urlInfo{}}
-	last := map[string]*restHandlerFunc{}
-	handlerMap = &handleFuncMap{
-		simple:       simple,
-		rest:         rest,
-		lastAllMatch: last,
+func AddFilters(fs ...core.Filter) {
+	for i := 0; i < len(fs); i++ {
+		core.AddFilter(fs[i])
 	}
-	filters = []Filter{}
-	AddHandlerFunc("/", "", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("doob "))
-	})
 }

@@ -1,11 +1,11 @@
-package doob
+package core
 
 import (
 	"log"
 	"net/http"
 	"time"
 
-	"github.com/fudali113/doob/errors"
+	"github.com/fudali113/doob/core/errors"
 )
 
 const (
@@ -14,6 +14,12 @@ const (
 	URL_PARA_LAST_FLAG   = "}"
 	URL_PARA_FLAG        = "{}"
 	EMPTY                = ""
+)
+
+//handler与filter容器
+var (
+	handlerMap *handleFuncMap
+	filters    []Filter
 )
 
 /**
@@ -51,5 +57,24 @@ func (this *DoobHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		}
 		return
 	}
+	if handler == nil {
+		res.WriteHeader(404)
+		return
+	}
 	handler(res, req)
+}
+
+func init() {
+	simple := map[string]*restHandlerFunc{}
+	rest := &restHandlerMap{urls: map[int][]*urlInfo{}}
+	last := map[string]*restHandlerFunc{}
+	handlerMap = &handleFuncMap{
+		simple:       simple,
+		rest:         rest,
+		lastAllMatch: last,
+	}
+	filters = []Filter{}
+	// AddHandlerFunc("/", "", func(w http.ResponseWriter, r *http.Request) {
+	// 	w.Write([]byte("doob "))
+	// })
 }

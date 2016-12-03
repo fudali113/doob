@@ -1,11 +1,11 @@
-package doob
+package core
 
 import (
 	"fmt"
 	"net/http"
 	"strings"
 
-	"github.com/fudali113/doob/errors"
+	"github.com/fudali113/doob/core/errors"
 	"github.com/fudali113/doob/utils"
 )
 
