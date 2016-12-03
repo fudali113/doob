@@ -1,13 +1,26 @@
-# golib
+# doob
 
-DoobHandler is a rest handler
+doob is a rest and a simple router handler 
 
 init invoke AddHandlerFunc(url,methodStr,func)
 such as
-`AddHandlerFunc("/test/{who}/{do}","get,post", func(w http.ResponseWriter,r *http.Request) {
+```
+doob.AddHandlerFunc("/test/{who}/{do}","get,post", func(w http.ResponseWriter,r *http.Request) {
     who := r.Form.Get("who")
     do := r.Form.Get("do")
     w.Write([]byte(who+":"+do))
-})`
-
+})
+```
 use r.From.Get() receive your urlpara value
+
+next use
+```
+doob.Start(8888)
+```
+run you application
+
+clone this project , run demo
+```
+cd /demo
+go run demo.go
+```
