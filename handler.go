@@ -3,8 +3,9 @@ package doob
 import (
 	"log"
 	"net/http"
-	"strings"
 	"time"
+
+	"github.com/fudali113/golib/doob/errors"
 )
 
 const (
@@ -36,14 +37,17 @@ func (this *DoobHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 	}
-	handler, err := this.handlerMap.getHandler(req)
-	if err != nil {
-		log.Println("error => ", err.Error())
-		errStr := err.Error()
-		if strings.Index(errStr, "method not match") >= 0 {
-			res.WriteHeader(405)
-		} else {
-			res.WriteHeader(404)
+	handler, errs := this.handlerMap.getHandler(req)
+	if len(errs) != 0 {
+		for i := 0; i < len(errs); i++ {
+			err := errs[i]
+			switch err.(type) {
+			case *errors.MethodMacthError:
+				res.WriteHeader(405)
+				break
+			case *errors.URLMacthError:
+				res.WriteHeader(404)
+			}
 		}
 		return
 	}

@@ -1,27 +1,27 @@
-package http
+package doob
 
 import (
 	"fmt"
 	"net/http"
 	"strings"
 
+	"github.com/fudali113/golib/doob/errors"
 	"github.com/fudali113/golib/utils"
 )
 
 /**
  * 根据request获取相应的处理handler
  */
-func (this handleFuncMap) getHandler(req *http.Request) (http.HandlerFunc, error) {
+func (this handleFuncMap) getHandler(req *http.Request) (http.HandlerFunc, []error) {
 	url := req.URL.Path
-	err := fmt.Errorf("url:%s;not found macth url", url)
+	errs := []error{}
 	method := strings.ToLower(req.Method)
 	rest, ok := this.simple[url]
 	if ok {
 		if rest.matchMethod(method) {
 			return rest.function, nil
-		} else {
-			err = fmt.Errorf("url:%s;method not match:methodStr is %s but %s", url, rest.methodStr, method)
 		}
+		errs = append(errs, errors.GetMwthodMatchError(rest.methodStr, method, url, nil))
 	}
 	restHandler, urlValues := this.rest.getHandler(url)
 	if restHandler != nil {
@@ -33,21 +33,19 @@ func (this handleFuncMap) getHandler(req *http.Request) (http.HandlerFunc, error
 				req.Form.Add(k, v)
 			}
 			return restHandler.function, nil
-		} else {
-			err = fmt.Errorf("url:%s;method not match:methodStr is %s but %s", url, restHandler.methodStr, method)
 		}
+		errs = append(errs, errors.GetMwthodMatchError(rest.methodStr, method, url, nil))
 	}
 	for k, v := range this.lastAllMatch {
 		if index := strings.Index(url, k); index == 0 || index == 1 {
 			if v.matchMethod(method) {
 				return v.function, nil
-			} else {
-				err = fmt.Errorf("url:%s;method not match:methodStr is %s but %s", url, rest.methodStr, method)
 			}
+			errs = append(errs, errors.GetMwthodMatchError(rest.methodStr, method, url, nil))
 		}
 	}
 
-	return nil, err
+	return nil, errs
 }
 
 /**
