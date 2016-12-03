@@ -19,6 +19,15 @@ import (
 	"github.com/fudali113/doob/core"
 )
 
+const (
+	GET     HttpMethod = "get"
+	POST    HttpMethod = "post"
+	PUT     HttpMethod = "put"
+	DELETE  HttpMethod = "delete"
+	OPTIONS HttpMethod = "options"
+	HEAD    HttpMethod = "head"
+)
+
 /**
  * 启动server
  */
@@ -33,21 +42,21 @@ func Start(port int) {
 /**
  * 注册一个handler
  */
-func AddHandlerFunc(url string, methodStr string, handler http.HandlerFunc) {
-	core.AddHandlerFunc(url, methodStr, handler)
+func AddHandlerFunc(url string, handler http.HandlerFunc, tms ...core.HttpMethod) {
+	core.AddHandlerFunc(url, handler, tms...)
 }
 
 func Get(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, "get", handler)
+	AddHandlerFunc(url, handler, GET)
 }
 func Post(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, "post", handler)
+	AddHandlerFunc(url, handler, POST)
 }
 func Put(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, "put", handler)
+	AddHandlerFunc(url, handler, PUT)
 }
 func Delete(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, "delete", handler)
+	AddHandlerFunc(url, handler, DELETE)
 }
 
 /**

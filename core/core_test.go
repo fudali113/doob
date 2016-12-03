@@ -7,15 +7,15 @@ import (
 )
 
 func TestAddHandlerFunc(t *testing.T) {
-	AddHandlerFunc("/oo/aa/bb", "get,post", func(http.ResponseWriter, *http.Request) {
+	AddHandlerFunc("/oo/aa/bb", func(http.ResponseWriter, *http.Request) {
 		fmt.Println("oo/aa/bb")
-	})
-	AddHandlerFunc("/oo/{aa}/cc/{bb}", "get", func(w http.ResponseWriter, r *http.Request) {
+	}, HttpMethod("get"), HttpMethod("post"))
+	AddHandlerFunc("/oo/{aa}/cc/{bb}", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(r.Form.Get("aa"), r.Form.Get("bb"))
-	})
-	AddHandlerFunc("/oo/aa/bb/*", "get", func(http.ResponseWriter, *http.Request) {
+	}, HttpMethod("get"))
+	AddHandlerFunc("/oo/aa/bb/*", func(http.ResponseWriter, *http.Request) {
 		fmt.Println("oo/aa/bb/*")
-	})
+	}, HttpMethod("get"))
 	fmt.Println(handlerMap.simple["/oo/aa/bb"].methodStr)
 	oo := handlerMap.rest.urls
 	for k, v := range oo {

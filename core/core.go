@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
@@ -19,7 +20,12 @@ func AddFilter(f Filter) {
 /**
  * 注册一个handler
  */
-func AddHandlerFunc(url string, methodStr string, handler http.HandlerFunc) {
+func AddHandlerFunc(url string, handler http.HandlerFunc, methods ...HttpMethod) {
+	methodStr, err := convertHttpMethods2String(methods)
+	if err != nil {
+		log.Printf(err.Error())
+		return
+	}
 	paras := utils.Split(url, "/")
 	matchParaCount := 0
 	urlinfo := &urlInfo{}

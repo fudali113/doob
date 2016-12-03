@@ -3,15 +3,12 @@ package core
 import "net/http"
 
 /**
-save handlers
-*/
+ *save handlers
+ */
 type restHandlerMap struct {
 	urls map[int][]*urlInfo
 }
 
-/**
-
- */
 type urlInfo struct {
 	urlParas []urlMacthPara
 	handler  *restHandlerFunc
