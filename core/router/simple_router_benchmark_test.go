@@ -68,10 +68,10 @@ func Benchmark_test(b *testing.B) {
 				b.Error("path variable method have bug")
 			}
 
-			// oo1, _ := simpleRouter.Get("/api/user/barcodes/111-1121-8406/bind_share").(*testType)
-			// if oo1 == nil {
-			// 	b.Error("path variable method have bug")
-			// }
+			oo1, _ := simpleRouter.Get("/api/user/barcodes/111-1121-8406/bind_share").(*testType)
+			if oo1 == nil {
+				b.Error("path variable method have bug")
+			}
 		}
 	})
 }

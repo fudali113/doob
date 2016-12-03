@@ -10,6 +10,11 @@ import (
 	"github.com/fudali113/doob/utils"
 )
 
+/**
+ * TODO 将储存改变，每次添加前判断是否有此url的handler存在
+ * 若有则根据方法添加不同的方法handler
+ */
+
 const (
 
 	// 各分类操作的正则表达式
@@ -48,9 +53,43 @@ var (
  * 储存url含有值得路由handler信息
  */
 type pathVariableHandler struct {
-	urlLen int
-	urlReg *regexp.Regexp
-	rest   interface{}
+	urlLen         int
+	pathParamNames []string
+	noMatchStrs    []string
+	urlReg         *regexp.Regexp
+	rest           interface{}
+}
+
+func (this *pathVariableHandler) getPathVariableParamMap(url string) map[string]string {
+	res := make(map[string]string, 0)
+	//TODO 根据url获取参数值
+	resStrs := make([]string, 0)
+	for i, noMatchStr := range this.noMatchStrs {
+		if i == len(this.noMatchStrs)-1 || noMatchStr == "" {
+			resStrs = append(resStrs, url)
+			break
+		}
+		//log.Print("noMatchStr : ", noMatchStr)
+		strs := strings.SplitN(url, noMatchStr, 2)
+		//log.Print(strs)
+		str := ""
+		if len(strs) == 2 {
+			if strs[0] == "" {
+				url = strings.TrimPrefix(url, noMatchStr)
+				continue
+			}
+			str = strs[0]
+			resStrs = append(resStrs, str)
+			url = strings.TrimPrefix(url, str)
+		}
+		url = strings.TrimPrefix(url, noMatchStr)
+		//log.Print("url : ", url)
+	}
+	for i := 0; i < len(this.pathParamNames); i++ {
+		res[this.pathParamNames[i]] = resStrs[i]
+	}
+	log.Print(res)
+	return res
 }
 
 func (this *pathVariableHandler) String() string {
@@ -109,15 +148,38 @@ func (this *SimpleRouter) Get(url string) interface{} {
 func pathVariableHandle(url string, restHandler interface{}) {
 	urlStrArray := utils.Split(url, URL_CUT_SYMBOL)
 	urlStrArrayLen := len(urlStrArray)
-	urlReg := getPathVariableReg(url)
 	pathVariableHandlerSlice := pathVariableMap[urlStrArrayLen]
-	pathVariableHandlerSlice = append(pathVariableHandlerSlice,
-		&pathVariableHandler{
-			urlLen: urlStrArrayLen,
-			urlReg: urlReg,
-			rest:   restHandler,
-		})
+	pathVariableHandlerSlice = append(
+		pathVariableHandlerSlice,
+		getPathVariableHandler(url, restHandler))
 	pathVariableMap[urlStrArrayLen] = pathVariableHandlerSlice
+}
+
+func getPathVariableHandler(url string, restHandler interface{}) *pathVariableHandler {
+	urlStrArray := utils.Split(url, URL_CUT_SYMBOL)
+	urlStrArrayLen := len(urlStrArray)
+	urlReg := getPathVariableReg(url)
+	noMatchStr := getRegexp(PATH_VARIABLE_SYMBOL).Split(url, -1)
+	log.Print(noMatchStr)
+	return &pathVariableHandler{
+		urlLen:         urlStrArrayLen,
+		pathParamNames: getPathParamNames(url),
+		noMatchStrs:    noMatchStr,
+		urlReg:         urlReg,
+		rest:           restHandler,
+	}
+}
+
+func getPathParamNames(url string) []string {
+	res := make([]string, 0)
+	matchs := getRegexp(PATH_VARIABLE_SYMBOL).FindAllStringSubmatch(url, -1)
+	for _, _match := range matchs {
+		match := _match[0]
+		paramName := match[1 : len(match)-1]
+		res = append(res, paramName)
+	}
+	log.Print(url, " :paraname: ", res)
+	return res
 }
 
 /**

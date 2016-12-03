@@ -1,6 +1,9 @@
 package router
 
-import "testing"
+import (
+	"log"
+	"testing"
+)
 
 type testType struct {
 	name string
@@ -13,6 +16,9 @@ func Test_getAndAdd(t *testing.T) {
 		name: "ooo",
 		num:  1,
 	}
+	/**
+	 * normal
+	 */
 	simpleRouter.Add("/dddd/dssds/dfdggf", testVar)
 	testGetVar, _ := simpleRouter.Get("/dddd/dssds/dfdggf").(*testType)
 	if testGetVar != testVar {
@@ -22,6 +28,9 @@ func Test_getAndAdd(t *testing.T) {
 		t.Error("normal router is error")
 	}
 
+	/**
+	 * pathVariable
+	 */
 	simpleRouter.Add("/dddd/{fffff}/dfdggf", testVar)
 	for i := 0; i < 10; i++ {
 		testGetVar1, _ := simpleRouter.Get("/dddd/dssssssds/dfdggf").(*testType)
@@ -33,6 +42,9 @@ func Test_getAndAdd(t *testing.T) {
 		}
 	}
 
+	/**
+	 * suffix
+	 */
 	simpleRouter.Add("/ddf/**", testVar)
 	testGetVar2, _ := simpleRouter.Get("/ddf/dssds/dfdggf,dsds-+!@#$%^&*").(*testType)
 	if testGetVar2 != testVar {
@@ -66,6 +78,9 @@ func Test_getUrlClassify(t *testing.T) {
 	}
 }
 
+/**
+ * 测试获取是否pathVariable匹配url的正则
+ */
 func Test_getPathVariableReg(t *testing.T) {
 	testUrlStr := "/api/dd/{ddddd}/{ffffffff}/fdldfldf"
 	shouldRegStr := "/api/dd/\\S+/\\S+/fdldfldf"
@@ -75,17 +90,32 @@ func Test_getPathVariableReg(t *testing.T) {
 	}
 }
 
-// func Test_getRegexp(t *testing.T) {
-// 	testStr := "{sddssddssd}dfdfdfdfdf"
-// 	r := getRegexp("{\\w+}")
-// 	log.Print(r)
-// 	s := r.FindString(testStr)
-// 	log.Print(s == "")
-// 	log.Printf("FindString res:%s", s)
-// 	s1 := r.FindAllStringSubmatch(testStr, 1)
-// 	log.Printf("FindAllStringSubmatch res:%s", s1)
-// 	s2 := r.FindStringIndex(testStr)
-// 	log.Printf("FindAllStringSubmatch res:%d", s2)
-// 	log.Print("FindStringSubmatch : ", r.FindStringSubmatch(testStr))
-// 	t.Log(s)
-// }
+func Test_getPathVariableParamMap(t *testing.T) {
+	pathVariableHandler := getPathVariableHandler("/{name1}/dfdfdf_{name2}/dfdf_{name3}_dsffdffd/{name4}", nil)
+	res := pathVariableHandler.getPathVariableParamMap("/name1/dfdfdf_name2/dfdf_name3_dsffdffd/name4")
+	if res["name1"] != "name1" {
+		t.Error("getPathVariableParamMap func have bug")
+	}
+	if res["name2"] != "name2" {
+		t.Error("getPathVariableParamMap func have bug")
+	}
+	if res["name3"] != "name3" {
+		t.Error("getPathVariableParamMap func have bug")
+	}
+	if res["name4"] != "name4" {
+		t.Error("getPathVariableParamMap func have bug")
+	}
+}
+
+func Test_getRegexp(t *testing.T) {
+	testStr := "{sddssddssd}dfdfdf{ooooooo}dfdf{ooooooooo}dsffdffd"
+	r := getRegexp("{\\w+}")
+	// 	s := r.Split(testStr, -1)
+	// 	log.Printf("FindString res:%s", s)
+	//
+	s1 := r.FindAllStringSubmatch(testStr, -1)
+	log.Printf("FindAllStringSubmatch res:%s", s1)
+	// 	s2 := r.FindStringIndex(testStr)
+	// 	log.Printf("FindAllStringSubmatch res:%d", s2)
+	// 	log.Print("FindStringSubmatch : ", r.FindStringSubmatch(testStr))
+}
