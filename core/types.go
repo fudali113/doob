@@ -1,4 +1,4 @@
-package doob
+package core
 
 import "net/http"
 

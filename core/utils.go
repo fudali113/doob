@@ -1,4 +1,4 @@
-package doob
+package core
 
 func (this *urlInfo) addUrlPara(v urlMacthPara) {
 	this.urlParas = append(this.urlParas, v)
