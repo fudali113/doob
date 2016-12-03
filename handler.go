@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fudali113/golib/doob/errors"
+	"github.com/fudali113/doob/errors"
 )
 
 const (

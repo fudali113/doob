@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/fudali113/golib/doob/errors"
-	"github.com/fudali113/golib/utils"
+	"github.com/fudali113/doob/errors"
+	"github.com/fudali113/doob/utils"
 )
 
 /**

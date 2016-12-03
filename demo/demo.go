@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/fudali113/golib/doob"
+	"github.com/fudali113/doob"
 )
 
 /**
