@@ -1,9 +1,46 @@
 package router
 
-import (
-	"log"
-	"testing"
-)
+import "testing"
+
+type testType struct {
+	name string
+	num  int
+}
+
+func Test_getAndAdd(t *testing.T) {
+	simpleRouter := &SimpleRouter{}
+	testVar := &testType{
+		name: "ooo",
+		num:  1,
+	}
+	simpleRouter.Add("/dddd/dssds/dfdggf", testVar)
+	testGetVar, _ := simpleRouter.Get("/dddd/dssds/dfdggf").(*testType)
+	if testGetVar != testVar {
+		t.Error("normal router is error")
+	}
+	if testGetVar.num != 1 {
+		t.Error("normal router is error")
+	}
+
+	simpleRouter.Add("/dddd/{fffff}/dfdggf", testVar)
+	testGetVar1, _ := simpleRouter.Get("/dddd/dssds/dfdggf").(*testType)
+	if testGetVar1 != testVar {
+		t.Error("normal router is error")
+	}
+	if testGetVar1.num != 1 {
+		t.Error("normal router is error")
+	}
+
+	simpleRouter.Add("/ddf/**", testVar)
+	testGetVar2, _ := simpleRouter.Get("/ddf/dssds/dfdggf").(*testType)
+	if testGetVar2 != testVar {
+		t.Error("normal router is error")
+	}
+	if testGetVar2.num != 1 {
+		t.Error("normal router is error")
+	}
+
+}
 
 /**
  * 测试url类型，分类处理
@@ -28,7 +65,12 @@ func Test_getUrlClassify(t *testing.T) {
 }
 
 func Test_getPathVariableReg(t *testing.T) {
-	log.Print(getPathVariableReg("/api/dd/{ddddd}/{ffffffff}/fdldfldf"))
+	testUrlStr := "/api/dd/{ddddd}/{ffffffff}/fdldfldf"
+	shouldRegStr := "/api/dd/\\w+/\\w+/fdldfldf"
+	oo := getPathVariableReg(testUrlStr)
+	if shouldRegStr != oo.String() {
+		t.Error("getPathVariableReg func have a bug")
+	}
 }
 
 // func Test_getRegexp(t *testing.T) {
