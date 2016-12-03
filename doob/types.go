@@ -36,11 +36,3 @@ type restHandlerFunc struct {
 type Filter interface {
 	Filter(http.ResponseWriter, *http.Request) bool
 }
-
-/**
-
- */
-type DoobHandler struct {
-	filters    []Filter
-	handlerMap *handleFuncMap
-}
