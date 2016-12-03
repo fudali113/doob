@@ -23,16 +23,18 @@ func Test_getAndAdd(t *testing.T) {
 	}
 
 	simpleRouter.Add("/dddd/{fffff}/dfdggf", testVar)
-	testGetVar1, _ := simpleRouter.Get("/dddd/dssds/dfdggf").(*testType)
-	if testGetVar1 != testVar {
-		t.Error("normal router is error")
-	}
-	if testGetVar1.num != 1 {
-		t.Error("normal router is error")
+	for i := 0; i < 10; i++ {
+		testGetVar1, _ := simpleRouter.Get("/dddd/dssssssds/dfdggf").(*testType)
+		if testGetVar1 != testVar {
+			t.Error("normal router is error")
+		}
+		if testGetVar1.num != 1 {
+			t.Error("normal router is error")
+		}
 	}
 
 	simpleRouter.Add("/ddf/**", testVar)
-	testGetVar2, _ := simpleRouter.Get("/ddf/dssds/dfdggf").(*testType)
+	testGetVar2, _ := simpleRouter.Get("/ddf/dssds/dfdggf,dsds-+!@#$%^&*").(*testType)
 	if testGetVar2 != testVar {
 		t.Error("normal router is error")
 	}
@@ -66,7 +68,7 @@ func Test_getUrlClassify(t *testing.T) {
 
 func Test_getPathVariableReg(t *testing.T) {
 	testUrlStr := "/api/dd/{ddddd}/{ffffffff}/fdldfldf"
-	shouldRegStr := "/api/dd/\\w+/\\w+/fdldfldf"
+	shouldRegStr := "/api/dd/\\S+/\\S+/fdldfldf"
 	oo := getPathVariableReg(testUrlStr)
 	if shouldRegStr != oo.String() {
 		t.Error("getPathVariableReg func have a bug")

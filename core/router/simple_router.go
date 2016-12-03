@@ -5,16 +5,19 @@ import (
 	"regexp"
 	"strings"
 
+	"fmt"
+
 	"github.com/fudali113/doob/utils"
 )
 
 const (
 
 	// 各分类操作的正则表达式
-	URL_CUT_SYMBOL              = "/"
-	SUFFIX_SYMBOL               = "[\\w|/]+/\\*\\*"
-	PATH_VARIABLE_SYMBOL        = "[\\w|/]+{\\w+}[\\w|/]+"
-	PATH_VARIABLE_SUFFIX_SYMBOL = "[\\w|/]+{\\w+}[\\w|/]+\\*\\*"
+	URL_CUT_SYMBOL           = "/"
+	PATH_VARIABLE_SYMBOL     = "{\\w+}"
+	SUFFIX_URL               = "[\\w|/]+/\\*\\*"
+	PATH_VARIABLE_URL        = "[\\w|/]+{\\w+}[\\w|/]+"
+	PATH_VARIABLE_SUFFIX_URL = "[\\w|/]+{\\w+}[\\w|/]+\\*\\*"
 )
 
 /**
@@ -31,9 +34,9 @@ const (
 var (
 
 	// 各分类操作的正则表达式对象
-	pathVariableReg = getRegexp(PATH_VARIABLE_SYMBOL)
-	lastAllMatchReg = getRegexp(SUFFIX_SYMBOL)
-	pvAndLamReg     = getRegexp(PATH_VARIABLE_SUFFIX_SYMBOL)
+	pathVariableReg = getRegexp(PATH_VARIABLE_URL)
+	lastAllMatchReg = getRegexp(SUFFIX_URL)
+	pvAndLamReg     = getRegexp(PATH_VARIABLE_SUFFIX_URL)
 
 	// 储存用户相关handler信息
 	normalMap         = make(map[string]interface{}, 0)
@@ -48,6 +51,10 @@ type pathVariableHandler struct {
 	urlLen int
 	urlReg *regexp.Regexp
 	rest   interface{}
+}
+
+func (this *pathVariableHandler) String() string {
+	return fmt.Sprintf("urlLen:%d,urlReg:%s", this.urlLen, this.urlReg.String())
 }
 
 /**
@@ -79,7 +86,8 @@ func (this *SimpleRouter) Get(url string) interface{} {
 	if ok {
 		return handler
 	}
-	pvHandlers, pvOk := pathVariableMap[len(utils.Split(url, URL_CUT_SYMBOL))]
+	urlStrLen := len(utils.Split(url, URL_CUT_SYMBOL))
+	pvHandlers, pvOk := pathVariableMap[urlStrLen]
 	if pvOk {
 		for _, pvHandler := range pvHandlers {
 			if pvHandler.urlReg.MatchString(url) {
@@ -109,14 +117,15 @@ func pathVariableHandle(url string, restHandler interface{}) {
 			urlReg: urlReg,
 			rest:   restHandler,
 		})
+	pathVariableMap[urlStrArrayLen] = pathVariableHandlerSlice
 }
 
 /**
  * 获取匹配该handler url的正则表达式
  */
 func getPathVariableReg(url string) *regexp.Regexp {
-	r := getRegexp("{\\w+}")
-	return getRegexp(r.ReplaceAllString(url, "\\w+"))
+	r := getRegexp(PATH_VARIABLE_SYMBOL)
+	return getRegexp(r.ReplaceAllString(url, "\\S+"))
 }
 
 /**
