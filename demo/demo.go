@@ -10,16 +10,16 @@ import (
  * 开始http服务
  */
 func main() {
-	doob.AddHandlerFunc("/test/{who}/{do}", "get,post", func(w http.ResponseWriter, r *http.Request) {
-		who := r.Form.Get("who")
-		do := r.Form.Get("do")
-		w.Write([]byte(who + ":" + do))
-	})
-	doob.AddHandlerFunc("/test/*", "get,post", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(r.Form.Get("*")))
-	})
-	doob.AddHandlerFunc("", "get", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("oo"))
+	doob.AddHandlerFunc("/doob/{who}/{do}", test1, doob.GET, doob.POST, doob.PUT, doob.DELETE)
+	doob.Get("/doob/{haha}", func(w http.ResponseWriter, r *http.Request) {
+		haha := r.Form.Get("haha")
+		w.Write([]byte(haha))
 	})
 	doob.Start(8888)
+}
+
+func test1(w http.ResponseWriter, r *http.Request) {
+	who := r.Form.Get("who")
+	do := r.Form.Get("do")
+	w.Write([]byte(who + ":" + do))
 }

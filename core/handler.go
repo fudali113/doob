@@ -57,6 +57,10 @@ func (this *DoobHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		}
 		return
 	}
+	if handler == nil {
+		res.WriteHeader(404)
+		return
+	}
 	handler(res, req)
 }
 

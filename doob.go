@@ -20,12 +20,12 @@ import (
 )
 
 const (
-	GET     HttpMethod = "get"
-	POST    HttpMethod = "post"
-	PUT     HttpMethod = "put"
-	DELETE  HttpMethod = "delete"
-	OPTIONS HttpMethod = "options"
-	HEAD    HttpMethod = "head"
+	GET     core.HttpMethod = "get"
+	POST    core.HttpMethod = "post"
+	PUT     core.HttpMethod = "put"
+	DELETE  core.HttpMethod = "delete"
+	OPTIONS core.HttpMethod = "options"
+	HEAD    core.HttpMethod = "head"
 )
 
 /**
