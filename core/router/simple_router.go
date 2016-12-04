@@ -37,7 +37,7 @@ const (
 )
 
 var (
-	EMPTY_MAP = make(map[string]string, 0)
+	emptyMap = make(map[string]string, 0)
 
 	// 各分类操作的正则表达式对象
 	pathVariableReg = getRegexp(PATH_VARIABLE_URL)
@@ -66,16 +66,23 @@ type pathVariableHandler struct {
  */
 func (this *pathVariableHandler) getPathVariableParamMap(url string) map[string]string {
 	res := make(map[string]string, 0)
-	//TODO 根据url获取参数值
 	resStrs := make([]string, 0)
 	for i, noMatchStr := range this.noMatchStrs {
+		/**
+		 * 如果是最后一个值了且分割字符串为空
+		 * 则代表最后一个字符串为想要获取的字符串
+		 */
 		if i == len(this.noMatchStrs)-1 || noMatchStr == "" {
 			resStrs = append(resStrs, url)
 			break
 		}
-		//log.Print("noMatchStr : ", noMatchStr)
+		/**
+		 * 将数组按分割字符串分为两组
+		 * 当第一个为空时，说明之前没有想要获取的字符串
+		 * 当不为空时，说明包含想要获取的字符串，获取这个字符串
+		 * 并将获取的字符串和分割字符串从原始字符串中去掉
+		 */
 		strs := strings.SplitN(url, noMatchStr, 2)
-		//log.Print(strs)
 		str := ""
 		if len(strs) == 2 {
 			if strs[0] == "" {
@@ -87,7 +94,6 @@ func (this *pathVariableHandler) getPathVariableParamMap(url string) map[string]
 			url = strings.TrimPrefix(url, str)
 		}
 		url = strings.TrimPrefix(url, noMatchStr)
-		//log.Print("url : ", url)
 	}
 	for i := 0; i < len(this.pathParamNames); i++ {
 		res[this.pathParamNames[i]] = resStrs[i]
@@ -108,6 +114,16 @@ type lastAllMatchHandler struct {
 	rest      interface{}
 }
 
+/**
+ * 获取尾部匹配的string
+ */
+func (this *lastAllMatchHandler) getLastStr(url string) string {
+	return strings.TrimRight(url, this.prefixStr)
+}
+
+/**
+ * 返回值类型
+ */
 type GetResult struct {
 	ParamMap map[string]string
 	Rest     interface{}
@@ -133,7 +149,7 @@ func (this *SimpleRouter) Get(url string) *GetResult {
 	handler, ok := normalMap[url]
 	if ok {
 		return &GetResult{
-			ParamMap: EMPTY_MAP,
+			ParamMap: emptyMap,
 			Rest:     handler,
 		}
 	}
@@ -153,11 +169,9 @@ func (this *SimpleRouter) Get(url string) *GetResult {
 		if strings.Index(url, lamHandler.prefixStr) == 0 {
 			return &GetResult{
 				Rest: lamHandler.rest,
-				ParamMap: func() map[string]string {
-					return map[string]string{
-						"last": strings.TrimRight(url, lamHandler.prefixStr),
-					}
-				}(),
+				ParamMap: map[string]string{
+					"last": lamHandler.getLastStr(url),
+				},
 			}
 		}
 	}
