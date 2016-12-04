@@ -31,13 +31,15 @@ func (this *doob) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	matchResult := this.router.Get(url)
 
 	if matchResult == nil {
-		log.Print("no match url")
+		log.Print("no match url : ", url)
+		res.WriteHeader(404)
 		return
 	}
 
 	handler := matchResult.Rest.GetHandler(method)
 	if handler == nil {
-		log.Print("match url , but method con`t match")
+		log.Print("match url : " + url + " , but method con`t match")
+		res.WriteHeader(405)
 		return
 	}
 

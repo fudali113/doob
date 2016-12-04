@@ -136,7 +136,6 @@ func (this *SimpleRouter) Add(url string, restHandler RestHandler) {
 
 	switch getUrlClassify(url) {
 	case NORMAL:
-		log.Print("mornal url : ", url)
 		_restHandler, ok := normalMap[url]
 		if ok {
 			_restHandler.Joint(restHandler)
@@ -145,10 +144,8 @@ func (this *SimpleRouter) Add(url string, restHandler RestHandler) {
 			normalMap[url] = restHandler
 		}
 	case PATH_VARIABLE:
-		log.Print("pv Router url : ", url)
 		pathVariableHandle(url, restHandler)
 	case LAST_ALL_MATCH:
-		log.Print("lam url : ", url)
 		lastAllMatchhandle(url, restHandler)
 	case PV_AND_LAM:
 		log.Print("url : ", url, " is not add")
@@ -193,7 +190,6 @@ func (this *SimpleRouter) Get(url string) *MatchResult {
  * 当分类为url中含有参数时的相关操作
  */
 func pathVariableHandle(url string, restHandler RestHandler) {
-	log.Print("router add url : ", url)
 	urlStrArray := utils.Split(url, URL_CUT_SYMBOL)
 	urlStrArrayLen := len(urlStrArray)
 	pathVariableHandlerSlice := pathVariableMap[urlStrArrayLen]
@@ -217,7 +213,6 @@ func getPathVariableHandler(url string, restHandler RestHandler) *pathVariableHa
 	urlStrArrayLen := len(urlStrArray)
 	urlReg := getPathVariableReg(url)
 	noMatchStr := getRegexp(PATH_VARIABLE_SYMBOL).Split(url, -1)
-	log.Print(noMatchStr)
 	return &pathVariableHandler{
 		urlLen:         urlStrArrayLen,
 		pathParamNames: getPathParamNames(url),
@@ -238,7 +233,6 @@ func getPathParamNames(url string) []string {
 		paramName := match[1 : len(match)-1]
 		res = append(res, paramName)
 	}
-	log.Print(url, " :paraname: ", res)
 	return res
 }
 

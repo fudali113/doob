@@ -1,17 +1,5 @@
 package doob
 
-/*
-现实思路:
-    分为三种类型url
-	1.普通的:如/fff/ddd/lll
-	2.有映射值的:如/user/{who}/info
-	3.尾部全部匹配的:如/user/*('*'只可以用于尾部)
-    先进行分组,将普通的于要进行取值的分开
-    普通的对于一个map,直接使用map[string]获取handlerFunc
-    要取值得将url利用"/"切分成数组,匹配是再将实际url切分成数组进行比对并取值
-
-*/
-
 import (
 	"log"
 	"net/http"
