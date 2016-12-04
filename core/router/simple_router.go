@@ -56,7 +56,7 @@ var (
 type pathVariableHandler struct {
 	urlLen         int
 	pathParamNames []string
-	noMatchStrs    []string
+	splitStrs      []string
 	urlReg         *regexp.Regexp
 	rest           RestHandler
 }
@@ -67,12 +67,12 @@ type pathVariableHandler struct {
 func (this *pathVariableHandler) getPathVariableParamMap(url string) map[string]string {
 	res := make(map[string]string, 0)
 	resStrs := make([]string, 0)
-	for i, noMatchStr := range this.noMatchStrs {
+	for i, splitStr := range this.splitStrs {
 		/**
 		 * 如果是最后一个值了且分割字符串为空
 		 * 则代表最后一个字符串为想要获取的字符串
 		 */
-		if i == len(this.noMatchStrs)-1 || noMatchStr == "" {
+		if i == len(this.splitStrs)-1 || splitStr == "" {
 			resStrs = append(resStrs, url)
 			break
 		}
@@ -82,18 +82,18 @@ func (this *pathVariableHandler) getPathVariableParamMap(url string) map[string]
 		 * 当不为空时，说明包含想要获取的字符串，获取这个字符串
 		 * 并将获取的字符串和分割字符串从原始字符串中去掉
 		 */
-		strs := strings.SplitN(url, noMatchStr, 2)
+		strs := strings.SplitN(url, splitStr, 2)
 		str := ""
 		if len(strs) == 2 {
 			if strs[0] == "" {
-				url = strings.TrimPrefix(url, noMatchStr)
+				url = strings.TrimPrefix(url, splitStr)
 				continue
 			}
 			str = strs[0]
 			resStrs = append(resStrs, str)
 			url = strings.TrimPrefix(url, str)
 		}
-		url = strings.TrimPrefix(url, noMatchStr)
+		url = strings.TrimPrefix(url, splitStr)
 	}
 	for i := 0; i < len(this.pathParamNames); i++ {
 		res[this.pathParamNames[i]] = resStrs[i]
@@ -215,7 +215,7 @@ func getPathVariableHandler(url string, restHandler RestHandler) *pathVariableHa
 	return &pathVariableHandler{
 		urlLen:         urlStrArrayLen,
 		pathParamNames: getPathParamNames(url),
-		noMatchStrs:    noMatchStr,
+		splitStrs:      noMatchStr,
 		urlReg:         urlReg,
 		rest:           restHandler,
 	}
