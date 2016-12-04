@@ -45,7 +45,7 @@ var (
 	pvAndLamReg     = getRegexp(PATH_VARIABLE_SUFFIX_URL)
 
 	// 储存用户相关handler信息
-	normalMap         = make(map[string]interface{}, 0)
+	normalMap         = make(map[string]RestHandler, 0)
 	pathVariableMap   = make(map[int][]*pathVariableHandler, 0)
 	lastAllMatchSlice = make([]*lastAllMatchHandler, 0)
 )
@@ -58,7 +58,7 @@ type pathVariableHandler struct {
 	pathParamNames []string
 	noMatchStrs    []string
 	urlReg         *regexp.Regexp
-	rest           interface{}
+	rest           RestHandler
 }
 
 /**
@@ -111,7 +111,7 @@ func (this *pathVariableHandler) String() string {
  */
 type lastAllMatchHandler struct {
 	prefixStr string
-	rest      interface{}
+	rest      RestHandler
 }
 
 /**
@@ -126,16 +126,22 @@ func (this *lastAllMatchHandler) getLastStr(url string) string {
  */
 type GetResult struct {
 	ParamMap map[string]string
-	Rest     interface{}
+	Rest     RestHandler
 }
 
 type SimpleRouter struct {
 }
 
-func (this *SimpleRouter) Add(url string, restHandler interface{}) {
+func (this *SimpleRouter) Add(url string, restHandler RestHandler) {
 	switch getUrlClassify(url) {
 	case NORMAL:
-		normalMap[url] = restHandler
+		_restHandler, ok := normalMap[url]
+		if ok {
+			_restHandler.Joint(restHandler)
+			normalMap[url] = _restHandler
+		} else {
+			normalMap[url] = restHandler
+		}
 	case PATH_VARIABLE:
 		pathVariableHandle(url, restHandler)
 	case LAST_ALL_MATCH:
@@ -181,10 +187,16 @@ func (this *SimpleRouter) Get(url string) *GetResult {
 /**
  * 当分类为url中含有参数时的相关操作
  */
-func pathVariableHandle(url string, restHandler interface{}) {
+func pathVariableHandle(url string, restHandler RestHandler) {
 	urlStrArray := utils.Split(url, URL_CUT_SYMBOL)
 	urlStrArrayLen := len(urlStrArray)
 	pathVariableHandlerSlice := pathVariableMap[urlStrArrayLen]
+	for _, pvHandler := range pathVariableHandlerSlice {
+		if pvHandler.urlReg.String() == getPathVariableReg(url).String() {
+			pvHandler.rest.Joint(restHandler)
+			return
+		}
+	}
 	pathVariableHandlerSlice = append(
 		pathVariableHandlerSlice,
 		getPathVariableHandler(url, restHandler))
@@ -194,7 +206,7 @@ func pathVariableHandle(url string, restHandler interface{}) {
 /**
  * 根据用户注册的 url 和 handler 生成一个 PathVariableHandler
  */
-func getPathVariableHandler(url string, restHandler interface{}) *pathVariableHandler {
+func getPathVariableHandler(url string, restHandler RestHandler) *pathVariableHandler {
 	urlStrArray := utils.Split(url, URL_CUT_SYMBOL)
 	urlStrArrayLen := len(urlStrArray)
 	urlReg := getPathVariableReg(url)
@@ -235,8 +247,14 @@ func getPathVariableReg(url string) *regexp.Regexp {
 /**
  * 当分类为尾部全匹配时的相关操作
  */
-func lastAllMatchhandle(url string, restHandler interface{}) {
+func lastAllMatchhandle(url string, restHandler RestHandler) {
 	prefixStr := strings.Replace(url, "**", "", 1)
+	for _, lastAllMatchHandler := range lastAllMatchSlice {
+		if lastAllMatchHandler.prefixStr == prefixStr {
+			lastAllMatchHandler.rest.Joint(restHandler)
+			return
+		}
+	}
 	lastAllMatchSlice = append(lastAllMatchSlice, &lastAllMatchHandler{
 		prefixStr: prefixStr,
 		rest:      restHandler,
