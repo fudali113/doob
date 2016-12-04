@@ -20,8 +20,8 @@ const (
 	// 各分类操作的正则表达式
 	URL_CUT_SYMBOL           = "/"
 	PATH_VARIABLE_SYMBOL     = "{\\w+}"
-	SUFFIX_URL               = "[\\w|/]+/\\*\\*"
-	PATH_VARIABLE_URL        = "[\\w|/]+{\\w+}[\\w|/]+"
+	SUFFIX_URL               = "[\\w|/]+\\*\\*"
+	PATH_VARIABLE_URL        = "[\\w|/]+{\\w+}[\\w|/]*"
 	PATH_VARIABLE_SUFFIX_URL = "[\\w|/]+{\\w+}[\\w|/]+\\*\\*"
 )
 
@@ -124,7 +124,7 @@ func (this *lastAllMatchHandler) getLastStr(url string) string {
 /**
  * 返回值类型
  */
-type GetResult struct {
+type MatchResult struct {
 	ParamMap map[string]string
 	Rest     RestHandler
 }
@@ -133,8 +133,10 @@ type SimpleRouter struct {
 }
 
 func (this *SimpleRouter) Add(url string, restHandler RestHandler) {
+
 	switch getUrlClassify(url) {
 	case NORMAL:
+		log.Print("mornal url : ", url)
 		_restHandler, ok := normalMap[url]
 		if ok {
 			_restHandler.Joint(restHandler)
@@ -143,18 +145,21 @@ func (this *SimpleRouter) Add(url string, restHandler RestHandler) {
 			normalMap[url] = restHandler
 		}
 	case PATH_VARIABLE:
+		log.Print("pv Router url : ", url)
 		pathVariableHandle(url, restHandler)
 	case LAST_ALL_MATCH:
+		log.Print("lam url : ", url)
 		lastAllMatchhandle(url, restHandler)
 	case PV_AND_LAM:
+		log.Print("url : ", url, " is not add")
 		//TODO 现在暂不考虑这种情况
 	}
 }
 
-func (this *SimpleRouter) Get(url string) *GetResult {
+func (this *SimpleRouter) Get(url string) *MatchResult {
 	handler, ok := normalMap[url]
 	if ok {
-		return &GetResult{
+		return &MatchResult{
 			ParamMap: emptyMap,
 			Rest:     handler,
 		}
@@ -164,7 +169,7 @@ func (this *SimpleRouter) Get(url string) *GetResult {
 	if pvOk {
 		for _, pvHandler := range pvHandlers {
 			if pvHandler.urlReg.MatchString(url) {
-				return &GetResult{
+				return &MatchResult{
 					Rest:     pvHandler.rest,
 					ParamMap: pvHandler.getPathVariableParamMap(url),
 				}
@@ -173,7 +178,7 @@ func (this *SimpleRouter) Get(url string) *GetResult {
 	}
 	for _, lamHandler := range lastAllMatchSlice {
 		if strings.Index(url, lamHandler.prefixStr) == 0 {
-			return &GetResult{
+			return &MatchResult{
 				Rest: lamHandler.rest,
 				ParamMap: map[string]string{
 					"last": lamHandler.getLastStr(url),
@@ -188,6 +193,7 @@ func (this *SimpleRouter) Get(url string) *GetResult {
  * 当分类为url中含有参数时的相关操作
  */
 func pathVariableHandle(url string, restHandler RestHandler) {
+	log.Print("router add url : ", url)
 	urlStrArray := utils.Split(url, URL_CUT_SYMBOL)
 	urlStrArrayLen := len(urlStrArray)
 	pathVariableHandlerSlice := pathVariableMap[urlStrArrayLen]

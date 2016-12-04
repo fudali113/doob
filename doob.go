@@ -47,27 +47,21 @@ func AddHandlerFunc(url string, handler http.HandlerFunc, tms ...core.HttpMethod
 }
 
 func Get(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, handler, GET)
+	core.AddHandlerFunc(url, handler, GET)
 }
 func Post(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, handler, POST)
+	core.AddHandlerFunc(url, handler, POST)
 }
 func Put(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, handler, PUT)
+	core.AddHandlerFunc(url, handler, PUT)
 }
 func Delete(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, handler, DELETE)
+	core.AddHandlerFunc(url, handler, DELETE)
 }
 
 /**
  * 添加一个过滤器
  */
-func AddFilter(f core.Filter) {
-	core.AddFilter(f)
-}
-
-func AddFilters(fs ...core.Filter) {
-	for i := 0; i < len(fs); i++ {
-		core.AddFilter(fs[i])
-	}
+func AddFilter(fs ...core.Filter) {
+	core.AddFilter(fs...)
 }

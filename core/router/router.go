@@ -1,6 +1,6 @@
 package router
 
-type router interface {
+type Router interface {
 	/**
 	 * 添加一个处理器
 	 */
@@ -8,7 +8,7 @@ type router interface {
 	/**
 	 * 根据url获取一个最佳处理器
 	 */
-	Get(string) GetResult
+	Get(string) *MatchResult
 }
 
 type RestHandler interface {
@@ -40,6 +40,13 @@ type RestHandler interface {
 type SimpleRestHandler struct {
 	methodHandlerMap map[string]interface{}
 	signinHandler    interface{}
+}
+
+func GetSimpleRestHandler(mhm map[string]interface{}, sh interface{}) *SimpleRestHandler {
+	return &SimpleRestHandler{
+		methodHandlerMap: mhm,
+		signinHandler:    sh,
+	}
 }
 
 func (this *SimpleRestHandler) GetMethods() []string {
