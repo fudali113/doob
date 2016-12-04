@@ -20,7 +20,7 @@ func Test_getAndAdd(t *testing.T) {
 	 * normal
 	 */
 	simpleRouter.Add("/dddd/dssds/dfdggf", testVar)
-	testGetVar, _ := simpleRouter.Get("/dddd/dssds/dfdggf").(*testType)
+	testGetVar, _ := simpleRouter.Get("/dddd/dssds/dfdggf").Rest.(*testType)
 	if testGetVar != testVar {
 		t.Error("normal router is error")
 	}
@@ -33,7 +33,7 @@ func Test_getAndAdd(t *testing.T) {
 	 */
 	simpleRouter.Add("/dddd/{fffff}/dfdggf", testVar)
 	for i := 0; i < 10; i++ {
-		testGetVar1, _ := simpleRouter.Get("/dddd/dssssssds/dfdggf").(*testType)
+		testGetVar1, _ := simpleRouter.Get("/dddd/dssssssds/dfdggf").Rest.(*testType)
 		if testGetVar1 != testVar {
 			t.Error("normal router is error")
 		}
@@ -46,7 +46,7 @@ func Test_getAndAdd(t *testing.T) {
 	 * suffix
 	 */
 	simpleRouter.Add("/ddf/**", testVar)
-	testGetVar2, _ := simpleRouter.Get("/ddf/dssds/dfdggf,dsds-+!@#$%^&*").(*testType)
+	testGetVar2, _ := simpleRouter.Get("/ddf/dssds/dfdggf,dsds-+!@#$%^&*").Rest.(*testType)
 	if testGetVar2 != testVar {
 		t.Error("normal router is error")
 	}

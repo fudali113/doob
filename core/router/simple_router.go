@@ -37,6 +37,7 @@ const (
 )
 
 var (
+	EMPTY_MAP = make(map[string]string, 0)
 
 	// 各分类操作的正则表达式对象
 	pathVariableReg = getRegexp(PATH_VARIABLE_URL)
@@ -60,6 +61,9 @@ type pathVariableHandler struct {
 	rest           interface{}
 }
 
+/**
+ * 根据实际url获取path variable
+ */
 func (this *pathVariableHandler) getPathVariableParamMap(url string) map[string]string {
 	res := make(map[string]string, 0)
 	//TODO 根据url获取参数值
@@ -104,6 +108,11 @@ type lastAllMatchHandler struct {
 	rest      interface{}
 }
 
+type GetResult struct {
+	ParamMap map[string]string
+	Rest     interface{}
+}
+
 type SimpleRouter struct {
 }
 
@@ -120,23 +129,36 @@ func (this *SimpleRouter) Add(url string, restHandler interface{}) {
 	}
 }
 
-func (this *SimpleRouter) Get(url string) interface{} {
+func (this *SimpleRouter) Get(url string) *GetResult {
 	handler, ok := normalMap[url]
 	if ok {
-		return handler
+		return &GetResult{
+			ParamMap: EMPTY_MAP,
+			Rest:     handler,
+		}
 	}
 	urlStrLen := len(utils.Split(url, URL_CUT_SYMBOL))
 	pvHandlers, pvOk := pathVariableMap[urlStrLen]
 	if pvOk {
 		for _, pvHandler := range pvHandlers {
 			if pvHandler.urlReg.MatchString(url) {
-				return pvHandler.rest
+				return &GetResult{
+					Rest:     pvHandler.rest,
+					ParamMap: pvHandler.getPathVariableParamMap(url),
+				}
 			}
 		}
 	}
 	for _, lamHandler := range lastAllMatchSlice {
 		if strings.Index(url, lamHandler.prefixStr) == 0 {
-			return lamHandler.rest
+			return &GetResult{
+				Rest: lamHandler.rest,
+				ParamMap: func() map[string]string {
+					return map[string]string{
+						"last": strings.TrimRight(url, lamHandler.prefixStr),
+					}
+				}(),
+			}
 		}
 	}
 	return nil
@@ -155,6 +177,9 @@ func pathVariableHandle(url string, restHandler interface{}) {
 	pathVariableMap[urlStrArrayLen] = pathVariableHandlerSlice
 }
 
+/**
+ * 根据用户注册的 url 和 handler 生成一个 PathVariableHandler
+ */
 func getPathVariableHandler(url string, restHandler interface{}) *pathVariableHandler {
 	urlStrArray := utils.Split(url, URL_CUT_SYMBOL)
 	urlStrArrayLen := len(urlStrArray)
@@ -170,6 +195,9 @@ func getPathVariableHandler(url string, restHandler interface{}) *pathVariableHa
 	}
 }
 
+/**
+ * 根据url获取用户注册url中的参数名字
+ */
 func getPathParamNames(url string) []string {
 	res := make([]string, 0)
 	matchs := getRegexp(PATH_VARIABLE_SYMBOL).FindAllStringSubmatch(url, -1)
