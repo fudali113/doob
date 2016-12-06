@@ -11,18 +11,19 @@ import (
 )
 
 /**
- * TODO 将储存改变，每次添加前判断是否有此url的handler存在
+ * TODO 给每个url模板打个分判断权重值，最后对有路径参数的url模板数组排序
  * 若有则根据方法添加不同的方法handler
  */
 
 const (
 
 	// 各分类操作的正则表达式
+	ALL_MATCH_REG            = "\\S+"
 	URL_CUT_SYMBOL           = "/"
-	PATH_VARIABLE_SYMBOL     = "{\\w+}"
+	PATH_VARIABLE_SYMBOL     = "{\\S+?}"
 	SUFFIX_URL               = "[\\w|/]+\\*\\*"
-	PATH_VARIABLE_URL        = "[\\w|/]+{\\w+}[\\w|/]*"
-	PATH_VARIABLE_SUFFIX_URL = "[\\w|/]+{\\w+}[\\w|/]+\\*\\*"
+	PATH_VARIABLE_URL        = "[\\w|/]+{\\S+}[\\w|/]*"
+	PATH_VARIABLE_SUFFIX_URL = "[\\w|/]+{\\S+}[\\w|/]+\\*\\*"
 )
 
 /**
@@ -68,11 +69,18 @@ func (this *pathVariableHandler) getPathVariableParamMap(url string) map[string]
 	res := make(map[string]string, 0)
 	resStrs := make([]string, 0)
 	for i, splitStr := range this.splitStrs {
+
+		/**
+		 * 为了支持在用户url模板中使用正则时可以使用一个{}符号加入的判断条件
+		 * 其他无任何意义
+		 */
+		splitStr = strings.TrimPrefix(splitStr,"}")
+
 		/**
 		 * 如果是最后一个值了且分割字符串为空
 		 * 则代表最后一个字符串为想要获取的字符串
 		 */
-		if i == len(this.splitStrs)-1 || splitStr == "" {
+		if i == len(this.splitStrs)-1 && splitStr == "" {
 			resStrs = append(resStrs, url)
 			break
 		}
@@ -98,7 +106,7 @@ func (this *pathVariableHandler) getPathVariableParamMap(url string) map[string]
 	for i := 0; i < len(this.pathParamNames); i++ {
 		res[this.pathParamNames[i]] = resStrs[i]
 	}
-	log.Print(res)
+	// log.Print(res)
 	return res
 }
 
@@ -194,7 +202,7 @@ func pathVariableHandle(url string, restHandler RestHandler) {
 	urlStrArrayLen := len(urlStrArray)
 	pathVariableHandlerSlice := pathVariableMap[urlStrArrayLen]
 	for _, pvHandler := range pathVariableHandlerSlice {
-		if pvHandler.urlReg.String() == getPathVariableReg(url).String() {
+		if pathRegexp, _ := getPathVariableRegAndParamNames(url); pvHandler.urlReg.String() == pathRegexp.String() {
 			pvHandler.rest.Joint(restHandler)
 			return
 		}
@@ -211,11 +219,11 @@ func pathVariableHandle(url string, restHandler RestHandler) {
 func getPathVariableHandler(url string, restHandler RestHandler) *pathVariableHandler {
 	urlStrArray := utils.Split(url, URL_CUT_SYMBOL)
 	urlStrArrayLen := len(urlStrArray)
-	urlReg := getPathVariableReg(url)
+	urlReg, pathParamNames := getPathVariableRegAndParamNames(url)
 	noMatchStr := getRegexp(PATH_VARIABLE_SYMBOL).Split(url, -1)
 	return &pathVariableHandler{
 		urlLen:         urlStrArrayLen,
-		pathParamNames: getPathParamNames(url),
+		pathParamNames: pathParamNames,
 		splitStrs:      noMatchStr,
 		urlReg:         urlReg,
 		rest:           restHandler,
@@ -223,25 +231,21 @@ func getPathVariableHandler(url string, restHandler RestHandler) *pathVariableHa
 }
 
 /**
- * 根据url获取用户注册url中的参数名字
+ * 获取匹配该handler url的正则表达式和获取参数名
  */
-func getPathParamNames(url string) []string {
-	res := make([]string, 0)
-	matchs := getRegexp(PATH_VARIABLE_SYMBOL).FindAllStringSubmatch(url, -1)
-	for _, _match := range matchs {
-		match := _match[0]
-		paramName := match[1 : len(match)-1]
-		res = append(res, paramName)
-	}
-	return res
-}
-
-/**
- * 获取匹配该handler url的正则表达式
- */
-func getPathVariableReg(url string) *regexp.Regexp {
+func getPathVariableRegAndParamNames(url string) (*regexp.Regexp, []string) {
 	r := getRegexp(PATH_VARIABLE_SYMBOL)
-	return getRegexp(r.ReplaceAllString(url, "\\S+"))
+	paramNames := make([]string, 0)
+	templates := r.FindAllString(url, -1)
+	for _, template := range templates {
+		templateCut := template[1 : len(template)-1]
+		paramName, regexpStr := getTemplateNameAndRegexpStr(templateCut)
+		paramNames = append(paramNames, paramName)
+		url = strings.Replace(url, template, regexpStr, 1)
+		log.Print(paramName, "+++++++", regexpStr, "---------", url)
+	}
+
+	return getRegexp(url), paramNames
 }
 
 /**
@@ -285,4 +289,16 @@ func getRegexp(reg string) *regexp.Regexp {
 		return nil
 	}
 	return r
+}
+
+/**
+ * 获取用户的正则表达式
+ * 如果没有则匹配全部
+ */
+func getTemplateNameAndRegexpStr(template string) (string, string) {
+	templateArray := utils.Split(template, ":")
+	if len(templateArray) == 2 {
+		return templateArray[0], templateArray[1]
+	}
+	return templateArray[0], ALL_MATCH_REG
 }

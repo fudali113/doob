@@ -16,6 +16,12 @@ doob.Get("/doob/{haha}", func(w http.ResponseWriter, r *http.Request) {
   haha := r.Form.Get("haha")
   w.Write([]byte(haha))
 })
+
+//use regexp in your url template
+doob.Get("/ooo/{name:\\w+}",func(w http.ResponseWriter, r *http.Request) {
+  haha := r.Form.Get("name")
+  w.Write([]byte(haha))
+})
 ```
 use r.From.Get() receive your urlpara value
 

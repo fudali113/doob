@@ -129,9 +129,15 @@ func Test_getUrlClassify(t *testing.T) {
 func Test_getPathVariableReg(t *testing.T) {
 	testUrlStr := "/api/dd/{ddddd}/{ffffffff}/fdldfldf"
 	shouldRegStr := "/api/dd/\\S+/\\S+/fdldfldf"
-	oo := getPathVariableReg(testUrlStr)
+	oo, _ := getPathVariableRegAndParamNames(testUrlStr)
 	if shouldRegStr != oo.String() {
 		t.Error("getPathVariableReg func have a bug")
+	}
+
+	regexp, _ := getPathVariableRegAndParamNames("/{name1:\\w+}/dfdfdf_{name2:[0-9]{3}}/dfdf_{name3}_dsffdffd")
+	if regexp.String() != "/\\w+/dfdfdf_[0-9]{3}/dfdf_"+ALL_MATCH_REG+"_dsffdffd" {
+		t.Log(regexp.String())
+		t.Error("getPathVariableReg have bug")
 	}
 }
 
@@ -155,11 +161,13 @@ func Test_getPathVariableParamMap(t *testing.T) {
 func Test_getRegexp(t *testing.T) {
 	testStr := "{sddssddssd}dfdfdf{ooooooo}dfdf{ooooooooo}dsffdffd"
 	r := getRegexp("{\\w+}")
+
+	log.Print(">>>>>>>>>>>>>>>>>>>", r.FindAllString(testStr, -1))
 	// 	s := r.Split(testStr, -1)
 	// 	log.Printf("FindString res:%s", s)
 	//
-	s1 := r.FindAllStringSubmatch(testStr, -1)
-	log.Printf("FindAllStringSubmatch res:%s", s1)
+	// s1 := r.FindAllStringSubmatch(testStr, -1)
+	// log.Printf("FindAllStringSubmatch res:%s", s1)
 	// 	s2 := r.FindStringIndex(testStr)
 	// 	log.Printf("FindAllStringSubmatch res:%d", s2)
 	// 	log.Print("FindStringSubmatch : ", r.FindStringSubmatch(testStr))
