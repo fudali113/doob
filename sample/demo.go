@@ -15,6 +15,10 @@ func main() {
 		haha := r.Form.Get("haha")
 		w.Write([]byte(haha))
 	})
+	doob.Get("/doob/{haha:[0-9]{3,4}}/ooo/kkkk", func(w http.ResponseWriter, r *http.Request) {
+		haha := r.Form.Get("haha")
+		w.Write([]byte(haha))
+	})
 	doob.Start(8888)
 }
 
