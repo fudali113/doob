@@ -11,7 +11,7 @@ import (
 )
 
 /**
- * TODO 将储存改变，每次添加前判断是否有此url的handler存在
+ * TODO 给每个url模板打个分判断权重值，最后对有路径参数的url模板数组排序
  * 若有则根据方法添加不同的方法handler
  */
 
@@ -69,11 +69,18 @@ func (this *pathVariableHandler) getPathVariableParamMap(url string) map[string]
 	res := make(map[string]string, 0)
 	resStrs := make([]string, 0)
 	for i, splitStr := range this.splitStrs {
+
+		/**
+		 * 为了支持在用户url模板中使用正则时可以使用一个{}符号加入的判断条件
+		 * 其他无任何意义
+		 */
+		splitStr = strings.TrimPrefix(splitStr,"}")
+
 		/**
 		 * 如果是最后一个值了且分割字符串为空
 		 * 则代表最后一个字符串为想要获取的字符串
 		 */
-		if i == len(this.splitStrs)-1 || splitStr == "" {
+		if i == len(this.splitStrs)-1 && splitStr == "" {
 			resStrs = append(resStrs, url)
 			break
 		}
