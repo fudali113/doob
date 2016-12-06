@@ -18,11 +18,12 @@ import (
 const (
 
 	// 各分类操作的正则表达式
+	ALL_MATCH_REG            = "\\S+"
 	URL_CUT_SYMBOL           = "/"
-	PATH_VARIABLE_SYMBOL     = "{\\w+}"
+	PATH_VARIABLE_SYMBOL     = "{\\S+?}"
 	SUFFIX_URL               = "[\\w|/]+\\*\\*"
-	PATH_VARIABLE_URL        = "[\\w|/]+{\\w+}[\\w|/]*"
-	PATH_VARIABLE_SUFFIX_URL = "[\\w|/]+{\\w+}[\\w|/]+\\*\\*"
+	PATH_VARIABLE_URL        = "[\\w|/]+{\\S+}[\\w|/]*"
+	PATH_VARIABLE_SUFFIX_URL = "[\\w|/]+{\\S+}[\\w|/]+\\*\\*"
 )
 
 /**
@@ -98,7 +99,7 @@ func (this *pathVariableHandler) getPathVariableParamMap(url string) map[string]
 	for i := 0; i < len(this.pathParamNames); i++ {
 		res[this.pathParamNames[i]] = resStrs[i]
 	}
-	log.Print(res)
+	// log.Print(res)
 	return res
 }
 
@@ -194,7 +195,7 @@ func pathVariableHandle(url string, restHandler RestHandler) {
 	urlStrArrayLen := len(urlStrArray)
 	pathVariableHandlerSlice := pathVariableMap[urlStrArrayLen]
 	for _, pvHandler := range pathVariableHandlerSlice {
-		if pvHandler.urlReg.String() == getPathVariableReg(url).String() {
+		if pathRegexp, _ := getPathVariableRegAndParamNames(url); pvHandler.urlReg.String() == pathRegexp.String() {
 			pvHandler.rest.Joint(restHandler)
 			return
 		}
@@ -211,11 +212,11 @@ func pathVariableHandle(url string, restHandler RestHandler) {
 func getPathVariableHandler(url string, restHandler RestHandler) *pathVariableHandler {
 	urlStrArray := utils.Split(url, URL_CUT_SYMBOL)
 	urlStrArrayLen := len(urlStrArray)
-	urlReg := getPathVariableReg(url)
+	urlReg, pathParamNames := getPathVariableRegAndParamNames(url)
 	noMatchStr := getRegexp(PATH_VARIABLE_SYMBOL).Split(url, -1)
 	return &pathVariableHandler{
 		urlLen:         urlStrArrayLen,
-		pathParamNames: getPathParamNames(url),
+		pathParamNames: pathParamNames,
 		splitStrs:      noMatchStr,
 		urlReg:         urlReg,
 		rest:           restHandler,
@@ -223,25 +224,21 @@ func getPathVariableHandler(url string, restHandler RestHandler) *pathVariableHa
 }
 
 /**
- * 根据url获取用户注册url中的参数名字
+ * 获取匹配该handler url的正则表达式和获取参数名
  */
-func getPathParamNames(url string) []string {
-	res := make([]string, 0)
-	matchs := getRegexp(PATH_VARIABLE_SYMBOL).FindAllStringSubmatch(url, -1)
-	for _, _match := range matchs {
-		match := _match[0]
-		paramName := match[1 : len(match)-1]
-		res = append(res, paramName)
-	}
-	return res
-}
-
-/**
- * 获取匹配该handler url的正则表达式
- */
-func getPathVariableReg(url string) *regexp.Regexp {
+func getPathVariableRegAndParamNames(url string) (*regexp.Regexp, []string) {
 	r := getRegexp(PATH_VARIABLE_SYMBOL)
-	return getRegexp(r.ReplaceAllString(url, "\\S+"))
+	paramNames := make([]string, 0)
+	templates := r.FindAllString(url, -1)
+	for _, template := range templates {
+		templateCut := template[1 : len(template)-1]
+		paramName, regexpStr := getTemplateNameAndRegexpStr(templateCut)
+		paramNames = append(paramNames, paramName)
+		url = strings.Replace(url, template, regexpStr, 1)
+		log.Print(paramName, "+++++++", regexpStr, "---------", url)
+	}
+
+	return getRegexp(url), paramNames
 }
 
 /**
@@ -285,4 +282,16 @@ func getRegexp(reg string) *regexp.Regexp {
 		return nil
 	}
 	return r
+}
+
+/**
+ * 获取用户的正则表达式
+ * 如果没有则匹配全部
+ */
+func getTemplateNameAndRegexpStr(template string) (string, string) {
+	templateArray := utils.Split(template, ":")
+	if len(templateArray) == 2 {
+		return templateArray[0], templateArray[1]
+	}
+	return templateArray[0], ALL_MATCH_REG
 }
