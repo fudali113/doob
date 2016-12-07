@@ -2,7 +2,6 @@ package core
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/fudali113/doob/core/router"
@@ -33,7 +32,7 @@ func AddHandlerFunc(url string, handler http.HandlerFunc, methods ...HttpMethod)
 		if checkMethodStr(methodStr) {
 			methodHandlerMap[methodStr] = handler
 		} else {
-			log.Printf("%s method is unsupport", methodStr)
+			logger.Notice("%s method is unsupport", methodStr)
 		}
 	}
 	_doob.addRestHandler(url, router.GetSimpleRestHandler(methodHandlerMap, handler))

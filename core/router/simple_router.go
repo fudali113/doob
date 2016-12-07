@@ -1,12 +1,11 @@
 package router
 
 import (
-	"log"
+	"fmt"
 	"regexp"
 	"strings"
 
-	"fmt"
-
+	"github.com/fudali113/doob/log"
 	"github.com/fudali113/doob/utils"
 )
 
@@ -38,6 +37,7 @@ const (
 )
 
 var (
+	logger   = log.GetLog("simple router")
 	emptyMap = make(map[string]string, 0)
 
 	// 各分类操作的正则表达式对象
@@ -74,7 +74,7 @@ func (this *pathVariableHandler) getPathVariableParamMap(url string) map[string]
 		 * 为了支持在用户url模板中使用正则时可以使用一个{}符号加入的判断条件
 		 * 其他无任何意义
 		 */
-		splitStr = strings.TrimPrefix(splitStr,"}")
+		splitStr = strings.TrimPrefix(splitStr, "}")
 
 		/**
 		 * 如果是最后一个值了且分割字符串为空
@@ -106,7 +106,6 @@ func (this *pathVariableHandler) getPathVariableParamMap(url string) map[string]
 	for i := 0; i < len(this.pathParamNames); i++ {
 		res[this.pathParamNames[i]] = resStrs[i]
 	}
-	// log.Print(res)
 	return res
 }
 
@@ -156,7 +155,7 @@ func (this *SimpleRouter) Add(url string, restHandler RestHandler) {
 	case LAST_ALL_MATCH:
 		lastAllMatchhandle(url, restHandler)
 	case PV_AND_LAM:
-		log.Print("url : ", url, " is not add")
+		logger.Error("url : %s %s", url, " is not add")
 		//TODO 现在暂不考虑这种情况
 	}
 }
@@ -242,7 +241,6 @@ func getPathVariableRegAndParamNames(url string) (*regexp.Regexp, []string) {
 		paramName, regexpStr := getTemplateNameAndRegexpStr(templateCut)
 		paramNames = append(paramNames, paramName)
 		url = strings.Replace(url, template, regexpStr, 1)
-		log.Print(paramName, "+++++++", regexpStr, "---------", url)
 	}
 
 	return getRegexp(url), paramNames
@@ -285,7 +283,7 @@ func getUrlClassify(url string) int {
 func getRegexp(reg string) *regexp.Regexp {
 	r, err := regexp.Compile(reg)
 	if err != nil {
-		log.Panic(err)
+		logger.Error(err.Error())
 		return nil
 	}
 	return r
