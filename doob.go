@@ -1,10 +1,10 @@
 package doob
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/fudali113/doob/core"
+	"github.com/fudali113/doob/log"
 )
 
 const (
@@ -16,14 +16,18 @@ const (
 	HEAD    core.HttpMethod = "head"
 )
 
+var (
+	logger = log.GetLog("doob")
+)
+
 /**
  * 启动server
  */
 func Start(port int) {
-	log.Printf("server is starting , listen port is %d", port)
+	logger.Info("server is starting , listen port is %d", port)
 	err := core.Listen(port)
 	if err != nil {
-		log.Printf("start is fail => %s", err.Error())
+		logger.Error("start is fail => %s", err.Error())
 	}
 }
 
