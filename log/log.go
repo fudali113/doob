@@ -15,6 +15,7 @@ const (
 )
 
 type Log interface {
+	Get(string) Log
 	Debug(string, ...interface{})
 	Info(string, ...interface{})
 	Notice(string, ...interface{})
@@ -22,12 +23,24 @@ type Log interface {
 	Error(string, ...interface{})
 }
 
+var (
+	looger Log = &SimpleLog{}
+)
+
 func GetLog(name string) Log {
 	return &SimpleLog{name: name}
 }
 
+func SetLog(log Log) {
+	looger = log
+}
+
 type SimpleLog struct {
 	name string
+}
+
+func (this *SimpleLog) Get(name string) Log {
+	return &SimpleLog{name: name}
 }
 
 func (this *SimpleLog) Error(format string, args ...interface{}) {
