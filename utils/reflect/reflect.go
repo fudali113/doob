@@ -15,6 +15,19 @@ var (
 	paramReg, _ = regexp.Compile("\\([\\S|\\s]+?\\)")
 )
 
+func Invoke(function interface{}, params ...interface{}) []reflect.Value {
+	values := []reflect.Value{}
+	for _, param := range params {
+		value := reflect.ValueOf(param)
+		values = append(values, value)
+	}
+	funcType := reflect.ValueOf(function)
+	return funcType.Call(values)
+}
+
+/**
+ * 获取方法的参数和返回值类型数组
+ */
 func GetFuncParams(function interface{}) (params []string, returns []string) {
 	funcType := reflect.TypeOf(function)
 	funcStr := funcType.String()

@@ -20,3 +20,11 @@ func Test_GetFuncParams(t *testing.T) {
 		t.Error("GetFuncParams have bug")
 	}
 }
+
+func test1(name string) string {
+	return name
+}
+
+func Test_Invoke(t *testing.T) {
+	logger.Debug("oooooooo___________%v", Invoke(test1, "name"))
+}

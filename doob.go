@@ -38,7 +38,7 @@ func AddHandlerFunc(url string, handler http.HandlerFunc, tms ...core.HttpMethod
 	core.AddHandlerFunc(url, handler, tms...)
 }
 
-func Get(url string, handler http.HandlerFunc) {
+func Get(url string, handler interface{}) {
 	core.AddHandlerFunc(url, handler, GET)
 }
 func Post(url string, handler http.HandlerFunc) {
