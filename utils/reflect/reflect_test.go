@@ -1,12 +1,11 @@
 package reflect
 
 import (
+	"net/http"
 	"testing"
-
-	"github.com/fudali113/doob/core"
 )
 
-func test(string, string, string, *core.Context) string {
+func test(string, string, string, http.ResponseWriter) string {
 	return ""
 }
 

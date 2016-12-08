@@ -1,10 +1,10 @@
 package register
 
 import (
-	"github.com/fudali113/doob/utils/reflect"
 	"log"
-)
 
+	"github.com/fudali113/doob/utils/reflect"
+)
 
 /**
  * 函数类别
@@ -20,20 +20,20 @@ const (
 
 const (
 	RETURN_NONE = iota
-	JSON = iota
+	JSON        = iota
 	FILE
 	MODAL_HTML
 	HTML_MODAL
 )
 
 type RegisterType struct {
-	Handler interface{}
-	ParamType *ParamType
+	Handler    interface{}
+	ParamType  *ParamType
 	ReturnType *ReturnType
 }
 
 type ParamType struct {
-	Type int
+	Type  int
 	CiLen int
 }
 
@@ -42,17 +42,17 @@ type ReturnType struct {
 }
 
 func GetFuncRegisterType(function interface{}) *RegisterType {
-	paramType,returnType := GetFuncParam3ReturnType(function)
+	paramType, returnType := GetFuncParam3ReturnType(function)
 	return &RegisterType{
-		Handler:function,
-		ParamType:paramType,
-		ReturnType:returnType,
+		Handler:    function,
+		ParamType:  paramType,
+		ReturnType: returnType,
 	}
 }
 
-func GetFuncParam3ReturnType(function interface{}) (*ParamType,*ReturnType) {
-	params , returns := reflect.GetFuncParams(function)
-	return getParamType(params),getReturnType(returns)
+func GetFuncParam3ReturnType(function interface{}) (*ParamType, *ReturnType) {
+	params, returns := reflect.GetFuncParams(function)
+	return getParamType(params), getReturnType(returns)
 }
 
 /**
@@ -62,7 +62,8 @@ func getParamType(params []string) *ParamType {
 	stringTypeLen := 0
 	hasCTX := 0
 	hasOringin := 0
-	for _,param := range params{
+	for _, param := range params {
+		log.Print(param)
 		switch param {
 		case "string":
 			stringTypeLen++
@@ -73,47 +74,48 @@ func getParamType(params []string) *ParamType {
 			hasCTX++
 		case "*http.Request":
 			hasOringin++
-		case "http.ResponseWrite":
+		case "http.ResponseWriter":
 			hasOringin++
+		default:
 		}
 	}
 	if stringTypeLen > 0 {
 		if hasCTX > 0 {
 			return &ParamType{
-				Type:CI_PATHVARIABLE_CTX,
-				CiLen:stringTypeLen,
+				Type:  CI_PATHVARIABLE_CTX,
+				CiLen: stringTypeLen,
 			}
 		}
 		if hasOringin > 0 {
 			return &ParamType{
-				Type:CI_PATHVARIABLE_ORIGIN,
-				CiLen:stringTypeLen,
+				Type:  CI_PATHVARIABLE_ORIGIN,
+				CiLen: stringTypeLen,
 			}
 		}
 		return &ParamType{
-			Type:CI_PATHVARIABLE,
-			CiLen:stringTypeLen,
+			Type:  CI_PATHVARIABLE,
+			CiLen: stringTypeLen,
 		}
 	}
 	if hasCTX > 0 {
 		return &ParamType{
-			Type:CTX,
+			Type: CTX,
 		}
 	}
 	if hasOringin > 0 {
 		return &ParamType{
-			Type:ORIGIN,
+			Type: ORIGIN,
 		}
 	}
 	return &ParamType{
-		Type:PARAM_NONE,
+		Type: PARAM_NONE,
 	}
 }
 
 /**
  * 获取返回值类型
  */
-func getReturnType(returns []string) *ReturnType  {
+func getReturnType(returns []string) *ReturnType {
 	Type := func(returns []string) int {
 		switch len(returns) {
 		case 1:
@@ -136,6 +138,5 @@ func getReturnType(returns []string) *ReturnType  {
 		}
 	}(returns)
 
-	return &ReturnType{Type:Type}
+	return &ReturnType{Type: Type}
 }
-

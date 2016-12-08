@@ -18,12 +18,9 @@ var (
 func GetFuncParams(function interface{}) (params []string, returns []string) {
 	funcType := reflect.TypeOf(function)
 	funcStr := funcType.String()
+	funcStr = strings.Replace(funcStr, " ", "", -1)
 
 	params3returns := paramReg.FindAllString(funcStr, -1)
-	if len(params3returns) == 2 {
-		params = getSlice(params3returns[0])
-		returns = getSlice(params3returns[1])
-	}
 
 	switch len(params3returns) {
 	case 1:
@@ -37,7 +34,7 @@ func GetFuncParams(function interface{}) (params []string, returns []string) {
 	default:
 
 	}
-	return nil, nil
+	return
 }
 
 func getSlice(arg string) []string {
