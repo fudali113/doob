@@ -43,9 +43,9 @@ func (this *Context) ParamInt(name string) int {
 
 func (this *Context) BodyJson() string {
 	body ,err := ioutil.ReadAll(this.request.Body)
-	if err {
+	if err!=nil {
 		logger.Error("get body str：%s",err.Error())
-		return nil
+		return ""
 	}
 	return string(body)
 }
