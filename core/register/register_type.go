@@ -136,6 +136,6 @@ func getReturnType(returns []string) *ReturnType  {
 		}
 	}(returns)
 
-	return ReturnType{Type:Type}
+	return &ReturnType{Type:Type}
 }
 
