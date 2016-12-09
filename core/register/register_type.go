@@ -41,6 +41,9 @@ type ReturnType struct {
 
 func GetFuncRegisterType(function interface{}) *RegisterType {
 	paramType, returnType := GetFuncParam3ReturnType(function)
+	if paramType.Type == ORIGIN && returnType.Type == RETURN_NONE {
+		log.Panic("支持原始http函数只为兼容，不允许设置返回值")
+	}
 	return &RegisterType{
 		Handler:    function,
 		ParamType:  paramType,

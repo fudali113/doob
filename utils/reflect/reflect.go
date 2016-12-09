@@ -15,14 +15,19 @@ var (
 	paramReg, _ = regexp.Compile("\\([\\S|\\s]+?\\)")
 )
 
-func Invoke(function interface{}, params ...interface{}) []reflect.Value {
-	values := []reflect.Value{}
+func Invoke(function interface{}, params ...interface{}) []interface{} {
+	valueParams := []reflect.Value{}
 	for _, param := range params {
 		value := reflect.ValueOf(param)
-		values = append(values, value)
+		valueParams = append(valueParams, value)
 	}
-	funcType := reflect.ValueOf(function)
-	return funcType.Call(values)
+	funcValue := reflect.ValueOf(function)
+	values := funcValue.Call(valueParams)
+	returns := []interface{}{}
+	for _, value := range values {
+		returns = append(returns, value.Interface())
+	}
+	return returns
 }
 
 /**

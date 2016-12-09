@@ -9,21 +9,21 @@ var (
 /**
  * 处理
  */
-func DealReturn(returnType ReturnType, req http.ResponseWriter) {
+func DealReturn(returnType *ReturnType, w http.ResponseWriter) {
 	for _, returnDeal := range deals {
-		if returnDeal.MacthType(returnType.typeStr) {
+		if returnDeal.MacthType(returnType.TypeStr) {
 			serialize, ok := returnDeal.(Serialize)
 			if ok {
 				bytes, headers := serialize.Serialize(returnType)
-				req.Write(bytes)
+				w.Write(bytes)
 				for name, value := range map[string][]string(headers) {
-					req.Header().Add(name, value[0])
+					w.Header().Add(name, value[0])
 				}
 				return
 			}
 			deal, ok := returnDeal.(Deal)
 			if ok {
-				deal.Deal(returnType, req)
+				deal.Deal(returnType, w)
 				return
 			}
 

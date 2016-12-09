@@ -12,10 +12,10 @@ type ReturnJsonSerialize struct {
 func (*ReturnJsonSerialize) Serialize(returnType ReturnType) ([]byte, http.Header) {
 	header := http.Header{}
 	var data interface{}
-	if returnType.data == nil {
+	if returnType.Data == nil {
 		data = map[string]string{}
 	} else {
-		data = returnType.data
+		data = returnType.Data
 	}
 	json, err := json.Marshal(data)
 	if err != nil {
@@ -25,6 +25,10 @@ func (*ReturnJsonSerialize) Serialize(returnType ReturnType) ([]byte, http.Heade
 	return json, header
 }
 
-func (*ReturnJsonSerialize) matchType(str string) bool {
+func (*ReturnJsonSerialize) MacthType(str string) bool {
 	return strings.ToLower(str) == "json"
+}
+
+func init() {
+	AddReturnDeal(&ReturnJsonSerialize{})
 }
