@@ -2,7 +2,6 @@ package core
 
 import (
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/fudali113/doob/core/router"
@@ -31,33 +30,10 @@ func (this *doob) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 
 	url := req.URL.Path
-	method := strings.ToLower(req.Method)
+
 	matchResult := this.router.Get(url)
 
-	if matchResult == nil {
-		logger.Notice("no match url : %s", url)
-		res.WriteHeader(404)
-		return
-	}
-
-	handler := matchResult.Rest.GetHandler(method)
-	if handler == nil {
-		logger.Notice("match url : %s , but method con`t match", url)
-		res.WriteHeader(405)
-		return
-	}
-
-	urlParam := matchResult.ParamMap
-
-	for k, v := range urlParam {
-		if req.Form == nil {
-			req.Form = map[string][]string{}
-		}
-		req.Form.Add(k, v)
-	}
-
-	resultHandler, _ := handler.(http.HandlerFunc)
-	resultHandler(res, req)
+	invoke(matchResult, res, req)
 
 }
 
