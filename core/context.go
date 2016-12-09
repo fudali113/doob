@@ -1,9 +1,9 @@
 package core
 
 import (
+	"io/ioutil"
 	"net/http"
 	"strconv"
-	"io/ioutil"
 )
 
 /**
@@ -33,7 +33,7 @@ func (this *Context) Param(name string) string {
 func (this *Context) ParamInt(name string) int {
 	strValue, ok := this.Params[name]
 	if ok {
-		value , err := strconv.Atoi(strValue)
+		value, err := strconv.Atoi(strValue)
 		if err != nil {
 			return value
 		}
@@ -42,16 +42,14 @@ func (this *Context) ParamInt(name string) int {
 }
 
 func (this *Context) BodyJson() string {
-	body ,err := ioutil.ReadAll(this.request.Body)
-	if err {
-		logger.Error("get body str：%s",err.Error())
-		return nil
+	body, err := ioutil.ReadAll(this.request.Body)
+	if err != nil {
+		logger.Error("get body str：%s", err.Error())
+		return ""
 	}
 	return string(body)
 }
 
-func (this *Context) Write(bytes []byte)  {
+func (this *Context) Write(bytes []byte) {
 	this.response.Write(bytes)
 }
-
-

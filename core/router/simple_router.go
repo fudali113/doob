@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/fudali113/doob/core/register"
 	"github.com/fudali113/doob/log"
 	"github.com/fudali113/doob/utils"
 )
@@ -60,6 +61,7 @@ type pathVariableHandler struct {
 	splitStrs      []string
 	urlReg         *regexp.Regexp
 	rest           RestHandler
+	registerType   *register.RegisterType
 }
 
 /**
@@ -128,14 +130,6 @@ func (this *lastAllMatchHandler) getLastStr(url string) string {
 	return strings.TrimRight(url, this.prefixStr)
 }
 
-/**
- * 返回值类型
- */
-type MatchResult struct {
-	ParamMap map[string]string
-	Rest     RestHandler
-}
-
 type SimpleRouter struct {
 }
 
@@ -174,8 +168,10 @@ func (this *SimpleRouter) Get(url string) *MatchResult {
 		for _, pvHandler := range pvHandlers {
 			if pvHandler.urlReg.MatchString(url) {
 				return &MatchResult{
-					Rest:     pvHandler.rest,
-					ParamMap: pvHandler.getPathVariableParamMap(url),
+					Rest:         pvHandler.rest,
+					ParamNames:   pvHandler.pathParamNames,
+					ParamMap:     pvHandler.getPathVariableParamMap(url),
+					RegisterType: pvHandler.registerType,
 				}
 			}
 		}
@@ -226,6 +222,7 @@ func getPathVariableHandler(url string, restHandler RestHandler) *pathVariableHa
 		splitStrs:      noMatchStr,
 		urlReg:         urlReg,
 		rest:           restHandler,
+		registerType:   register.GetFuncRegisterType(restHandler.GetSigninHandler()),
 	}
 }
 

@@ -142,7 +142,11 @@ func Test_getPathVariableReg(t *testing.T) {
 }
 
 func Test_getPathVariableParamMap(t *testing.T) {
-	pathVariableHandler := getPathVariableHandler("/{name1}/dfdfdf_{name2}/dfdf_{name3}_dsffdffd/{name4}", nil)
+	restHandler := &SimpleRestHandler{
+		signinHandler:    func(string, string) string { return "" },
+		methodHandlerMap: map[string]interface{}{"get": func(string, string) string { return "" }},
+	}
+	pathVariableHandler := getPathVariableHandler("/{name1}/dfdfdf_{name2}/dfdf_{name3}_dsffdffd/{name4}", restHandler)
 	res := pathVariableHandler.getPathVariableParamMap("/name1/dfdfdf_name2/dfdf_name3_dsffdffd/name4")
 	if res["name1"] != "name1" {
 		t.Error("getPathVariableParamMap func have bug")

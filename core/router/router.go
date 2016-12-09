@@ -1,5 +1,7 @@
 package router
 
+import "log"
+
 type Router interface {
 	/**
 	 * 添加一个处理器
@@ -68,6 +70,14 @@ func (this *SimpleRestHandler) GetHandler(method string) interface{} {
 	return res
 }
 func (this *SimpleRestHandler) GetSigninHandler() interface{} {
+	if this.signinHandler == nil {
+		for _, handler := range this.methodHandlerMap {
+			if handler != nil {
+				return handler
+			}
+		}
+		log.Panic("注册函数不能为nil")
+	}
 	return this.signinHandler
 }
 
