@@ -13,7 +13,7 @@ func (*staticHtmlReturnDeal) MacthType(str string) bool {
 	return strings.HasPrefix(str, "html")
 }
 
-func (*staticHtmlReturnDeal) Deal(returnType ReturnType, res http.ResponseWriter) {
+func (*staticHtmlReturnDeal) Deal(returnType *ReturnType, res http.ResponseWriter) {
 	log.Print(returnType.TypeStr)
 }
 

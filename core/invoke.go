@@ -127,7 +127,7 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 			if paramType.Type == register.CI_PATHVARIABLE_CTX {
 				params = append(params, getContext(w, req))
 			}
-			returns = reflectUtils.Invoke(handlerInterface, params)
+			returns = reflectUtils.Invoke(handlerInterface, params...)
 
 			switch returnType.Type {
 			case register.RETURN_NONE:

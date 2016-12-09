@@ -9,7 +9,7 @@ import (
 type ReturnJsonSerialize struct {
 }
 
-func (*ReturnJsonSerialize) Serialize(returnType ReturnType) ([]byte, http.Header) {
+func (*ReturnJsonSerialize) Serialize(returnType *ReturnType) ([]byte, http.Header) {
 	header := http.Header{}
 	var data interface{}
 	if returnType.Data == nil {
