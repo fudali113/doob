@@ -15,15 +15,13 @@ const (
 	ORIGIN
 	CI_PATHVARIABLE
 	CI_PATHVARIABLE_CTX
-	CI_PATHVARIABLE_ORIGIN
 )
 
 const (
 	RETURN_NONE = iota
-	JSON        = iota
 	FILE
-	MODAL_HTML
-	HTML_MODAL
+	JSON
+	RETURN_TYPE
 )
 
 type RegisterType struct {
@@ -87,10 +85,7 @@ func getParamType(params []string) *ParamType {
 			}
 		}
 		if hasOringin > 0 {
-			return &ParamType{
-				Type:  CI_PATHVARIABLE_ORIGIN,
-				CiLen: stringTypeLen,
-			}
+			log.Panic("您的函数doob不支持")
 		}
 		return &ParamType{
 			Type:  CI_PATHVARIABLE,
@@ -129,14 +124,15 @@ func getReturnType(returns []string) *ReturnType {
 		case 2:
 			switch returns[0] {
 			case "string":
-				return HTML_MODAL
+				return RETURN_TYPE
 			default:
-				return MODAL_HTML
+				log.Panic("您的函数doob不支持")
 			}
 		default:
 			return RETURN_NONE
 		}
+		log.Panic("您的函数doob不支持")
+		return RETURN_NONE
 	}(returns)
-
 	return &ReturnType{Type: Type}
 }
