@@ -12,6 +12,8 @@ var (
 		filters: make([]Filter, 0),
 		router:  &router.SimpleRouter{},
 	}
+	urlPrefixs      = []string{}
+	staticFileCache = map[string][]byte{}
 )
 
 func Listen(port int) error {
@@ -22,9 +24,7 @@ func AddFilter(fs ...Filter) {
 	_doob.addFilter(fs...)
 }
 
-/**
- * 注册一个handler
- */
+// 注册一个handler
 func AddHandlerFunc(url string, handler interface{}, methods ...HttpMethod) {
 	methodHandlerMap := make(map[string]interface{}, 0)
 	for _, method := range methods {
@@ -36,4 +36,8 @@ func AddHandlerFunc(url string, handler interface{}, methods ...HttpMethod) {
 		}
 	}
 	_doob.addRestHandler(url, router.GetSimpleRestHandler(methodHandlerMap, handler))
+}
+
+func AddStaticPrefix(prefixUrls ...string) {
+	urlPrefixs = append(urlPrefixs, prefixUrls...)
 }

@@ -1,7 +1,9 @@
 package core
 
 import (
+	"log"
 	"net/http"
+	"reflect"
 	"strings"
 
 	"github.com/fudali113/doob/core/register"
@@ -41,14 +43,18 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 		}
 	}
 
-	/**
-	 * 根据RegisterType决定怎么执行函数
-	 */
+	// 根据RegisterType决定怎么执行函数
 	registerType := matchResult.RegisterType
 	if registerType != nil {
 		paramType := registerType.ParamType
 		returnType := registerType.ReturnType
 		switch paramType.Type {
+
+		case register.ORIGIN:
+			log.Print(reflect.TypeOf(handlerInterface).String())
+			handler := handlerInterface.(http.HandlerFunc)
+			handler(w, req)
+
 		case register.PARAM_NONE:
 			switch returnType.Type {
 			case register.RETURN_NONE:
@@ -56,7 +62,7 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 				handler()
 
 			case register.JSON:
-				handler := handlerInterface.(ReturnObject)
+				handler := handlerInterface.(func() interface{})
 				returnValue := handler()
 				returnDeal.DealReturn(&returnDeal.ReturnType{
 					TypeStr: "json",
@@ -64,12 +70,12 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 				}, w)
 
 			case register.FILE:
-				handler := handlerInterface.(ReturnStr)
+				handler := handlerInterface.(func() string)
 				returnValue := handler()
 				returnDeal.DealReturn(&returnDeal.ReturnType{TypeStr: returnValue}, w)
 
 			case register.RETURN_TYPE:
-				handler := handlerInterface.(ReturnType)
+				handler := handlerInterface.(func() (string, interface{}))
 				str, data := handler()
 				returnDeal.DealReturn(&returnDeal.ReturnType{
 					TypeStr: str,
@@ -77,23 +83,20 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 				}, w)
 			}
 
-		case register.ORIGIN:
-			handler := handlerInterface.(http.HandlerFunc)
-			handler(w, req)
-
 		case register.CTX:
 			context := getContext(w, req)
 			switch returnType.Type {
 			case register.RETURN_NONE:
-				handler := handlerInterface.(CTXReturn)
+				handler := handlerInterface.(func(*Context))
 				handler(context)
 
 			case register.FILE:
-				handler := handlerInterface.(CTXReturnStr)
+				handler := handlerInterface.(func(*Context) string)
 				returnValue := handler(context)
 				returnDeal.DealReturn(&returnDeal.ReturnType{TypeStr: returnValue}, w)
 
 			case register.JSON:
+				//handler := handlerInterface.(func(*Context) interface{})
 				handler := handlerInterface.(CTXReturnObject)
 				returnValue := handler(context)
 				returnDeal.DealReturn(&returnDeal.ReturnType{
@@ -102,7 +105,7 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 				}, w)
 
 			case register.RETURN_TYPE:
-				handler := handlerInterface.(CTXReturnType)
+				handler := handlerInterface.(func(*Context) (string, interface{}))
 				str, data := handler(context)
 				returnDeal.DealReturn(&returnDeal.ReturnType{
 					TypeStr: str,
@@ -156,9 +159,7 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 	}
 }
 
-/**
- * 根据res&req获取context
- */
+// 根据res&req获取context
 func getContext(w http.ResponseWriter, req *http.Request) *Context {
 	return &Context{
 		request:  req,

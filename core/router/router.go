@@ -3,42 +3,26 @@ package router
 import "log"
 
 type Router interface {
-	/**
-	 * 添加一个处理器
-	 */
+	// 添加一个处理器
 	Add(string, RestHandler)
-	/**
-	 * 根据url获取一个最佳处理器
-	 */
+	// 根据url获取一个最佳处理器
 	Get(string) *MatchResult
 }
 
 type RestHandler interface {
-	/**
-	 * 获取该实列包含哪些method
-	 */
+	// 获取该实列包含哪些method
 	GetMethods() []string
-	/**
-	 * 想该实列注入一个method的处理方法
-	 */
+	// 想该实列注入一个method的处理方法
 	PutMethod(method string, handler interface{})
-	/**
-	 * 根据方法名获取处理方法
-	 */
+	// 根据方法名获取处理方法
 	GetHandler(method string) interface{}
-	/**
-	 * 获取注册方法
-	 */
+	// 获取注册方法
 	GetSigninHandler() interface{}
-	/**
-	 * 整合另一个RestHandler
-	 */
+	// 整合另一个RestHandler
 	Joint(RestHandler)
 }
 
-/**
- * RestHandler的简单实现
- */
+// RestHandler的简单实现
 type SimpleRestHandler struct {
 	methodHandlerMap map[string]interface{}
 	signinHandler    interface{}
