@@ -10,12 +10,22 @@ type ReturnType func() (string, interface{})
 
 type CTXReturn func(*Context)
 type CTXReturnStr func(*Context) string
+
+type ctxReturnObject interface {
+	ServerHTTP(ctx *Context) interface{}
+}
+
 type CTXReturnObject func(*Context) interface{}
+
+func (c CTXReturnObject) ServerHTTP(ctx *Context) interface{} {
+	return c(ctx)
+}
+
 type CTXReturnType func(*Context) (string, interface{})
 
 /**
  *  =====================================================
- *  下面想不用反射完成自动注入参数，但是貌似工作亮太大了-_-
+ *  下面想不用反射完成自动注入参数，但是貌似工作量太大了-_-
  *  =====================================================
  */
 

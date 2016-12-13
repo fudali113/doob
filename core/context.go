@@ -31,14 +31,9 @@ func (this *Context) Param(name string) string {
 }
 
 func (this *Context) ParamInt(name string) int {
-	strValue, ok := this.Params[name]
-	if ok {
-		value, err := strconv.Atoi(strValue)
-		if err != nil {
-			return value
-		}
-	}
-	return 0
+	strValue := this.request.Form.Get(name)
+	value, _ := strconv.Atoi(strValue)
+	return value
 }
 
 func (this *Context) BodyJson() string {
