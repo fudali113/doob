@@ -1,37 +1,37 @@
 package main
 
 import (
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/fudali113/doob"
 	"github.com/fudali113/doob/core"
-	"log"
 )
 
+type oo func(string, string)
 
-type oo func(string,string)
-
-func(o oo) ooo(name string,value string){
-	o(name,value)
+func (o oo) ooo(name string, value string) {
+	o(name, value)
 }
 
-func ooo(name string,value string){
+func ooo(name string, value string) {
 	return
 }
 
-func oooo(w http.ResponseWriter, req *http.Request){
+func oooo(w http.ResponseWriter, req *http.Request) {
 	return
 }
+
 /**
  * 开始http服务
  */
 func main() {
-	var haha interface{} = ooo
-	var hahah interface{} = oooo
-	_,ok:=haha.(oo)
-	_,ok1:=hahah.(http.HandlerFunc)
-	log.Print("ok",ok)
-	log.Print("ok1",ok1)
+	_, err := os.Open("oooo.html")
+	if err != nil {
+		log.Print(err)
+	}
+	doob.AddStaicPrefix("/static")
 	doob.AddHandlerFunc("/doob/origin/{who}/{do}", origin, doob.GET, doob.POST, doob.PUT, doob.DELETE)
 	doob.Get("/doob/di/{name}/{value}", di)
 	doob.Get("/doob/ctx/{haha:[0-9]{3,4}}", ctx)

@@ -57,3 +57,7 @@ func Delete(url string, handler http.HandlerFunc) {
 func AddFilter(fs ...core.Filter) {
 	core.AddFilter(fs...)
 }
+
+func AddStaicPrefix(prefix string) {
+	core.AddStaticPrefix(prefix)
+}

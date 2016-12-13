@@ -13,6 +13,7 @@ func (*staticHtmlReturnDeal) MacthType(str string) bool {
 	return strings.HasPrefix(str, "html")
 }
 
+//	实现 Dealer 接口
 func (*staticHtmlReturnDeal) Deal(returnType *ReturnType, res http.ResponseWriter) {
 	log.Print(returnType.TypeStr)
 }
