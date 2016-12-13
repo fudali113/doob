@@ -20,9 +20,7 @@ var (
 	logger = log.GetLog("doob")
 )
 
-/**
- * 启动server
- */
+// 启动server
 func Start(port int) {
 	logger.Info("server is starting , listen port is %d", port)
 	err := core.Listen(port)
@@ -31,9 +29,7 @@ func Start(port int) {
 	}
 }
 
-/**
- * 注册一个handler
- */
+// 注册一个handler
 func AddHandlerFunc(url string, handler http.HandlerFunc, tms ...core.HttpMethod) {
 	core.AddHandlerFunc(url, handler, tms...)
 }
@@ -51,9 +47,7 @@ func Delete(url string, handler http.HandlerFunc) {
 	core.AddHandlerFunc(url, handler, DELETE)
 }
 
-/**
- * 添加一个过滤器
- */
+// 添加一个过滤器
 func AddFilter(fs ...core.Filter) {
 	core.AddFilter(fs...)
 }

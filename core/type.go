@@ -1,9 +1,8 @@
 package core
 
-/**
- * 自动注入参数function兼容
- * 不符合这些条件的func讲使用反射执行方法
- */
+// 自动注入参数function兼容
+// 不符合这些条件的func讲使用反射执行方法
+//
 type ReturnStr func() string
 type ReturnObject func() interface{}
 type ReturnType func() (string, interface{})
@@ -23,11 +22,9 @@ func (c CTXReturnObject) ServerHTTP(ctx *Context) interface{} {
 
 type CTXReturnType func(*Context) (string, interface{})
 
-/**
- *  =====================================================
- *  下面想不用反射完成自动注入参数，但是貌似工作量太大了-_-
- *  =====================================================
- */
+// =====================================================
+// 下面想不用反射完成自动注入参数，但是貌似工作量太大了-_-
+// =====================================================
 
 type DI1ReturnStr func(string) string
 type DI2ReturnStr func(string, string) string

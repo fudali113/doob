@@ -43,9 +43,7 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 		}
 	}
 
-	/**
-	 * 根据RegisterType决定怎么执行函数
-	 */
+	// 根据RegisterType决定怎么执行函数
 	registerType := matchResult.RegisterType
 	if registerType != nil {
 		paramType := registerType.ParamType
@@ -161,9 +159,7 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 	}
 }
 
-/**
- * 根据res&req获取context
- */
+// 根据res&req获取context
 func getContext(w http.ResponseWriter, req *http.Request) *Context {
 	return &Context{
 		request:  req,

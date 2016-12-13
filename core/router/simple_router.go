@@ -1,3 +1,7 @@
+//
+// TODO 给每个url模板打个分判断权重值，最后对有路径参数的url模板数组排序
+// 若有则根据方法添加不同的方法handler
+//
 package router
 
 import (
@@ -9,11 +13,6 @@ import (
 	"github.com/fudali113/doob/log"
 	"github.com/fudali113/doob/utils"
 )
-
-/**
- * TODO 给每个url模板打个分判断权重值，最后对有路径参数的url模板数组排序
- * 若有则根据方法添加不同的方法handler
- */
 
 const (
 

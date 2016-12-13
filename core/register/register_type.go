@@ -1,3 +1,7 @@
+//
+//	在用户注册 handle func 的时候对函数进行分析
+//	并分已不同的类别,在执行时根据类别进行不同的处理
+//
 package register
 
 import (
@@ -7,9 +11,7 @@ import (
 	"github.com/fudali113/doob/utils/reflect"
 )
 
-/**
- * 函数类别
- */
+// 函数类别
 const (
 	PARAM_NONE = iota
 	CTX
@@ -69,9 +71,7 @@ func GetFuncParam3ReturnType(function interface{}) (*ParamType, *ReturnType) {
 	return getParamType(params), getReturnType(returns)
 }
 
-/**
- * 获取参数类型
- */
+// 获取参数类型
 func getParamType(params []string) *ParamType {
 	stringTypeLen := 0
 	hasCTX := 0
@@ -110,9 +110,7 @@ func getParamType(params []string) *ParamType {
 	}
 }
 
-/**
- * 获取返回值类型
- */
+// 获取返回值类型
 func getReturnType(returns []string) *ReturnType {
 	Type := func(returns []string) int {
 		switch len(returns) {

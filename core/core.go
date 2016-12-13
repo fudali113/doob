@@ -24,9 +24,7 @@ func AddFilter(fs ...Filter) {
 	_doob.addFilter(fs...)
 }
 
-/**
- * 注册一个handler
- */
+// 注册一个handler
 func AddHandlerFunc(url string, handler interface{}, methods ...HttpMethod) {
 	methodHandlerMap := make(map[string]interface{}, 0)
 	for _, method := range methods {
