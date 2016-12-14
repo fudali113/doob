@@ -12,7 +12,7 @@ import (
 
 var (
 	logger      = log.GetLog("reflect")
-	paramReg, _ = regexp.Compile("\\([\\S|\\s]*\\)")
+	paramReg, _ = regexp.Compile("\\([\\S|\\s]*?\\)")
 )
 
 func Invoke(function interface{}, params ...interface{}) []interface{} {

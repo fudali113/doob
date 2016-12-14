@@ -1,6 +1,7 @@
 package return_deal
 
 import (
+	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -16,7 +17,7 @@ func (*staticHtmlReturnDeal) MacthType(str string) bool {
 	return strings.HasPrefix(str, "html")
 }
 
-//	实现 Dealer 接口
+// 实现 Dealer 接口
 func (*staticHtmlReturnDeal) Deal(returnType *ReturnType, w http.ResponseWriter) {
 	log.Print(returnType.TypeStr)
 	path := getPath(returnType.TypeStr)
@@ -29,15 +30,11 @@ func (*staticHtmlReturnDeal) Deal(returnType *ReturnType, w http.ResponseWriter)
 		}
 		w.Write(bytes)
 	} else {
-		bytes, err := getTempleteBytes(path, data)
-		if err != nil {
-			w.WriteHeader(500)
-			return
-		}
-		w.Write(bytes)
+		getTemplateBytes(path, data, w)
 	}
 }
 
+// 获取 typeStr 中的路径
 func getPath(typeStr string) string {
 	typeAndPath := utils.Split(typeStr, ":")
 	if len(typeAndPath) == 2 {
@@ -46,8 +43,16 @@ func getPath(typeStr string) string {
 	return ""
 }
 
-func getTempleteBytes(path string, data interface{}) ([]byte, error) {
-	return []byte{}, nil
+// 标准 template 实现
+func getTemplateBytes(path string, data interface{}, w http.ResponseWriter) {
+	t, err := template.ParseFiles(path)
+	if err != nil {
+		return
+	}
+	err = t.Execute(w, data)
+	if err != nil {
+		w.WriteHeader(500)
+	}
 }
 
 func init() {

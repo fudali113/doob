@@ -41,6 +41,6 @@ func ctx(ctx *core.Context) interface{} {
 	}
 }
 
-func returnHtml() string {
-	return "html:static/index.html"
+func returnHtml() (string, interface{}) {
+	return "html:static/test.html", map[string]string{"Name": "test"}
 }
