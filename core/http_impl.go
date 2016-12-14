@@ -17,6 +17,7 @@ type doob struct {
 	filters []Filter
 }
 
+// 实现 http Handle 接口
 func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	startTime := time.Now()
 	defer logger.Info("程序处理共消耗:%d ns", time.Now().Sub(startTime).Nanoseconds())
