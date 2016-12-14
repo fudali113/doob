@@ -7,11 +7,11 @@ import (
 
 const (
 	LOG_TEMPLATE = "%s  %s  %s \n"
-	ERROR_COLOR  = "\033[1;31;40m %s \033[0m"
-	INFO_COLOR   = "\033[1;32;40m %s \034"
-	NOTICE_COLOR = "\033[1;37;40m %s \034"
-	WARN_COLOR   = "\033[1;35;40m %s \034"
-	DEBUG_COLOR  = "\033[1;34;40m %s \034"
+	ERROR_COLOR  = "\033[31;40m %s \033[0m"
+	INFO_COLOR   = "\033[32;40m %s \033[0m"
+	NOTICE_COLOR = "\033[37;40m %s \033[0m"
+	WARN_COLOR   = "\033[35;40m %s \033[0m"
+	DEBUG_COLOR  = "\033[34;40m %s \033[0m"
 )
 
 type Log interface {
@@ -45,29 +45,33 @@ func (this *SimpleLog) Get(name string) Log {
 
 func (this *SimpleLog) Error(format string, args ...interface{}) {
 	template := fmt.Sprintf(format, args...)
-	fmt.Printf(fmt.Sprintf(ERROR_COLOR, LOG_TEMPLATE), getTimeString(), this.name+" [ERROR]", template)
+	fmt.Printf(fmt.Sprintf(ERROR_COLOR, LOG_TEMPLATE), getTimeString(), getLogInfo(this.name, "ERROR"), template)
 }
 
 func (this *SimpleLog) Info(format string, args ...interface{}) {
 	template := fmt.Sprintf(format, args...)
-	fmt.Printf(fmt.Sprintf(INFO_COLOR, LOG_TEMPLATE), getTimeString(), this.name+" [INFO]", template)
+	fmt.Printf(fmt.Sprintf(INFO_COLOR, LOG_TEMPLATE), getTimeString(), getLogInfo(this.name, "INFO"), template)
 }
 
 func (this *SimpleLog) Notice(format string, args ...interface{}) {
 	template := fmt.Sprintf(format, args...)
-	fmt.Printf(fmt.Sprintf(NOTICE_COLOR, LOG_TEMPLATE), getTimeString(), this.name+" [NOTICE]", template)
+	fmt.Printf(fmt.Sprintf(NOTICE_COLOR, LOG_TEMPLATE), getTimeString(), getLogInfo(this.name, "NOTICE"), template)
 }
 
 func (this *SimpleLog) Warn(format string, args ...interface{}) {
 	template := fmt.Sprintf(format, args...)
-	fmt.Printf(fmt.Sprintf(WARN_COLOR, LOG_TEMPLATE), getTimeString(), this.name+" [WARN]", template)
+	fmt.Printf(fmt.Sprintf(WARN_COLOR, LOG_TEMPLATE), getTimeString(), getLogInfo(this.name, "WARN"), template)
 }
 
 func (this *SimpleLog) Debug(format string, args ...interface{}) {
 	template := fmt.Sprintf(format, args...)
-	fmt.Printf(fmt.Sprintf(DEBUG_COLOR, LOG_TEMPLATE), getTimeString(), this.name+" [DEBUG]", template)
+	fmt.Printf(fmt.Sprintf(DEBUG_COLOR, LOG_TEMPLATE), getTimeString(), getLogInfo(this.name, "DEBUG"), template)
 }
 
 func getTimeString() string {
 	return time.Now().Format("2006-01-02 15:04:05")
+}
+
+func getLogInfo(name, class string) string {
+	return " [" + class + "] " + "{name:" + name + "} "
 }

@@ -7,20 +7,6 @@ import (
 	"github.com/fudali113/doob/core"
 )
 
-type oo func(string, string)
-
-func (o oo) ooo(name string, value string) {
-	o(name, value)
-}
-
-func ooo(name string, value string) {
-	return
-}
-
-func oooo(w http.ResponseWriter, req *http.Request) {
-	return
-}
-
 // 开始http服务
 func main() {
 	doob.AddStaicPrefix("/static")

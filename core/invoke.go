@@ -1,9 +1,7 @@
 package core
 
 import (
-	"log"
 	"net/http"
-	"reflect"
 	"strings"
 
 	"github.com/fudali113/doob/core/register"
@@ -23,16 +21,14 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 		return
 	}
 
-	handlerInterface := matchResult.Rest.GetHandler(method)
-	if handlerInterface == nil {
+	handlerType := matchResult.Rest.GetHandler(method)
+	if handlerType == nil {
 		logger.Notice("match url : %s , but method con`t match", url)
 		w.WriteHeader(405)
 		return
 	}
 
-	/**
-	 * 获取路劲参数并存入request参数中
-	 */
+	// 获取路劲参数并存入request参数中
 	urlParam := matchResult.ParamMap
 	if urlParam != nil {
 		for k, v := range urlParam {
@@ -44,15 +40,15 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 	}
 
 	// 根据RegisterType决定怎么执行函数
-	registerType := matchResult.RegisterType
+	registerType := handlerType.GetRegisterType()
+	handlerInterface := handlerType.GetHandler()
 	if registerType != nil {
 		paramType := registerType.ParamType
 		returnType := registerType.ReturnType
 		switch paramType.Type {
 
 		case register.ORIGIN:
-			log.Print(reflect.TypeOf(handlerInterface).String())
-			handler := handlerInterface.(http.HandlerFunc)
+			handler := handlerInterface.(func(http.ResponseWriter, *http.Request))
 			handler(w, req)
 
 		case register.PARAM_NONE:

@@ -3,6 +3,8 @@ package router
 import (
 	"log"
 	"testing"
+
+	"github.com/fudali113/doob/core/register"
 )
 
 type testType struct {
@@ -12,38 +14,40 @@ type testType struct {
 
 func Test_getAndAdd(t *testing.T) {
 	simpleRouter := &SimpleRouter{}
-	testVar := &testType{
-		name: "ooo",
-		num:  1,
+	testVar := &RegisterHandler{
+		Handler: &testType{
+			name: "ooo",
+			num:  1,
+		},
 	}
-	testVar1 := &testType{
-		name: "ooo222",
-		num:  2,
+	testVar1 := &RegisterHandler{
+		Handler: &testType{
+			name: "ooo222",
+			num:  2,
+		},
 	}
 	/**
 	 * normal
 	 */
 	simpleRouter.Add("/dddd/dssds/dfdggf", &SimpleRestHandler{
-		signinHandler: testVar,
-		methodHandlerMap: map[string]interface{}{
+		methodHandlerMap: map[string]register.RegisterHandlerType{
 			"get": testVar,
 		},
 	})
 	simpleRouter.Add("/dddd/dssds/dfdggf", &SimpleRestHandler{
-		signinHandler: testVar1,
-		methodHandlerMap: map[string]interface{}{
+		methodHandlerMap: map[string]register.RegisterHandlerType{
 			"post": testVar1,
 		},
 	})
-	testGetVar, _ := simpleRouter.Get("/dddd/dssds/dfdggf").Rest.GetHandler("get").(*testType)
-	_testGetVar, _ := simpleRouter.Get("/dddd/dssds/dfdggf").Rest.GetHandler("post").(*testType)
-	if testGetVar != testVar {
+	testGetVar, _ := simpleRouter.Get("/dddd/dssds/dfdggf").Rest.GetHandler("get").GetHandler().(*testType)
+	_testGetVar, _ := simpleRouter.Get("/dddd/dssds/dfdggf").Rest.GetHandler("post").GetHandler().(*testType)
+	if testGetVar != testVar.GetHandler() {
 		t.Error("normal router is error")
 	}
 	if testGetVar.num != 1 {
 		t.Error("normal router is error")
 	}
-	if _testGetVar != testVar1 {
+	if _testGetVar != testVar1.GetHandler() {
 		t.Error("normal router is error")
 	}
 	if _testGetVar.num != 2 {
@@ -54,27 +58,25 @@ func Test_getAndAdd(t *testing.T) {
 	 * pathVariable
 	 */
 	simpleRouter.Add("/dddd/{fffff}/dfdggf", &SimpleRestHandler{
-		signinHandler: testVar,
-		methodHandlerMap: map[string]interface{}{
+		methodHandlerMap: map[string]register.RegisterHandlerType{
 			"get": testVar,
 		},
 	})
 	simpleRouter.Add("/dddd/{fffff}/dfdggf", &SimpleRestHandler{
-		signinHandler: testVar1,
-		methodHandlerMap: map[string]interface{}{
+		methodHandlerMap: map[string]register.RegisterHandlerType{
 			"post": testVar1,
 		},
 	})
 	for i := 0; i < 10; i++ {
-		testGetVar1, _ := simpleRouter.Get("/dddd/dssssssds/dfdggf").Rest.GetHandler("get").(*testType)
-		_testGetVar1, _ := simpleRouter.Get("/dddd/dssssssds/dfdggf").Rest.GetHandler("post").(*testType)
-		if testGetVar1 != testVar {
+		testGetVar1, _ := simpleRouter.Get("/dddd/dssssssds/dfdggf").Rest.GetHandler("get").GetHandler().(*testType)
+		_testGetVar1, _ := simpleRouter.Get("/dddd/dssssssds/dfdggf").Rest.GetHandler("post").GetHandler().(*testType)
+		if testGetVar1 != testVar.GetHandler() {
 			t.Error("normal router is error")
 		}
 		if testGetVar1.num != 1 {
 			t.Error("normal router is error")
 		}
-		if _testGetVar1 != testVar1 {
+		if _testGetVar1 != testVar1.GetHandler() {
 			t.Error("normal router is error")
 		}
 		if _testGetVar1.num != 2 {
@@ -86,13 +88,12 @@ func Test_getAndAdd(t *testing.T) {
 	 * suffix
 	 */
 	simpleRouter.Add("/ddf/**", &SimpleRestHandler{
-		signinHandler: testVar,
-		methodHandlerMap: map[string]interface{}{
+		methodHandlerMap: map[string]register.RegisterHandlerType{
 			"get": testVar,
 		},
 	})
-	testGetVar2, _ := simpleRouter.Get("/ddf/dssds/dfdggf,dsds-+!@#$%^&*").Rest.GetHandler("get").(*testType)
-	if testGetVar2 != testVar {
+	testGetVar2, _ := simpleRouter.Get("/ddf/dssds/dfdggf,dsds-+!@#$%^&*").Rest.GetHandler("get").GetHandler().(*testType)
+	if testGetVar2 != testVar.GetHandler() {
 		t.Error("normal router is error")
 	}
 	if testGetVar2.num != 1 {
@@ -143,8 +144,11 @@ func Test_getPathVariableReg(t *testing.T) {
 
 func Test_getPathVariableParamMap(t *testing.T) {
 	restHandler := &SimpleRestHandler{
-		signinHandler:    func(string, string) string { return "" },
-		methodHandlerMap: map[string]interface{}{"get": func(string, string) string { return "" }},
+		methodHandlerMap: map[string]register.RegisterHandlerType{
+			"get": &RegisterHandler{
+				Handler: func(string, string) string { return "" },
+			},
+		},
 	}
 	pathVariableHandler := getPathVariableHandler("/{name1}/dfdfdf_{name2}/dfdf_{name3}_dsffdffd/{name4}", restHandler)
 	res := pathVariableHandler.getPathVariableParamMap("/name1/dfdfdf_name2/dfdf_name3_dsffdffd/name4")
