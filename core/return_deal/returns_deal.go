@@ -19,38 +19,23 @@ import (
 )
 
 var (
-	deals = make([]ReturnMatchType, 0)
+	dealers = make([]ReturnTypeDealer, 0)
 )
 
 // 根据初始化时加入的元素进行遍历处理
 // 找到第一个匹配的type是进行处理
 // 之后将结束遍历并返回
 func DealReturn(returnType *ReturnType, w http.ResponseWriter) {
-	for _, returnDeal := range deals {
-		if returnDeal.MacthType(returnType.TypeStr) {
-			serialize, ok := returnDeal.(Serializer)
-			if ok {
-				bytes, headers := serialize.Serialize(returnType)
-				w.Write(bytes)
-				for name, value := range map[string][]string(headers) {
-					w.Header().Add(name, value[0])
-				}
-				return
-			}
-			deal, ok := returnDeal.(Dealer)
-			log.Print(ok)
-			if ok {
-				deal.Deal(returnType, w)
-				return
-			}
+	for _, dealer := range dealers {
+		if dealer.MacthType(returnType.TypeStr) {
+			dealer.Deal(returnType, w)
+			return
 		}
 	}
 	log.Print("don`t have deal handler match this type : ", returnType.TypeStr)
 }
 
 //	添加一个处理实例
-func AddReturnDeal(returnDeals ...ReturnMatchType) {
-	log.Print(len(returnDeals))
-	deals = append(deals, returnDeals...)
-	log.Print(len(deals))
+func AddReturnDealer(returnDeals ...ReturnTypeDealer) {
+	dealers = append(dealers, returnDeals...)
 }

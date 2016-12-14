@@ -43,5 +43,5 @@ func ctx(ctx *core.Context) interface{} {
 
 // 返回处理 template 文件 path 和数据进行处理并返回生成的html
 func returnHtml() (string, interface{}) {
-	return "html:static/test.html", map[string]string{"Name": "test"}
+	return "tpl:static/test", map[string]string{"Name": "test"}
 }
