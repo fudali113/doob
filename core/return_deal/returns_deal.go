@@ -13,7 +13,10 @@
 //
 package return_deal
 
-import "net/http"
+import (
+	"log"
+	"net/http"
+)
 
 var (
 	deals = make([]ReturnMatchType, 0)
@@ -35,16 +38,19 @@ func DealReturn(returnType *ReturnType, w http.ResponseWriter) {
 				return
 			}
 			deal, ok := returnDeal.(Dealer)
+			log.Print(ok)
 			if ok {
 				deal.Deal(returnType, w)
 				return
 			}
-
 		}
 	}
+	log.Print("don`t have deal handler match this type : ", returnType.TypeStr)
 }
 
 //	添加一个处理实例
 func AddReturnDeal(returnDeals ...ReturnMatchType) {
+	log.Print(len(returnDeals))
 	deals = append(deals, returnDeals...)
+	log.Print(len(deals))
 }

@@ -12,7 +12,7 @@ import (
 
 var (
 	logger      = log.GetLog("reflect")
-	paramReg, _ = regexp.Compile("\\([\\S|\\s]+?\\)")
+	paramReg, _ = regexp.Compile("\\([\\S|\\s]*?\\)")
 )
 
 func Invoke(function interface{}, params ...interface{}) []interface{} {
@@ -39,18 +39,16 @@ func GetFuncParams(function interface{}) (params []string, returns []string) {
 	funcStr = strings.Replace(funcStr, " ", "", -1)
 
 	params3returns := paramReg.FindAllString(funcStr, -1)
-
 	switch len(params3returns) {
 	case 1:
 		params = getSlice(params3returns[0])
-		funcStr = strings.Replace(funcStr, "func", "", -1)
-		funcStr = paramReg.ReplaceAllString(funcStr, "")
+		funcParamReg, _ := regexp.Compile("func\\([\\S|\\s]*\\)")
+		funcStr = funcParamReg.ReplaceAllString(funcStr, "")
 		returns = append(returns, funcStr)
 	case 2:
 		params = getSlice(params3returns[0])
 		returns = getSlice(params3returns[1])
 	default:
-
 	}
 	return
 }

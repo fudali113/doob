@@ -13,6 +13,7 @@ func main() {
 	doob.AddHandlerFunc("/doob/origin/{who}/{do}", origin, doob.GET, doob.POST, doob.PUT, doob.DELETE)
 	doob.Get("/doob/di/{name}/{value}", di)
 	doob.Get("/doob/ctx/{haha:[0-9]{3,4}}", ctx)
+	doob.Get("/test", returnHtml)
 	doob.Start(8888)
 }
 
@@ -38,4 +39,8 @@ func ctx(ctx *core.Context) interface{} {
 		"haha": ctx.ParamInt("haha"),
 		"test": ctx.ParamInt("test"),
 	}
+}
+
+func returnHtml() (string, interface{}) {
+	return "html:static/test.html", map[string]string{"Name": "test"}
 }
