@@ -1,10 +1,13 @@
 package doob
 
 import (
+	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/fudali113/doob/core"
 	"github.com/fudali113/doob/log"
+	"github.com/fudali113/doob/utils"
 )
 
 const (
@@ -17,7 +20,8 @@ const (
 )
 
 var (
-	logger = log.GetLog("doob")
+	logger          = log.GetLog("doob")
+	staticFileCache = map[string][]byte{}
 )
 
 // 启动server
@@ -30,7 +34,7 @@ func Start(port int) {
 }
 
 // 注册一个handler
-func AddHandlerFunc(url string, handler http.HandlerFunc, tms ...core.HttpMethod) {
+func AddHandlerFunc(url string, handler interface{}, tms ...core.HttpMethod) {
 	core.AddHandlerFunc(url, handler, tms...)
 }
 
@@ -52,6 +56,35 @@ func AddFilter(fs ...core.Filter) {
 	core.AddFilter(fs...)
 }
 
-func AddStaicPrefix(prefix string) {
-	core.AddStaticPrefix(prefix)
+func AddStaicPrefix(prefixs ...string) {
+	for _, prefixUrl := range prefixs {
+		prefixUrl = prefixUrl + "/**"
+		core.AddHandlerFunc(prefixUrl, staticPrefixFileHandlerFunc, GET)
+	}
+}
+
+// 静态文件前缀处理器
+func staticPrefixFileHandlerFunc(w http.ResponseWriter, r *http.Request) {
+	path := func(url string) string {
+		return strings.TrimPrefix(url, "/")
+	}(r.URL.Path)
+
+	if utils.IsDirectory(path) {
+		path = path + "index.html"
+	}
+
+	fileBytes, ok := staticFileCache[path]
+	if ok {
+		w.Write(fileBytes)
+		return
+	}
+
+	fileBytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		w.WriteHeader(404)
+		return
+	}
+
+	staticFileCache[path] = fileBytes
+	w.Write(fileBytes)
 }

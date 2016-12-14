@@ -47,7 +47,7 @@ func GetFuncRegisterType(function interface{}) *RegisterType {
 	if paramType.Type == ORIGIN && returnType.Type == RETURN_NONE {
 		log.Panic("支持原始http函数只为兼容，不允许设置返回值")
 	}
-	_, ok := function.(http.HandlerFunc)
+	_, ok := function.(func(http.ResponseWriter, *http.Request))
 	if ok {
 		return &RegisterType{
 			Handler: function,
@@ -76,7 +76,6 @@ func getParamType(params []string) *ParamType {
 	stringTypeLen := 0
 	hasCTX := 0
 	for _, param := range params {
-		log.Print(param)
 		switch param {
 		case "string":
 			stringTypeLen++
