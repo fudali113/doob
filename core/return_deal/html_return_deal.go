@@ -4,6 +4,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	. "github.com/fudali113/doob/core/http_const"
 )
 
 type staticFileReturnDealer struct {
@@ -24,6 +26,7 @@ func (*staticFileReturnDealer) Deal(returnType *ReturnType, w http.ResponseWrite
 		return
 	}
 	w.Write(bytes)
+	w.Header().Add(CONTENT_TYPE, APP_HTML)
 }
 
 func init() {

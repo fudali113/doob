@@ -4,6 +4,8 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+
+	. "github.com/fudali113/doob/core/http_const"
 )
 
 type tplReturnDeal struct {
@@ -34,6 +36,7 @@ func getTemplateBytes(path string, data interface{}, w http.ResponseWriter) {
 	if err != nil {
 		w.WriteHeader(500)
 	}
+	w.Header().Add(CONTENT_TYPE, APP_HTML)
 }
 
 func init() {

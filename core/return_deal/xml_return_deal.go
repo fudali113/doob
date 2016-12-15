@@ -3,6 +3,8 @@ package return_deal
 import (
 	"encoding/xml"
 	"net/http"
+
+	. "github.com/fudali113/doob/core/http_const"
 )
 
 //	处理返回 type 为 xml 或者返回单个对象的 func
@@ -28,7 +30,7 @@ func (*ReturnXmlDealer) Deal(returnType *ReturnType, w http.ResponseWriter) {
 		return
 	}
 	w.Write(xml)
-	w.Header().Add("context", "application/xml")
+	w.Header().Add(CONTENT_TYPE, APP_XML)
 }
 
 func init() {
