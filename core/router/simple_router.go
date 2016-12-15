@@ -7,6 +7,7 @@ package router
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/fudali113/doob/log"
@@ -229,6 +230,12 @@ func lastAllMatchhandle(url string, restHandler RestHandler) {
 	lastAllMatchSlice = append(lastAllMatchSlice, &prefixMatchHandler{
 		prefixStr: prefixStr,
 		rest:      restHandler,
+	})
+	sort.Sort(prefixMatchHandlerSorter{
+		handlers: lastAllMatchSlice,
+		by: func(p, q *prefixMatchHandler) bool {
+			return len(p.prefixStr) > len(q.prefixStr)
+		},
 	})
 }
 
