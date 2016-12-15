@@ -11,6 +11,14 @@ import (
 	reflectUtils "github.com/fudali113/doob/utils/reflect"
 )
 
+var (
+	returnDealDefaultType = "json"
+)
+
+func SetReturnDealDefaultType(t string) {
+	returnDealDefaultType = t
+}
+
 //
 // 根据路由匹配获取匹配的返回值
 // 根据返回值执行不同的逻辑操作
@@ -67,7 +75,7 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 				handler := handlerInterface.(func() interface{})
 				returnValue := handler()
 				returnDeal.DealReturn(&returnDeal.ReturnType{
-					TypeStr: "json",
+					TypeStr: returnDealDefaultType,
 					Data:    returnValue,
 				}, w)
 
