@@ -4,14 +4,14 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"strings"
 )
 
 type tplReturnDeal struct {
+	DealerName
 }
 
 func (*tplReturnDeal) MacthType(str string) bool {
-	return strings.HasPrefix(str, "tpl")
+	return matchPrefix(str, "tpl")
 }
 
 // 实现 Dealer 接口
@@ -37,5 +37,5 @@ func getTemplateBytes(path string, data interface{}, w http.ResponseWriter) {
 }
 
 func init() {
-	AddReturnDealer(&tplReturnDeal{})
+	AddReturnDealer(&tplReturnDeal{DealerName: DealerName{name: DEFAULT_HTML_DEALER_NAME}})
 }

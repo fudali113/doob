@@ -18,15 +18,25 @@ import (
 	"net/http"
 )
 
+// default dealer names
+// user can rewriter this name dealer
+// cover default dealer
+const (
+	DEFAULT_JSON_DEALER_NAME = "json_dealer"
+	DEFAULT_HTML_DEALER_NAME = "html_dealer"
+	DEFAULT_TPL_DEALER_NAME  = "tpl_dealer"
+)
+
+// dealer store
 var (
-	dealers = make([]ReturnTypeDealer, 0)
+	dealerMap = make(map[string]ReturnTypeDealer, 0)
 )
 
 // 根据初始化时加入的元素进行遍历处理
 // 找到第一个匹配的type是进行处理
 // 之后将结束遍历并返回
 func DealReturn(returnType *ReturnType, w http.ResponseWriter) {
-	for _, dealer := range dealers {
+	for _, dealer := range dealerMap {
 		if dealer.MacthType(returnType.TypeStr) {
 			dealer.Deal(returnType, w)
 			return
@@ -37,5 +47,10 @@ func DealReturn(returnType *ReturnType, w http.ResponseWriter) {
 
 //	添加一个处理实例
 func AddReturnDealer(returnDeals ...ReturnTypeDealer) {
-	dealers = append(dealers, returnDeals...)
+	for _, returnDeal := range returnDeals {
+		if _, ok := dealerMap[returnDeal.Name()]; ok {
+			log.Print("has repetition dealer , name is ", returnDeal.Name())
+		}
+		dealerMap[returnDeal.Name()] = returnDeal
+	}
 }
