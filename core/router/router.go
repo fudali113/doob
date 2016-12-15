@@ -44,6 +44,7 @@ type SimpleRestHandler struct {
 	methodHandlerMap map[string]register.RegisterHandlerType
 }
 
+// 获取一个 SimpleRestHandler 实例
 func GetSimpleRestHandler(method string, sh interface{}) *SimpleRestHandler {
 	registerHandler := &RegisterHandler{
 		Handler:      sh,
@@ -87,4 +88,24 @@ func (this *SimpleRestHandler) Joint(restHandler RestHandler) {
 	for _, method := range methods {
 		this.PutMethod(method, restHandler.GetSigninHandler())
 	}
+}
+
+type prefixMatchHandlerSorter struct {
+	handlers []*prefixMatchHandler
+	by       func(p, q *prefixMatchHandler) bool
+}
+
+// 重写 Len() 方法
+func (this prefixMatchHandlerSorter) Len() int {
+	return len(this.handlers)
+}
+
+// 重写 Swap() 方法
+func (this prefixMatchHandlerSorter) Swap(i, j int) {
+	this.handlers[i], this.handlers[j] = this.handlers[j], this.handlers[i]
+}
+
+// 重写 Less() 方法
+func (this prefixMatchHandlerSorter) Less(i, j int) bool {
+	return this.by(this.handlers[i], this.handlers[j])
 }

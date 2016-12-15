@@ -9,12 +9,8 @@ func test(string, string, string, http.ResponseWriter) string {
 	return ""
 }
 
-func returnHtml() string {
-	return "static/index.html"
-}
-
 func Test_GetFuncParams(t *testing.T) {
-	params, returns := GetFuncParams(returnHtml)
+	params, returns := GetFuncParams(test)
 	logger.Debug("%v", params)
 	logger.Debug("%v", returns)
 	if len(params) != 4 {

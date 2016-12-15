@@ -1,5 +1,6 @@
 package core
 
+//
 // 自动注入参数function兼容
 // 不符合这些条件的func讲使用反射执行方法
 //

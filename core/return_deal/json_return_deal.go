@@ -3,17 +3,16 @@ package return_deal
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
 )
 
 //	处理返回 type 为 json 或者返回单个对象的 func
 //	返回单个对象且 type 不为 string 的 handle func 默认返回处理 type 为 json
-type ReturnJsonSerialize struct {
+type ReturnJsonDealer struct {
+	DealerName
 }
 
 //	实现 Serializer 接口
-func (*ReturnJsonSerialize) Serialize(returnType *ReturnType) ([]byte, http.Header) {
-	header := http.Header{}
+func (*ReturnJsonDealer) Deal(returnType *ReturnType, w http.ResponseWriter) {
 	var data interface{}
 	if returnType.Data == nil {
 		data = map[string]string{}
@@ -22,16 +21,17 @@ func (*ReturnJsonSerialize) Serialize(returnType *ReturnType) ([]byte, http.Head
 	}
 	json, err := json.Marshal(data)
 	if err != nil {
-
+		// TODO log
+		return
 	}
-	header.Add("json", "application/json")
-	return json, header
+	w.Write(json)
+	w.Header().Add("context", "application/json")
 }
 
-func (*ReturnJsonSerialize) MacthType(str string) bool {
-	return strings.ToLower(str) == "json"
+func (*ReturnJsonDealer) MacthType(str string) bool {
+	return matchPrefix(str, "json")
 }
 
 func init() {
-	AddReturnDeal(&ReturnJsonSerialize{})
+	AddReturnDealer(&ReturnJsonDealer{DealerName: DealerName{name: DEFAULT_JSON_DEALER_NAME}})
 }

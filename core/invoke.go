@@ -11,6 +11,12 @@ import (
 	reflectUtils "github.com/fudali113/doob/utils/reflect"
 )
 
+//
+// 根据路由匹配获取匹配的返回值
+// 根据返回值执行不同的逻辑操作
+//
+// FIXME 此方法有些复杂，需要进行拆解
+//
 func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Request) {
 	url := req.URL.Path
 	method := strings.ToLower(req.Method)

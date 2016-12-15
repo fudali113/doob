@@ -18,39 +18,39 @@ import (
 	"net/http"
 )
 
+// default dealer names
+// user can rewriter this name dealer
+// cover default dealer
+const (
+	DEFAULT_JSON_DEALER_NAME = "json_dealer"
+	DEFAULT_HTML_DEALER_NAME = "html_dealer"
+	DEFAULT_TPL_DEALER_NAME  = "tpl_dealer"
+)
+
+// dealer store
 var (
-	deals = make([]ReturnMatchType, 0)
+	dealerMap = make(map[string]ReturnTypeDealer, 0)
 )
 
 // 根据初始化时加入的元素进行遍历处理
 // 找到第一个匹配的type是进行处理
 // 之后将结束遍历并返回
 func DealReturn(returnType *ReturnType, w http.ResponseWriter) {
-	for _, returnDeal := range deals {
-		if returnDeal.MacthType(returnType.TypeStr) {
-			serialize, ok := returnDeal.(Serializer)
-			if ok {
-				bytes, headers := serialize.Serialize(returnType)
-				w.Write(bytes)
-				for name, value := range map[string][]string(headers) {
-					w.Header().Add(name, value[0])
-				}
-				return
-			}
-			deal, ok := returnDeal.(Dealer)
-			log.Print(ok)
-			if ok {
-				deal.Deal(returnType, w)
-				return
-			}
+	for _, dealer := range dealerMap {
+		if dealer.MacthType(returnType.TypeStr) {
+			dealer.Deal(returnType, w)
+			return
 		}
 	}
 	log.Print("don`t have deal handler match this type : ", returnType.TypeStr)
 }
 
 //	添加一个处理实例
-func AddReturnDeal(returnDeals ...ReturnMatchType) {
-	log.Print(len(returnDeals))
-	deals = append(deals, returnDeals...)
-	log.Print(len(deals))
+func AddReturnDealer(returnDeals ...ReturnTypeDealer) {
+	for _, returnDeal := range returnDeals {
+		if _, ok := dealerMap[returnDeal.Name()]; ok {
+			log.Print("has repetition dealer , name is ", returnDeal.Name())
+		}
+		dealerMap[returnDeal.Name()] = returnDeal
+	}
 }
