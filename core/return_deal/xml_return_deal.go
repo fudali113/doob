@@ -14,7 +14,7 @@ func (*ReturnXmlDealer) MacthType(str string) bool {
 	return matchPrefix(str, "xml")
 }
 
-//	实现 Serializer 接口
+//	实现 Deal 方法
 func (*ReturnXmlDealer) Deal(returnType *ReturnType, w http.ResponseWriter) {
 	var data interface{}
 	if returnType.Data == nil {
