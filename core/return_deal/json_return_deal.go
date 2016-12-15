@@ -11,7 +11,7 @@ type ReturnJsonDealer struct {
 	DealerName
 }
 
-//	实现 Serializer 接口
+//	实现 Deal 方法
 func (*ReturnJsonDealer) Deal(returnType *ReturnType, w http.ResponseWriter) {
 	var data interface{}
 	if returnType.Data == nil {

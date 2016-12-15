@@ -23,6 +23,7 @@ import (
 // cover default dealer
 const (
 	DEFAULT_JSON_DEALER_NAME = "json_dealer"
+	DEFAULT_XML_DEALER_NAME  = "xml_dealer"
 	DEFAULT_HTML_DEALER_NAME = "html_dealer"
 	DEFAULT_TPL_DEALER_NAME  = "tpl_dealer"
 )

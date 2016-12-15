@@ -14,6 +14,7 @@ import (
 	"github.com/fudali113/doob/utils"
 )
 
+// http method
 const (
 	GET     core.HttpMethod = "get"
 	POST    core.HttpMethod = "post"
@@ -28,7 +29,7 @@ var (
 	staticFileCache = map[string][]byte{}
 )
 
-// 启动server
+// start doob server
 func Start(port int) {
 	logger.Info("server is starting , listen port is %d", port)
 	err := core.Listen(port)
@@ -37,7 +38,7 @@ func Start(port int) {
 	}
 }
 
-// 注册一个handler
+// register a handler
 func AddHandlerFunc(url string, handler interface{}, tms ...core.HttpMethod) {
 	core.AddHandlerFunc(url, handler, tms...)
 }
@@ -55,7 +56,12 @@ func Delete(url string, handler http.HandlerFunc) {
 	core.AddHandlerFunc(url, handler, DELETE)
 }
 
-// 添加一个过滤器
+// set return type default value
+func SetReturnDealDefaultType(t string) {
+	core.SetReturnDealDefaultType(t)
+}
+
+// add a filter
 func AddFilter(fs ...core.Filter) {
 	core.AddFilter(fs...)
 }
@@ -67,7 +73,7 @@ func AddStaicPrefix(prefixs ...string) {
 	}
 }
 
-// 静态文件前缀处理器
+// static file handler func
 func staticPrefixFileHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	path := func(url string) string {
 		return strings.TrimPrefix(url, "/")
