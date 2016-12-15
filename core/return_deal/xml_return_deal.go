@@ -2,6 +2,7 @@ package return_deal
 
 import (
 	"encoding/xml"
+	"log"
 	"net/http"
 
 	. "github.com/fudali113/doob/core/http_const"
@@ -26,11 +27,11 @@ func (*ReturnXmlDealer) Deal(returnType *ReturnType, w http.ResponseWriter) {
 	}
 	xml, err := xml.Marshal(data)
 	if err != nil {
-		// TODO log
+		log.Print("xml dealer is error , error is ", err)
 		return
 	}
-	w.Write(xml)
 	w.Header().Add(CONTENT_TYPE, APP_XML)
+	w.Write(xml)
 }
 
 func init() {

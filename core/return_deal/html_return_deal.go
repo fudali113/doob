@@ -22,11 +22,12 @@ func (*staticFileReturnDealer) Deal(returnType *ReturnType, w http.ResponseWrite
 	path := getPath(returnType.TypeStr)
 	bytes, err := ioutil.ReadFile(path)
 	if err != nil {
+		log.Print("html/file dealer is error , error is ", err)
 		w.WriteHeader(500)
 		return
 	}
-	w.Write(bytes)
 	w.Header().Add(CONTENT_TYPE, APP_HTML)
+	w.Write(bytes)
 }
 
 func init() {

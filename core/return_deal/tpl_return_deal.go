@@ -32,11 +32,12 @@ func getTemplateBytes(path string, data interface{}, w http.ResponseWriter) {
 	if err != nil {
 		return
 	}
+	w.Header().Add(CONTENT_TYPE, APP_HTML)
 	err = t.Execute(w, data)
 	if err != nil {
+		log.Print("tpl dealer is error , error is ", err)
 		w.WriteHeader(500)
 	}
-	w.Header().Add(CONTENT_TYPE, APP_HTML)
 }
 
 func init() {
