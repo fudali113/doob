@@ -1,6 +1,10 @@
 package utils
 
-import "strings"
+import (
+	"log"
+	"regexp"
+	"strings"
+)
 
 /**
  * golang1.6 Strings.split()有问题
@@ -29,4 +33,14 @@ func Split(s, sep string) []string {
 		na++
 	}
 	return a[:na]
+}
+
+// 获取正则表达式
+func GetRegexp(reg string) *regexp.Regexp {
+	r, err := regexp.Compile(reg)
+	if err != nil {
+		log.Print(err)
+		return nil
+	}
+	return r
 }
