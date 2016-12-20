@@ -8,7 +8,7 @@ import (
 
 const (
 	urlSplitSymbol = "/"
-	pathVarRegStr  = "{\\S+}"
+	pathVarRegStr  = "{\\S\\s+}"
 )
 
 var (
@@ -24,7 +24,7 @@ func getUrlNodeValue(url string) (string, string) {
 // 获取url的前缀和剩余的部分
 func splitUrl(url string) (string, string) {
 	url = strings.TrimPrefix(url, urlSplitSymbol)
-	prefixAndOther := strings.SplitN(url, urlSplitSymbol, 1)
+	prefixAndOther := strings.SplitN(url, urlSplitSymbol, 2)
 	if len(prefixAndOther) == 1 {
 		return prefixAndOther[0], ""
 	}
@@ -46,6 +46,15 @@ func creatNode(url string, rt reserveType) (newNode *node, isOver bool) {
 		newNode.children = make([]*node, 0)
 	}
 	return
+}
+
+func isMatch(fact , origin string, class int) bool  {
+	switch class {
+	case normal:
+		return fact == origin
+	case pathReg:
+		return
+	}
 }
 
 // 根据参数获取参数类别
