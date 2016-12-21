@@ -3,8 +3,9 @@ package tree_router
 import (
 	"sort"
 
-	"github.com/fudali113/doob/core/router"
 	"fmt"
+
+	"github.com/fudali113/doob/core/router"
 )
 
 const (
@@ -36,7 +37,7 @@ func (this nodes) Less(i, j int) bool {
 // 装载url每一个由`/`隔开的分段的实体
 type node struct {
 	class    int
-	value    string
+	value    nodeV
 	handler  router.RestHandler
 	children nodes
 }
@@ -47,7 +48,7 @@ type node struct {
 func (this *node) insertChild(url string, rt reserveType) error {
 	prefix, other := splitUrl(url)
 	for _, node := range this.children {
-		if node.value == prefix && node.class == normal {
+		if node.value.getOrigin() == prefix && node.class == normal {
 			node.insertChild(other, rt)
 			return nil
 		}
@@ -55,28 +56,28 @@ func (this *node) insertChild(url string, rt reserveType) error {
 	newNode, isOver := creatNode(url, rt)
 	if !isOver {
 		newNode.insertChild(other, rt)
-		this.children = append(this.children,newNode)
-	}else {
+		this.children = append(this.children, newNode)
+	} else {
 		this.handler = rt
 	}
 	return nil
 }
 
-func (this *node) getRT(url string) (reserveType,error){
+func (this *node) getRT(url string) (reserveType, error) {
 	prefix, other := splitUrl(url)
 	if other == "" {
 		rt := this.handler
 		if rt == nil {
-			return nil , NotMatch{"this url not rt"}
+			return nil, NotMatch{"this url not rt"}
 		}
-		return rt,nil
+		return rt, nil
 	}
 	for _, node := range this.children {
-		if node.value == prefix && node.class == normal {
+		if node.value.getOrigin() == prefix && node.class == normal {
 			return node.getRT(other)
 		}
 	}
-	return nil , NotMatch{"this url not rt"}
+	return nil, NotMatch{"this url not rt"}
 }
 
 // 对子node进行排序
@@ -91,8 +92,6 @@ func (this *node) Sort() {
 	}
 }
 
-func (this *node) String() string{
-	return fmt.Sprintf("class:%d,value:%s,handler:%v,children:%v",this.class,this.value,this.handler,this.children)
+func (this *node) String() string {
+	return fmt.Sprintf("class:%d,value:%s,handler:%v,children:%v", this.class, this.value, this.handler, this.children)
 }
-
-

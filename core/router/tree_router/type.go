@@ -1,28 +1,76 @@
 package tree_router
 
-import "regexp"
+import (
+	"regexp"
+	"strings"
+)
 
+// 各类型储存接口
 type nodeV interface {
-	isMatch(urlPart string) bool
-	paramValue(urlPart string) map[string]string
+	isMatch(urlPart string) (bool, bool)
+	// if need pathvar
+	// return in this method
+	paramValue(urlPart string, url string) map[string]string
+	getOrigin() string
 }
 
-type nodeValue struct {
-	class int
+type nodeVNormal struct {
 	origin string
+}
+
+func (this nodeVNormal) isMatch(urlPart string) (bool, bool) {
+	return this.origin == urlPart, false
+}
+func (this nodeVNormal) paramValue(urlPart string, url string) map[string]string {
+	return map[string]string{}
+}
+func (this nodeVNormal) getOrigin() string {
+	return this.origin
+}
+
+type nodeVPathReg struct {
+	origin    string
 	paramName string
-	paramReg *regexp.Regexp
+	paramReg  *regexp.Regexp
 }
 
 // check url part is match this node value
-func (this *nodeValue) isMatch(urlPart string) bool {
-	switch this.class {
-	case normal:
-		return this.origin == urlPart
-	case pathReg:
-		return this.paramReg.MatchString(urlPart)
-	case pathVar,matchAll:
-		return true
-	}
-	return false
+func (this nodeVPathReg) isMatch(urlPart string) (bool, bool) {
+	return this.paramReg.MatchString(urlPart), false
+}
+func (this nodeVPathReg) paramValue(urlPart string, url string) map[string]string {
+	return map[string]string{this.paramName: urlPart}
+}
+func (this nodeVPathReg) getOrigin() string {
+	return this.origin
+}
+
+type nodeVPathVar struct {
+	origin    string
+	paramName string
+}
+
+func (this nodeVPathVar) isMatch(urlPart string) (bool, bool) {
+	return true, false
+}
+func (this nodeVPathVar) paramValue(urlPart string, url string) map[string]string {
+	return map[string]string{this.paramName: urlPart}
+}
+func (this nodeVPathVar) getOrigin() string {
+	return this.origin
+}
+
+type nodeVMatchAll struct {
+	origin string
+	prefix string
+}
+
+func (this nodeVMatchAll) isMatch(urlPart string) (bool, bool) {
+	return strings.HasPrefix(urlPart, this.prefix), true
+}
+func (this nodeVMatchAll) paramValue(urlPart string, url string) map[string]string {
+	return map[string]string{"**": strings.TrimPrefix(url, this.prefix)}
+}
+func (this nodeVMatchAll) getOrigin() string {
+	return this.origin
 }

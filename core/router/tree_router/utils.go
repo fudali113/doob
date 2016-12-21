@@ -1,6 +1,7 @@
 package tree_router
 
 import (
+	"log"
 	"strings"
 
 	"github.com/fudali113/doob/utils"
@@ -37,7 +38,7 @@ func creatNode(url string, rt reserveType) (newNode *node, isOver bool) {
 	isOver = false
 	newNode = &node{
 		class: getClass(prefix),
-		value: prefix,
+		value: createNodeValue(prefix),
 	}
 	if strings.TrimSpace(other) == "" {
 		newNode.handler = rt
@@ -48,13 +49,46 @@ func creatNode(url string, rt reserveType) (newNode *node, isOver bool) {
 	return
 }
 
-func isMatch(fact , origin string, class int) bool  {
+// 根据url的每一部分生成一个特定的value
+// 用于寻找路径是做匹配
+func createNodeValue(urlPart string) nodeV {
+	if strings.HasSuffix(urlPart, "**") {
+		prefixStr := strings.Replace(urlPart, "**", "", 1)
+		if strings.HasSuffix(prefixStr, "**") {
+			log.Panic("只允许在最后添加**")
+		}
+		return &nodeVMatchAll{
+			origin: urlPart,
+			prefix: prefixStr,
+		}
+	}
+
+	if matchStr := pathVarReg.FindAllString(urlPart, -1); len(matchStr) > 0 {
+		pathVarStr := matchStr[0]
+		if paramNameAndReg := utils.Split(pathVarStr, ":"); len(paramNameAndReg) > 1 {
+			parLen := len(paramNameAndReg)
+			return &nodeVPathReg{
+				origin:    urlPart,
+				paramName: paramNameAndReg[0],
+				paramReg:  utils.GetRegexp(strings.Join(paramNameAndReg[1:parLen-1], "")),
+			}
+		}
+		return &nodeVPathVar{
+			origin:    urlPart,
+			paramName: pathVarStr,
+		}
+	}
+	return &nodeVNormal{origin: urlPart}
+}
+
+func isMatch(fact, origin string, class int) bool {
 	switch class {
 	case normal:
 		return fact == origin
 	case pathReg:
-		return
+		return false
 	}
+	return false
 }
 
 // 根据参数获取参数类别
@@ -62,7 +96,6 @@ func getClass(s string) int {
 	if s == "**" {
 		return matchAll
 	}
-
 	if matchStr := pathVarReg.FindAllString(s, -1); len(matchStr) > 0 {
 		pathVarStr := matchStr[0]
 		if strings.Contains(pathVarStr, ":") {
@@ -70,6 +103,5 @@ func getClass(s string) int {
 		}
 		return pathVar
 	}
-
 	return normal
 }
