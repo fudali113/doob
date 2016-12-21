@@ -3,6 +3,7 @@ package core
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -62,4 +63,22 @@ func (this *Context) WriteJson(jsonStruct interface{}) {
 	}
 	this.response.Write(json)
 	this.SetHeader("context", "application/json")
+}
+
+// redirect
+func (this *Context) Redirect(url string, addresses ...string) {
+	if len(addresses) == 0 {
+		_doob.ServeHTTP(this.response, this.request)
+		return
+	}
+	address := addresses[0]
+	client := &http.Client{}
+	this.request.URL.Parse(address + url)
+	res, err := client.Do(this.request)
+	if err != nil {
+		log.Print("Redirect is error , error is ", err)
+		return
+	}
+	this.response.WriteHeader(res.StatusCode)
+	res.Write(this.response)
 }
