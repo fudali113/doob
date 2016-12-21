@@ -9,7 +9,7 @@ import (
 
 const (
 	urlSplitSymbol = "/"
-	pathVarRegStr  = "{\\S\\s+}"
+	pathVarRegStr  = "{\\S+}"
 )
 
 var (
@@ -47,13 +47,17 @@ func createNodeValue(urlPart string) nodeV {
 	}
 
 	if matchStr := pathVarReg.FindAllString(urlPart, -1); len(matchStr) > 0 {
-		pathVarStr := matchStr[0]
+		pathVarStr := strings.TrimPrefix(matchStr[0], "{")
+		pathVarStr = strings.TrimSuffix(pathVarStr, "}")
+		log.Print(pathVarStr)
 		if paramNameAndReg := utils.Split(pathVarStr, ":"); len(paramNameAndReg) > 1 {
-			parLen := len(paramNameAndReg)
+			paraLen := len(paramNameAndReg)
+			paraRegStr := strings.Join(paramNameAndReg[1:paraLen], "")
+			log.Print(paraRegStr)
 			return &nodeVPathReg{
 				origin:    urlPart,
 				paramName: paramNameAndReg[0],
-				paramReg:  utils.GetRegexp(strings.Join(paramNameAndReg[1:parLen-1], "")),
+				paramReg:  utils.GetRegexp(paraRegStr),
 			}
 		}
 		return &nodeVPathVar{

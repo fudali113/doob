@@ -1,6 +1,7 @@
 package tree_router
 
 import (
+	"log"
 	"regexp"
 	"strings"
 )
@@ -36,7 +37,9 @@ type nodeVPathReg struct {
 
 // check url part is match this node value
 func (this nodeVPathReg) isMatch(urlPart string) (bool, bool) {
-	return this.paramReg.MatchString(urlPart), false
+	findStr := this.paramReg.FindString(urlPart)
+	log.Print(findStr, "====", urlPart)
+	return findStr == urlPart, false
 }
 func (this nodeVPathReg) paramValue(urlPart string, url string) map[string]string {
 	return map[string]string{this.paramName: urlPart}
