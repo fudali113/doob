@@ -4,6 +4,8 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+
+	. "github.com/fudali113/doob/core/http_const"
 )
 
 type tplReturnDeal struct {
@@ -30,12 +32,14 @@ func getTemplateBytes(path string, data interface{}, w http.ResponseWriter) {
 	if err != nil {
 		return
 	}
+	w.Header().Add(CONTENT_TYPE, APP_HTML)
 	err = t.Execute(w, data)
 	if err != nil {
+		log.Print("tpl dealer is error , error is ", err)
 		w.WriteHeader(500)
 	}
 }
 
 func init() {
-	AddReturnDealer(&tplReturnDeal{DealerName: DealerName{name: DEFAULT_HTML_DEALER_NAME}})
+	AddReturnDealer(&tplReturnDeal{DealerName: DealerName{name: DEFAULT_TPL_DEALER_NAME}})
 }

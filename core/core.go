@@ -9,6 +9,11 @@ import (
 	"net/http"
 
 	"github.com/fudali113/doob/core/router"
+	"github.com/fudali113/doob/utils"
+)
+
+const (
+	url_split_symbol = "&&"
 )
 
 var (
@@ -26,14 +31,20 @@ func AddFilter(fs ...Filter) {
 	_doob.addFilter(fs...)
 }
 
-// 注册一个handler
-func AddHandlerFunc(url string, handler interface{}, methods ...HttpMethod) {
-	for _, method := range methods {
-		methodStr := string(method)
-		if checkMethodStr(methodStr) {
-			_doob.addRestHandler(url, router.GetSimpleRestHandler(methodStr, handler))
-		} else {
-			logger.Notice("%s method is unsupport", methodStr)
+// register a handler
+// if urlstr use `&&` split more url
+// split range register
+func AddHandlerFunc(allUrl string, handler interface{}, methods ...HttpMethod) {
+	urls := utils.Split(allUrl, url_split_symbol)
+	for _, url := range urls {
+		for _, method := range methods {
+			methodStr := string(method)
+			if checkMethodStr(methodStr) {
+				_doob.addRestHandler(url, router.GetSimpleRestHandler(methodStr, handler))
+			} else {
+				logger.Notice("%s method is unsupport", methodStr)
+			}
 		}
 	}
+
 }

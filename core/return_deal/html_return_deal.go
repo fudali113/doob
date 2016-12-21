@@ -4,6 +4,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	. "github.com/fudali113/doob/core/http_const"
 )
 
 type staticFileReturnDealer struct {
@@ -20,9 +22,11 @@ func (*staticFileReturnDealer) Deal(returnType *ReturnType, w http.ResponseWrite
 	path := getPath(returnType.TypeStr)
 	bytes, err := ioutil.ReadFile(path)
 	if err != nil {
+		log.Print("html/file dealer is error , error is ", err)
 		w.WriteHeader(500)
 		return
 	}
+	w.Header().Add(CONTENT_TYPE, APP_HTML)
 	w.Write(bytes)
 }
 

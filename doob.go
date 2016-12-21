@@ -96,5 +96,6 @@ func staticPrefixFileHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	staticFileCache[path] = fileBytes
+	w.WriteHeader(200)
 	w.Write(fileBytes)
 }

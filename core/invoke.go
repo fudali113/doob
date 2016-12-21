@@ -7,12 +7,14 @@ import (
 	"github.com/fudali113/doob/core/register"
 	"github.com/fudali113/doob/core/router"
 
+	. "github.com/fudali113/doob/core/http_const"
+
 	returnDeal "github.com/fudali113/doob/core/return_deal"
 	reflectUtils "github.com/fudali113/doob/utils/reflect"
 )
 
 var (
-	returnDealDefaultType = "json"
+	returnDealDefaultType = "auto"
 )
 
 func SetReturnDealDefaultType(t string) {
@@ -110,7 +112,7 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 				handler := handlerInterface.(CTXReturnObject)
 				returnValue := handler(context)
 				returnDeal.DealReturn(&returnDeal.ReturnType{
-					TypeStr: "json",
+					TypeStr: getReqAccept(req),
 					Data:    returnValue,
 				}, w)
 
@@ -169,11 +171,31 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 	}
 }
 
-// 根据res&req获取context
+// According to the request and response for context
 func getContext(w http.ResponseWriter, req *http.Request) *Context {
 	return &Context{
 		request:  req,
 		response: w,
 		Params:   map[string]string{},
 	}
+}
+
+// if user don`t set returnDealDefaultType
+// returnDealDefaultType deafault value is "auto"
+// Will automatically think return type according to the request to accept
+func getReqAccept(req *http.Request) string {
+	if returnDealDefaultType != "auto" {
+		return returnDealDefaultType
+	}
+	accepts := req.Header.Get("Accept")
+	for _, accept := range accepts {
+		acceptStr := string(accept)
+		if acceptStr == APP_JSON {
+			return "json"
+		}
+		if acceptStr == APP_XML {
+			return "xml"
+		}
+	}
+	return "json"
 }

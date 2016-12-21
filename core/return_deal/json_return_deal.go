@@ -2,7 +2,10 @@ package return_deal
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
+
+	. "github.com/fudali113/doob/core/http_const"
 )
 
 //	处理返回 type 为 json 或者返回单个对象的 func
@@ -21,11 +24,11 @@ func (*ReturnJsonDealer) Deal(returnType *ReturnType, w http.ResponseWriter) {
 	}
 	json, err := json.Marshal(data)
 	if err != nil {
-		// TODO log
+		log.Print("json dealer is error , error is ", err)
 		return
 	}
+	w.Header().Add(CONTENT_TYPE, APP_JSON)
 	w.Write(json)
-	w.Header().Add("context", "application/json")
 }
 
 func (*ReturnJsonDealer) MacthType(str string) bool {
