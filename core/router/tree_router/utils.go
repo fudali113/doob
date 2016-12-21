@@ -32,23 +32,6 @@ func splitUrl(url string) (string, string) {
 	return prefixAndOther[0], prefixAndOther[1]
 }
 
-// create a new node
-func creatNode(url string, rt reserveType) (newNode *node, isOver bool) {
-	prefix, other := splitUrl(url)
-	isOver = false
-	newNode = &node{
-		class: getClass(prefix),
-		value: createNodeValue(prefix),
-	}
-	if strings.TrimSpace(other) == "" {
-		newNode.handler = rt
-		isOver = true
-	} else {
-		newNode.children = make([]*node, 0)
-	}
-	return
-}
-
 // 根据url的每一部分生成一个特定的value
 // 用于寻找路径是做匹配
 func createNodeValue(urlPart string) nodeV {
