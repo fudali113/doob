@@ -66,6 +66,7 @@ func (this *Context) WriteJson(jsonStruct interface{}) {
 }
 
 // redirect
+// no test
 func (this *Context) Redirect(url string, addresses ...string) {
 	if len(addresses) == 0 {
 		_doob.ServeHTTP(this.response, this.request)

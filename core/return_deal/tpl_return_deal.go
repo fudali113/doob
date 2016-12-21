@@ -41,5 +41,5 @@ func getTemplateBytes(path string, data interface{}, w http.ResponseWriter) {
 }
 
 func init() {
-	AddReturnDealer(&tplReturnDeal{DealerName: DealerName{name: DEFAULT_HTML_DEALER_NAME}})
+	AddReturnDealer(&tplReturnDeal{DealerName: DealerName{name: DEFAULT_TPL_DEALER_NAME}})
 }
