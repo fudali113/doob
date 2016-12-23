@@ -1,11 +1,9 @@
 package tree_router
 
 import (
-	"log"
+	"fmt"
 	"sort"
 	"strings"
-
-	"fmt"
 
 	"github.com/fudali113/doob/core/router"
 )
@@ -33,7 +31,7 @@ func (this nodes) Swap(i, j int) {
 func (this nodes) Less(i, j int) bool {
 	a := this[i]
 	b := this[j]
-	return a.class > b.class
+	return b.class > a.class
 }
 
 // 装载url每一个由`/`隔开的分段的实体
@@ -63,27 +61,9 @@ func (this *node) insertChild(url string, rt reserveType) error {
 	return nil
 }
 
-// create a new node
-func creatNode(url string, rt reserveType) (newNode *node, isOver bool) {
-	prefix, other := splitUrl(url)
-	isOver = false
-	newNode = &node{
-		class: getClass(prefix),
-		value: createNodeValue(prefix),
-	}
-	if strings.TrimSpace(other) == "" {
-		newNode.handler = rt
-		isOver = true
-	} else {
-		newNode.children = make([]*node, 0)
-	}
-	return
-}
-
 func (this *node) getRT(url string, paramMap map[string]string) (reserveType, error) {
 	prefix, other := splitUrl(url)
 	for _, node := range this.children {
-		log.Print(node.value.isMatch(prefix))
 		nodeValue := node.value
 		if match, over := nodeValue.isMatch(prefix); match {
 			hasParam, paramMapPart := nodeValue.paramValue(prefix, url)
@@ -101,13 +81,6 @@ func (this *node) getRT(url string, paramMap map[string]string) (reserveType, er
 	return nil, NotMatch{"this url not rt"}
 }
 
-func getRtAndErr(rt reserveType) (reserveType, error) {
-	if rt == nil {
-		return nil, NotMatch{"this url not rt"}
-	}
-	return rt, nil
-}
-
 // 对子node进行排序
 // 将会递归所有子node排序
 func (this *node) Sort() {
@@ -122,4 +95,28 @@ func (this *node) Sort() {
 
 func (this *node) String() string {
 	return fmt.Sprintf("{ class:%d,value:%s,handler:%v,children:%v }", this.class, this.value, this.handler, this.children)
+}
+
+// create a new node
+func creatNode(url string, rt reserveType) (newNode *node, isOver bool) {
+	prefix, other := splitUrl(url)
+	isOver = false
+	newNode = &node{
+		class: getClass(prefix),
+		value: createNodeValue(prefix),
+	}
+	if strings.TrimSpace(other) == "" {
+		newNode.handler = rt
+		isOver = true
+	} else {
+		newNode.children = make([]*node, 0)
+	}
+	return
+}
+
+func getRtAndErr(rt reserveType) (reserveType, error) {
+	if rt == nil {
+		return nil, NotMatch{"this url not rt"}
+	}
+	return rt, nil
 }

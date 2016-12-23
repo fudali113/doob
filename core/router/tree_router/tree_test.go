@@ -1,12 +1,14 @@
 package tree_router
 
 import (
+	"log"
 	"testing"
 
 	"github.com/fudali113/doob/core/router"
 )
 
 func TestNode_insertChildren(t *testing.T) {
+
 	node := &node{
 		class:    normal,
 		value:    nil,
@@ -41,4 +43,40 @@ func TestNode_insertChildren(t *testing.T) {
 		t.Error("Node_insertChildren have bug 3")
 	}
 
+}
+
+func TestNode_Sort(t *testing.T) {
+
+	nodeRoot := &node{
+		class:    normal,
+		value:    nil,
+		handler:  nil,
+		children: make([]*node, 0),
+	}
+
+	nodeSlice1 := []*node{
+		&node{class: 12},
+		&node{class: 15},
+		&node{class: 11},
+		&node{class: 16},
+	}
+
+	nodeSlice2 := []*node{
+		&node{class: 16},
+		&node{class: 11},
+	}
+	nodeSlice := []*node{
+		&node{class: 0},
+		&node{class: 1},
+		&node{class: 2, children: nodeSlice2},
+		&node{class: 3},
+		&node{class: 2},
+		&node{class: 5, children: nodeSlice1},
+		&node{class: 1},
+		&node{class: 6},
+	}
+
+	nodeRoot.children = nodes(nodeSlice)
+	nodeRoot.Sort()
+	log.Print("iiiiiiiiiiiiiiiii", nodeSlice)
 }
