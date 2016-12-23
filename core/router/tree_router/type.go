@@ -11,7 +11,7 @@ type nodeV interface {
 	isMatch(urlPart string) (bool, bool)
 	// if need pathvar
 	// return in this method
-	paramValue(urlPart string, url string) map[string]string
+	paramValue(urlPart string, url string) (bool, map[string]string)
 	getOrigin() string
 }
 
@@ -22,8 +22,8 @@ type nodeVNormal struct {
 func (this nodeVNormal) isMatch(urlPart string) (bool, bool) {
 	return this.origin == urlPart, false
 }
-func (this nodeVNormal) paramValue(urlPart string, url string) map[string]string {
-	return map[string]string{}
+func (this nodeVNormal) paramValue(urlPart string, url string) (bool, map[string]string) {
+	return false, nil
 }
 func (this nodeVNormal) getOrigin() string {
 	return this.origin
@@ -41,8 +41,8 @@ func (this nodeVPathReg) isMatch(urlPart string) (bool, bool) {
 	log.Print(findStr, "====", urlPart)
 	return findStr == urlPart, false
 }
-func (this nodeVPathReg) paramValue(urlPart string, url string) map[string]string {
-	return map[string]string{this.paramName: urlPart}
+func (this nodeVPathReg) paramValue(urlPart string, url string) (bool, map[string]string) {
+	return true, map[string]string{this.paramName: urlPart}
 }
 func (this nodeVPathReg) getOrigin() string {
 	return this.origin
@@ -56,8 +56,8 @@ type nodeVPathVar struct {
 func (this nodeVPathVar) isMatch(urlPart string) (bool, bool) {
 	return true, false
 }
-func (this nodeVPathVar) paramValue(urlPart string, url string) map[string]string {
-	return map[string]string{this.paramName: urlPart}
+func (this nodeVPathVar) paramValue(urlPart string, url string) (bool, map[string]string) {
+	return true, map[string]string{this.paramName: urlPart}
 }
 func (this nodeVPathVar) getOrigin() string {
 	return this.origin
@@ -71,8 +71,9 @@ type nodeVMatchAll struct {
 func (this nodeVMatchAll) isMatch(urlPart string) (bool, bool) {
 	return strings.HasPrefix(urlPart, this.prefix), true
 }
-func (this nodeVMatchAll) paramValue(urlPart string, url string) map[string]string {
-	return map[string]string{"**": strings.TrimPrefix(url, this.prefix)}
+func (this nodeVMatchAll) paramValue(urlPart string, url string) (bool, map[string]string) {
+	paramValue := strings.TrimPrefix(urlPart, this.prefix) + url
+	return true, map[string]string{"**": paramValue}
 }
 func (this nodeVMatchAll) getOrigin() string {
 	return this.origin

@@ -32,11 +32,12 @@ func TestNode_insertChildren(t *testing.T) {
 
 	testUrl2 := "hhhh/{mmm:\\d{3}}/ddddd"
 	_testUrl2 := "hhhh/124/ddddd"
+	paramMap := map[string]string{}
 	node.insertChild(testUrl2, &router.SimpleRestHandler{})
-	log.Print(node)
-	_, err2 := node.getRT(_testUrl2)
+	_, err2 := node.getRT(_testUrl2, paramMap)
 	if err2 != nil {
 		t.Error("Node_insertChildren have bug 2")
 	}
+	log.Print(paramMap)
 
 }

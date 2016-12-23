@@ -80,15 +80,22 @@ func creatNode(url string, rt reserveType) (newNode *node, isOver bool) {
 	return
 }
 
-func (this *node) getRT(url string) (reserveType, error) {
+func (this *node) getRT(url string, paramMap map[string]string) (reserveType, error) {
 	prefix, other := splitUrl(url)
 	for _, node := range this.children {
 		log.Print(node.value.isMatch(prefix))
-		if match, over := node.value.isMatch(prefix); match {
+		nodeValue := node.value
+		if match, over := nodeValue.isMatch(prefix); match {
+			hasParam, paramMapPart := nodeValue.paramValue(prefix, url)
+			if hasParam {
+				for k, v := range paramMapPart {
+					paramMap[k] = v
+				}
+			}
 			if over || other == "" {
 				return getRtAndErr(node.handler)
 			}
-			return node.getRT(other)
+			return node.getRT(other, paramMap)
 		}
 	}
 	return nil, NotMatch{"this url not rt"}
