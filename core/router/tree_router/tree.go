@@ -87,7 +87,7 @@ func (this *node) getRT(url string, paramMap map[string]string) (reserveType, er
 		nodeValue := node.value
 		if match, over := nodeValue.isMatch(prefix); match {
 			hasParam, paramMapPart := nodeValue.paramValue(prefix, url)
-			if hasParam {
+			if hasParam && paramMap != nil {
 				for k, v := range paramMapPart {
 					paramMap[k] = v
 				}
