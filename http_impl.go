@@ -1,11 +1,11 @@
-package core
+package doob
 
 import (
 	"log"
 	"net/http"
 	"time"
 
-	"github.com/fudali113/doob/core/router"
+	"github.com/fudali113/doob/router"
 )
 
 type doob struct {

@@ -10,18 +10,17 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/fudali113/doob/core"
 	"github.com/fudali113/doob/utils"
 )
 
 // http method
 const (
-	GET     core.HttpMethod = "get"
-	POST    core.HttpMethod = "post"
-	PUT     core.HttpMethod = "put"
-	DELETE  core.HttpMethod = "delete"
-	OPTIONS core.HttpMethod = "options"
-	HEAD    core.HttpMethod = "head"
+	GET     HttpMethod = "get"
+	POST    HttpMethod = "post"
+	PUT     HttpMethod = "put"
+	DELETE  HttpMethod = "delete"
+	OPTIONS HttpMethod = "options"
+	HEAD    HttpMethod = "head"
 )
 
 var (
@@ -31,44 +30,29 @@ var (
 // start doob server
 func Start(port int) {
 	log.Printf("server is starting , listen port is %d", port)
-	err := core.Listen(port)
+	err := Listen(port)
 	if err != nil {
 		log.Printf("start is fail => %s", err.Error())
 	}
 }
 
-// register a handler
-func AddHandlerFunc(url string, handler interface{}, tms ...core.HttpMethod) {
-	core.AddHandlerFunc(url, handler, tms...)
-}
-
 func Get(url string, handler interface{}) {
-	core.AddHandlerFunc(url, handler, GET)
+	AddHandlerFunc(url, handler, GET)
 }
 func Post(url string, handler http.HandlerFunc) {
-	core.AddHandlerFunc(url, handler, POST)
+	AddHandlerFunc(url, handler, POST)
 }
 func Put(url string, handler http.HandlerFunc) {
-	core.AddHandlerFunc(url, handler, PUT)
+	AddHandlerFunc(url, handler, PUT)
 }
 func Delete(url string, handler http.HandlerFunc) {
-	core.AddHandlerFunc(url, handler, DELETE)
-}
-
-// set return type default value
-func SetReturnDealDefaultType(t string) {
-	core.SetReturnDealDefaultType(t)
-}
-
-// add a filter
-func AddFilter(fs ...core.Filter) {
-	core.AddFilter(fs...)
+	AddHandlerFunc(url, handler, DELETE)
 }
 
 func AddStaicPrefix(prefixs ...string) {
 	for _, prefixUrl := range prefixs {
 		prefixUrl = prefixUrl + "/**"
-		core.AddHandlerFunc(prefixUrl, staticPrefixFileHandlerFunc, GET)
+		AddHandlerFunc(prefixUrl, staticPrefixFileHandlerFunc, GET)
 	}
 }
 

@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/fudali113/doob/core/register"
+	"github.com/fudali113/doob/register"
 )
 
 // 返回值类型

@@ -1,16 +1,16 @@
-package core
+package doob
 
 import (
 	"log"
 	"net/http"
 	"strings"
 
-	"github.com/fudali113/doob/core/register"
-	"github.com/fudali113/doob/core/router"
+	"github.com/fudali113/doob/register"
+	"github.com/fudali113/doob/router"
 
-	. "github.com/fudali113/doob/core/http_const"
+	. "github.com/fudali113/doob/http_const"
 
-	returnDeal "github.com/fudali113/doob/core/return_deal"
+	returnDeal "github.com/fudali113/doob/return_deal"
 	reflectUtils "github.com/fudali113/doob/utils/reflect"
 )
 

@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/fudali113/doob"
-	"github.com/fudali113/doob/core"
 )
 
 // 开始http服务
@@ -34,7 +33,7 @@ func origin(w http.ResponseWriter, r *http.Request) {
 }
 
 // 根据doob 里的context 进行获取参数或者返回
-func ctx(ctx *core.Context) interface{} {
+func ctx(ctx *doob.Context) interface{} {
 	return map[string]int{
 		"haha": ctx.ParamInt("haha"),
 		"test": ctx.ParamInt("test"),
