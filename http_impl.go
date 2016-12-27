@@ -1,11 +1,11 @@
-package core
+package doob
 
 import (
 	"log"
 	"net/http"
 	"time"
 
-	"github.com/fudali113/doob/core/router"
+	"github.com/fudali113/doob/router"
 )
 
 type doob struct {
@@ -17,7 +17,14 @@ type doob struct {
 func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	startTime := time.Now()
 	defer log.Printf("程序处理共消耗:%d ns", time.Now().Sub(startTime).Nanoseconds())
+	// TODO user can register err deal
+	defer func(){
+		if err:=recover();err!=nil{
+			switch err.(type) {
 
+			}
+		}
+	}()
 	for i := range this.filters {
 		if this.filters[i].doFilter(w, req) {
 			continue

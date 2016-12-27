@@ -1,4 +1,4 @@
-package core
+package doob
 
 import (
 	"encoding/json"

@@ -2,16 +2,13 @@ package reflect
 
 import (
 	"reflect"
-
 	"regexp"
 	"strings"
 
-	"github.com/fudali113/doob/log"
 	"github.com/fudali113/doob/utils"
 )
 
 var (
-	logger      = log.GetLog("reflect")
 	paramReg, _ = regexp.Compile("\\([\\S|\\s]*?\\)")
 )
 
