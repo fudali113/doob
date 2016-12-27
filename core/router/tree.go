@@ -13,27 +13,16 @@ const (
 	matchAll
 )
 
-// 实现Sort的接口
-type nodes []*node
+func GetRoot() *Node {
+	return &Node{class: normal}
+}
 
 // 转化储存的实体类型
 // 一面后面修改麻烦
 type reserveType RestHandler
 
-func (this nodes) Len() int {
-	return len(this)
-}
-func (this nodes) Swap(i, j int) {
-	this[i], this[j] = this[j], this[i]
-}
-func (this nodes) Less(i, j int) bool {
-	a := this[i]
-	b := this[j]
-	return b.class > a.class
-}
-
 // 装载url每一个由`/`隔开的分段的实体
-type node struct {
+type Node struct {
 	class    int
 	value    nodeV
 	handler  RestHandler
@@ -43,25 +32,25 @@ type node struct {
 // 插入一个子node到一个node中
 // 递归插入
 // 知道url到最后
-func (this *node) insertChild(url string, rt reserveType) error {
+func (this *Node) InsertChild(url string, rt reserveType) error {
 	prefix, other := splitUrl(url)
 	for _, node := range this.children {
 		if node.value.getOrigin() == prefix {
-			node.insertChild(other, rt)
+			node.InsertChild(other, rt)
 			return nil
 		}
 	}
 	newNode, isOver := creatNode(url, rt)
 	this.children = append(this.children, newNode)
 	if !isOver {
-		newNode.insertChild(other, rt)
+		newNode.InsertChild(other, rt)
 	}
 	return nil
 }
 
 // get reserve type
 // if reserve type value is nil , return error
-func (this *node) getRT(url string, paramMap map[string]string) (reserveType, error) {
+func (this *Node) GetRT(url string, paramMap map[string]string) (reserveType, error) {
 	prefix, other := splitUrl(url)
 	for _, node := range this.children {
 		nodeValue := node.value
@@ -75,24 +64,24 @@ func (this *node) getRT(url string, paramMap map[string]string) (reserveType, er
 			if over || other == "" {
 				return getRtAndErr(node.handler)
 			}
-			return node.getRT(other, paramMap)
+			return node.GetRT(other, paramMap)
 		}
 	}
 	return nil, NotMatch{"this url not rt"}
 }
 
-func (this *node) getNode(url string) *node {
+func (this *Node) GetNode(url string) *Node {
 	if url == "" {
 		return this
 	}
-	_, err := this.getRT(url, nil)
+	_, err := this.GetRT(url, nil)
 	if err != nil {
-		this.insertChild(url, nil)
+		this.InsertChild(url, nil)
 	}
 	prefix, other := splitUrl(url)
 	for _, node := range this.children {
 		if node.value.getOrigin() == prefix {
-			return node.getNode(other)
+			return node.GetNode(other)
 		}
 	}
 	return nil
@@ -100,7 +89,7 @@ func (this *node) getNode(url string) *node {
 
 // 对子node进行排序
 // 将会递归所有子node排序
-func (this *node) Sort() {
+func (this *Node) Sort() {
 	if this.children == nil {
 		return
 	}
@@ -110,15 +99,15 @@ func (this *node) Sort() {
 	}
 }
 
-func (this *node) String() string {
+func (this *Node) String() string {
 	return fmt.Sprintf("{ class:%d,value:%s,handler:%v,children:%v }", this.class, this.value, this.handler, this.children)
 }
 
-// create a new node
-func creatNode(url string, rt reserveType) (newNode *node, isOver bool) {
+// create a new Node
+func creatNode(url string, rt reserveType) (newNode *Node, isOver bool) {
 	prefix, other := splitUrl(url)
 	isOver = false
-	newNode = &node{
+	newNode = &Node{
 		class: getClass(prefix),
 		value: createNodeValue(prefix),
 	}
@@ -126,7 +115,7 @@ func creatNode(url string, rt reserveType) (newNode *node, isOver bool) {
 		newNode.handler = rt
 		isOver = true
 	} else {
-		newNode.children = make([]*node, 0)
+		newNode.children = make([]*Node, 0)
 	}
 	return
 }

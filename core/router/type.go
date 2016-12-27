@@ -10,16 +10,8 @@ import (
 
 // 返回值类型
 type MatchResult struct {
-	ParamMap   map[string]string
-	Rest       RestHandler
-	ParamNames []string
-}
-
-type Router interface {
-	// 添加一个处理器
-	Add(string, RestHandler)
-	// 根据url获取一个最佳处理器
-	Get(string) *MatchResult
+	ParamMap map[string]string
+	Rest     RestHandler
 }
 
 type RestHandler interface {
@@ -97,6 +89,21 @@ func (this *SimpleRestHandler) Joint(restHandler RestHandler) {
 	for _, method := range methods {
 		this.PutMethod(method, restHandler.GetSigninHandler())
 	}
+}
+
+// 实现Sort的接口
+type nodes []*Node
+
+func (this nodes) Len() int {
+	return len(this)
+}
+func (this nodes) Swap(i, j int) {
+	this[i], this[j] = this[j], this[i]
+}
+func (this nodes) Less(i, j int) bool {
+	a := this[i]
+	b := this[j]
+	return b.class > a.class
 }
 
 // 各类型储存接口

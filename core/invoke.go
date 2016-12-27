@@ -1,6 +1,7 @@
 package core
 
 import (
+	"log"
 	"net/http"
 	"strings"
 
@@ -32,14 +33,14 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 	method := strings.ToLower(req.Method)
 
 	if matchResult == nil {
-		logger.Notice("no match url : %s", url)
+		log.Print("no match url : ", url)
 		w.WriteHeader(404)
 		return
 	}
 
 	handlerType := matchResult.Rest.GetHandler(method)
 	if handlerType == nil {
-		logger.Notice("match url : %s , but method con`t match", url)
+		log.Printf("match url : %s , but method con`t match", url)
 		w.WriteHeader(405)
 		return
 	}
@@ -132,7 +133,7 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 				paraNames = append(paraNames, k)
 			}
 			if ciLen > len(paraNames) {
-				logger.Warn(`your func path variable params lnegth is %d ,
+				log.Printf(`your func path variable params lnegth is %d ,
            but your url params length just %d`, ciLen, len(paraNames))
 				return
 			}

@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"log"
+
 	"github.com/fudali113/doob/core/router"
 	"github.com/fudali113/doob/utils"
 )
@@ -17,9 +19,12 @@ const (
 )
 
 var (
+	filters = make([]Filter, 0)
+	root    = router.GetRoot()
+
 	_doob = &doob{
-		filters: make([]Filter, 0),
-		router:  &router.SimpleRouter{},
+		filters: filters,
+		root:    root,
 	}
 )
 
@@ -42,7 +47,7 @@ func AddHandlerFunc(allUrl string, handler interface{}, methods ...HttpMethod) {
 			if checkMethodStr(methodStr) {
 				_doob.addRestHandler(url, router.GetSimpleRestHandler(methodStr, handler))
 			} else {
-				logger.Notice("%s method is unsupport", methodStr)
+				log.Printf("%s method is unsupport", methodStr)
 			}
 		}
 	}

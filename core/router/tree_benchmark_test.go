@@ -65,11 +65,11 @@ func (t testType) String() string {
 }
 
 func Benchmark_test(b *testing.B) {
-	node := &node{
+	node := &Node{
 		class:    normal,
 		value:    nil,
 		handler:  nil,
-		children: make([]*node, 0),
+		children: make([]*Node, 0),
 	}
 	testVar := &RegisterHandler{
 		Handler: &testType{
@@ -78,16 +78,16 @@ func Benchmark_test(b *testing.B) {
 		},
 	}
 	for _, url := range testData {
-		node.insertChild(url, GetSimpleRestHandler("get", testVar))
+		node.InsertChild(url, GetSimpleRestHandler("get", testVar))
 	}
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			res := must(node.getRT("/api/report/index", nil)).GetHandler("get").GetHandler()
+			res := must(node.GetRT("/api/report/index", nil)).GetHandler("get").GetHandler()
 			if res == nil {
 				b.Error("path variable method have bug")
 			}
 
-			res1 := must(node.getRT("/api/user/barcodes/111-1121-8406/bind_share", nil)).GetHandler("get").GetHandler()
+			res1 := must(node.GetRT("/api/user/barcodes/111-1121-8406/bind_share", nil)).GetHandler("get").GetHandler()
 			if res1 == nil {
 				b.Error("path variable method have bug")
 			}
