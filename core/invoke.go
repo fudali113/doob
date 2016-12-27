@@ -1,36 +1,51 @@
 package core
 
 import (
+	"log"
 	"net/http"
 	"strings"
 
 	"github.com/fudali113/doob/core/register"
 	"github.com/fudali113/doob/core/router"
 
+	. "github.com/fudali113/doob/core/http_const"
+
 	returnDeal "github.com/fudali113/doob/core/return_deal"
 	reflectUtils "github.com/fudali113/doob/utils/reflect"
 )
 
+var (
+	returnDealDefaultType = "auto"
+)
+
+func SetReturnDealDefaultType(t string) {
+	returnDealDefaultType = t
+}
+
+//
+// 根据路由匹配获取匹配的返回值
+// 根据返回值执行不同的逻辑操作
+//
+// FIXME 此方法有些复杂，需要进行拆解
+//
 func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Request) {
 	url := req.URL.Path
 	method := strings.ToLower(req.Method)
 
 	if matchResult == nil {
-		logger.Notice("no match url : %s", url)
+		log.Print("no match url : ", url)
 		w.WriteHeader(404)
 		return
 	}
 
-	handlerInterface := matchResult.Rest.GetHandler(method)
-	if handlerInterface == nil {
-		logger.Notice("match url : %s , but method con`t match", url)
+	handlerType := matchResult.Rest.GetHandler(method)
+	if handlerType == nil {
+		log.Printf("match url : %s , but method con`t match", url)
 		w.WriteHeader(405)
 		return
 	}
 
-	/**
-	 * 获取路劲参数并存入request参数中
-	 */
+	// 获取路劲参数并存入request参数中
 	urlParam := matchResult.ParamMap
 	if urlParam != nil {
 		for k, v := range urlParam {
@@ -41,14 +56,18 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 		}
 	}
 
-	/**
-	 * 根据RegisterType决定怎么执行函数
-	 */
-	registerType := matchResult.RegisterType
+	// 根据RegisterType决定怎么执行函数
+	registerType := handlerType.GetRegisterType()
+	handlerInterface := handlerType.GetHandler()
 	if registerType != nil {
 		paramType := registerType.ParamType
 		returnType := registerType.ReturnType
 		switch paramType.Type {
+
+		case register.ORIGIN:
+			handler := handlerInterface.(func(http.ResponseWriter, *http.Request))
+			handler(w, req)
+
 		case register.PARAM_NONE:
 			switch returnType.Type {
 			case register.RETURN_NONE:
@@ -56,20 +75,20 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 				handler()
 
 			case register.JSON:
-				handler := handlerInterface.(ReturnObject)
+				handler := handlerInterface.(func() interface{})
 				returnValue := handler()
 				returnDeal.DealReturn(&returnDeal.ReturnType{
-					TypeStr: "json",
+					TypeStr: returnDealDefaultType,
 					Data:    returnValue,
 				}, w)
 
 			case register.FILE:
-				handler := handlerInterface.(ReturnStr)
+				handler := handlerInterface.(func() string)
 				returnValue := handler()
 				returnDeal.DealReturn(&returnDeal.ReturnType{TypeStr: returnValue}, w)
 
 			case register.RETURN_TYPE:
-				handler := handlerInterface.(ReturnType)
+				handler := handlerInterface.(func() (string, interface{}))
 				str, data := handler()
 				returnDeal.DealReturn(&returnDeal.ReturnType{
 					TypeStr: str,
@@ -77,32 +96,28 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 				}, w)
 			}
 
-		case register.ORIGIN:
-			handler := handlerInterface.(http.HandlerFunc)
-			handler(w, req)
-
 		case register.CTX:
 			context := getContext(w, req)
 			switch returnType.Type {
 			case register.RETURN_NONE:
-				handler := handlerInterface.(CTXReturn)
+				handler := handlerInterface.(func(*Context))
 				handler(context)
 
 			case register.FILE:
-				handler := handlerInterface.(CTXReturnStr)
+				handler := handlerInterface.(func(*Context) string)
 				returnValue := handler(context)
 				returnDeal.DealReturn(&returnDeal.ReturnType{TypeStr: returnValue}, w)
 
 			case register.JSON:
-				handler := handlerInterface.(CTXReturnObject)
+				handler := handlerInterface.(func(*Context) interface{})
 				returnValue := handler(context)
 				returnDeal.DealReturn(&returnDeal.ReturnType{
-					TypeStr: "json",
+					TypeStr: getReqAccept(req),
 					Data:    returnValue,
 				}, w)
 
 			case register.RETURN_TYPE:
-				handler := handlerInterface.(CTXReturnType)
+				handler := handlerInterface.(func(*Context) (string, interface{}))
 				str, data := handler(context)
 				returnDeal.DealReturn(&returnDeal.ReturnType{
 					TypeStr: str,
@@ -113,9 +128,12 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 		case register.CI_PATHVARIABLE, register.CI_PATHVARIABLE_CTX:
 			var returns []interface{}
 			ciLen := paramType.CiLen
-			paraNames := matchResult.ParamNames
+			paraNames := make([]string, 0)
+			for k, _ := range matchResult.ParamMap {
+				paraNames = append(paraNames, k)
+			}
 			if ciLen > len(paraNames) {
-				logger.Warn(`your func path variable params lnegth is %d ,
+				log.Printf(`your func path variable params lnegth is %d ,
            but your url params length just %d`, ciLen, len(paraNames))
 				return
 			}
@@ -156,13 +174,31 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 	}
 }
 
-/**
- * 根据res&req获取context
- */
+// According to the request and response for context
 func getContext(w http.ResponseWriter, req *http.Request) *Context {
 	return &Context{
 		request:  req,
 		response: w,
 		Params:   map[string]string{},
 	}
+}
+
+// if user don`t set returnDealDefaultType
+// returnDealDefaultType deafault value is "auto"
+// Will automatically think return type according to the request to accept
+func getReqAccept(req *http.Request) string {
+	if returnDealDefaultType != "auto" {
+		return returnDealDefaultType
+	}
+	accepts := req.Header.Get("Accept")
+	for _, accept := range accepts {
+		acceptStr := string(accept)
+		if acceptStr == APP_JSON {
+			return "json"
+		}
+		if acceptStr == APP_XML {
+			return "xml"
+		}
+	}
+	return "json"
 }

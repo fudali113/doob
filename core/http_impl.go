@@ -1,28 +1,25 @@
 package core
 
 import (
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/fudali113/doob/core/router"
-	"github.com/fudali113/doob/log"
-)
-
-var (
-	logger = log.GetLog("simple router")
 )
 
 type doob struct {
-	router  router.Router
+	root    *router.Node
 	filters []Filter
 }
 
-func (this *doob) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+// 实现 http Handle 接口
+func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	startTime := time.Now()
-	defer logger.Info("程序处理共消耗:%d ns", time.Now().Sub(startTime).Nanoseconds())
+	defer log.Printf("程序处理共消耗:%d ns", time.Now().Sub(startTime).Nanoseconds())
 
 	for i := range this.filters {
-		if this.filters[i].doFilter(res, req) {
+		if this.filters[i].doFilter(w, req) {
 			continue
 		} else {
 			return
@@ -30,10 +27,17 @@ func (this *doob) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 
 	url := req.URL.Path
-
-	matchResult := this.router.Get(url)
-
-	invoke(matchResult, res, req)
+	paramMap := make(map[string]string, 0)
+	handler, err := this.root.GetRT(url, paramMap)
+	if err != nil {
+		w.WriteHeader(500)
+		return
+	}
+	matchResult := &router.MatchResult{
+		Rest:     handler,
+		ParamMap: paramMap,
+	}
+	invoke(matchResult, w, req)
 
 }
 
@@ -42,5 +46,5 @@ func (this *doob) addFilter(fs ...Filter) {
 }
 
 func (this *doob) addRestHandler(url string, restHandler router.RestHandler) {
-	this.router.Add(url, restHandler)
+	this.root.InsertChild(url, restHandler)
 }

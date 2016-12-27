@@ -16,6 +16,7 @@ func Test_GetFuncParams(t *testing.T) {
 	if len(params) != 4 {
 		t.Error("GetFuncParams have bug")
 	}
+	logger.Debug("------ %v", returns)
 	if len(returns) != 1 {
 		t.Error("GetFuncParams have bug")
 	}

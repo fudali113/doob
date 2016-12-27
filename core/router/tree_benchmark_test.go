@@ -1,6 +1,9 @@
 package router
 
-import "testing"
+import (
+	"log"
+	"testing"
+)
 
 var (
 	testData = []string{
@@ -52,31 +55,49 @@ var (
 	}
 )
 
+type testType struct {
+	name string
+	num  int
+}
+
+func (t testType) String() string {
+	return t.name + "----"
+}
+
 func Benchmark_test(b *testing.B) {
-	simpleRouter := &SimpleRouter{}
-	testVar := &testType{
-		name: "ooo",
-		num:  1,
+	node := &Node{
+		class:    normal,
+		value:    nil,
+		handler:  nil,
+		children: make([]*Node, 0),
+	}
+	testVar := &RegisterHandler{
+		Handler: &testType{
+			name: "ooo",
+			num:  1,
+		},
 	}
 	for _, url := range testData {
-		simpleRouter.Add(url, &SimpleRestHandler{
-			signinHandler: testVar,
-			methodHandlerMap: map[string]interface{}{
-				"get": testVar,
-			},
-		})
+		node.InsertChild(url, GetSimpleRestHandler("get", testVar))
 	}
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			oo, _ := simpleRouter.Get("/api/report/index" /**fmt.Sprintf("/aaa/%s/oo", "dd")*/).Rest.GetHandler("get").(*testType)
-			if oo == nil {
+			res := must(node.GetRT("/api/report/index", nil)).GetHandler("get").GetHandler()
+			if res == nil {
 				b.Error("path variable method have bug")
 			}
 
-			oo1, _ := simpleRouter.Get("/api/user/barcodes/111-1121-8406/bind_share").Rest.GetHandler("get").(*testType)
-			if oo1 == nil {
+			res1 := must(node.GetRT("/api/user/barcodes/111-1121-8406/bind_share", nil)).GetHandler("get").GetHandler()
+			if res1 == nil {
 				b.Error("path variable method have bug")
 			}
 		}
 	})
+}
+
+func must(i RestHandler, e error) RestHandler {
+	if e != nil {
+		log.Panic(e)
+	}
+	return i
 }

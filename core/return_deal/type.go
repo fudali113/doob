@@ -7,23 +7,19 @@ type ReturnType struct {
 	Data    interface{}
 }
 
-type ReturnMatchType interface {
-	/**
-	 * 是否匹配typeStr
-	 */
+type ReturnTypeDealer interface {
+	// 此 Dealer 的名字
+	Name() string
+	//	是否匹配typeStr
 	MacthType(typeStr string) bool
+	//	自己处理相关数据到respons
+	Deal(returnType *ReturnType, w http.ResponseWriter)
 }
 
-type Serialize interface {
-	/**
-	 * 序列化方式，
-	 */
-	Serialize(returnType *ReturnType) ([]byte, http.Header)
+type DealerName struct {
+	name string
 }
 
-type Deal interface {
-	/**
-	 * 自己处理相关数据到respons
-	 */
-	Deal(returnType *ReturnType, res http.ResponseWriter)
+func (this DealerName) Name() string {
+	return this.name
 }
