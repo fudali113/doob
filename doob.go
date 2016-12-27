@@ -48,6 +48,12 @@ func Put(url string, handler http.HandlerFunc) {
 func Delete(url string, handler http.HandlerFunc) {
 	AddHandlerFunc(url, handler, DELETE)
 }
+func Options(url string, handler http.HandlerFunc) {
+	AddHandlerFunc(url, handler, OPTIONS)
+}
+func Head(url string, handler http.HandlerFunc) {
+	AddHandlerFunc(url, handler, HEAD)
+}
 
 func AddStaicPrefix(prefixs ...string) {
 	for _, prefixUrl := range prefixs {
