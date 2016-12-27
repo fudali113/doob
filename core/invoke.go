@@ -108,8 +108,7 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 				returnDeal.DealReturn(&returnDeal.ReturnType{TypeStr: returnValue}, w)
 
 			case register.JSON:
-				//handler := handlerInterface.(func(*Context) interface{})
-				handler := handlerInterface.(CTXReturnObject)
+				handler := handlerInterface.(func(*Context) interface{})
 				returnValue := handler(context)
 				returnDeal.DealReturn(&returnDeal.ReturnType{
 					TypeStr: getReqAccept(req),

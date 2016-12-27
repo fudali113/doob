@@ -18,8 +18,9 @@ func TestNode_insertChildren(t *testing.T) {
 
 	testUrl := "/oooo/lllll/ddddd"
 	node.insertChild(testUrl, &router.SimpleRestHandler{})
-	_, err := node.getRT(testUrl, nil)
-	if err != nil {
+	res, err := node.getRT(testUrl, nil)
+	log.Print(res)
+	if err != nil || res == nil {
 		t.Error("Node_insertChildren have bug")
 	}
 
@@ -78,5 +79,4 @@ func TestNode_Sort(t *testing.T) {
 
 	nodeRoot.children = nodes(nodeSlice)
 	nodeRoot.Sort()
-	log.Print("iiiiiiiiiiiiiiiii", nodeSlice)
 }
