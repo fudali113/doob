@@ -1,11 +1,9 @@
-package tree_router
+package router
 
 import (
 	"fmt"
 	"sort"
 	"strings"
-
-	"github.com/fudali113/doob/core/router"
 )
 
 const (
@@ -20,7 +18,7 @@ type nodes []*node
 
 // 转化储存的实体类型
 // 一面后面修改麻烦
-type reserveType router.RestHandler
+type reserveType RestHandler
 
 func (this nodes) Len() int {
 	return len(this)
@@ -38,7 +36,7 @@ func (this nodes) Less(i, j int) bool {
 type node struct {
 	class    int
 	value    nodeV
-	handler  router.RestHandler
+	handler  RestHandler
 	children nodes
 }
 
@@ -61,6 +59,8 @@ func (this *node) insertChild(url string, rt reserveType) error {
 	return nil
 }
 
+// get reserve type
+// if reserve type value is nil , return error
 func (this *node) getRT(url string, paramMap map[string]string) (reserveType, error) {
 	prefix, other := splitUrl(url)
 	for _, node := range this.children {
@@ -79,6 +79,23 @@ func (this *node) getRT(url string, paramMap map[string]string) (reserveType, er
 		}
 	}
 	return nil, NotMatch{"this url not rt"}
+}
+
+func (this *node) getNode(url string) *node {
+	if url == "" {
+		return this
+	}
+	_, err := this.getRT(url, nil)
+	if err != nil {
+		this.insertChild(url, nil)
+	}
+	prefix, other := splitUrl(url)
+	for _, node := range this.children {
+		if node.value.getOrigin() == prefix {
+			return node.getNode(other)
+		}
+	}
+	return nil
 }
 
 // 对子node进行排序

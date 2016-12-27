@@ -2,9 +2,18 @@ package router
 
 import (
 	"log"
+	"regexp"
+	"strings"
 
 	"github.com/fudali113/doob/core/register"
 )
+
+// 返回值类型
+type MatchResult struct {
+	ParamMap   map[string]string
+	Rest       RestHandler
+	ParamNames []string
+}
 
 type Router interface {
 	// 添加一个处理器
@@ -90,22 +99,75 @@ func (this *SimpleRestHandler) Joint(restHandler RestHandler) {
 	}
 }
 
-type prefixMatchHandlerSorter struct {
-	handlers []*prefixMatchHandler
-	by       func(p, q *prefixMatchHandler) bool
+// 各类型储存接口
+type nodeV interface {
+	isMatch(urlPart string) (bool, bool)
+	// if need pathvar
+	// return in this method
+	paramValue(urlPart string, url string) (bool, map[string]string)
+	getOrigin() string
 }
 
-// 重写 Len() 方法
-func (this prefixMatchHandlerSorter) Len() int {
-	return len(this.handlers)
+type nodeVNormal struct {
+	origin string
 }
 
-// 重写 Swap() 方法
-func (this prefixMatchHandlerSorter) Swap(i, j int) {
-	this.handlers[i], this.handlers[j] = this.handlers[j], this.handlers[i]
+func (this nodeVNormal) isMatch(urlPart string) (bool, bool) {
+	return this.origin == urlPart, false
+}
+func (this nodeVNormal) paramValue(urlPart string, url string) (bool, map[string]string) {
+	return false, nil
+}
+func (this nodeVNormal) getOrigin() string {
+	return this.origin
 }
 
-// 重写 Less() 方法
-func (this prefixMatchHandlerSorter) Less(i, j int) bool {
-	return this.by(this.handlers[i], this.handlers[j])
+type nodeVPathReg struct {
+	origin    string
+	paramName string
+	paramReg  *regexp.Regexp
+}
+
+// check url part is match this node value
+func (this nodeVPathReg) isMatch(urlPart string) (bool, bool) {
+	findStr := this.paramReg.FindString(urlPart)
+	log.Print(findStr, "====", urlPart)
+	return findStr == urlPart, false
+}
+func (this nodeVPathReg) paramValue(urlPart string, url string) (bool, map[string]string) {
+	return true, map[string]string{this.paramName: urlPart}
+}
+func (this nodeVPathReg) getOrigin() string {
+	return this.origin
+}
+
+type nodeVPathVar struct {
+	origin    string
+	paramName string
+}
+
+func (this nodeVPathVar) isMatch(urlPart string) (bool, bool) {
+	return true, false
+}
+func (this nodeVPathVar) paramValue(urlPart string, url string) (bool, map[string]string) {
+	return true, map[string]string{this.paramName: urlPart}
+}
+func (this nodeVPathVar) getOrigin() string {
+	return this.origin
+}
+
+type nodeVMatchAll struct {
+	origin string
+	prefix string
+}
+
+func (this nodeVMatchAll) isMatch(urlPart string) (bool, bool) {
+	return strings.HasPrefix(urlPart, this.prefix), true
+}
+func (this nodeVMatchAll) paramValue(urlPart string, url string) (bool, map[string]string) {
+	paramValue := strings.TrimPrefix(urlPart, this.prefix) + url
+	return true, map[string]string{"**": paramValue}
+}
+func (this nodeVMatchAll) getOrigin() string {
+	return this.origin
 }

@@ -1,4 +1,4 @@
-package tree_router
+package router
 
 import (
 	"log"

@@ -127,7 +127,10 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 		case register.CI_PATHVARIABLE, register.CI_PATHVARIABLE_CTX:
 			var returns []interface{}
 			ciLen := paramType.CiLen
-			paraNames := matchResult.ParamNames
+			paraNames := make([]string, 0)
+			for k, _ := range matchResult.ParamMap {
+				paraNames = append(paraNames, k)
+			}
 			if ciLen > len(paraNames) {
 				logger.Warn(`your func path variable params lnegth is %d ,
            but your url params length just %d`, ciLen, len(paraNames))
