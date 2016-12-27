@@ -1,4 +1,4 @@
-package tree_router
+package router
 
 import (
 	"log"
@@ -49,11 +49,9 @@ func createNodeValue(urlPart string) nodeV {
 	if matchStr := pathVarReg.FindAllString(urlPart, -1); len(matchStr) > 0 {
 		pathVarStr := strings.TrimPrefix(matchStr[0], "{")
 		pathVarStr = strings.TrimSuffix(pathVarStr, "}")
-		log.Print(pathVarStr)
 		if paramNameAndReg := utils.Split(pathVarStr, ":"); len(paramNameAndReg) > 1 {
 			paraLen := len(paramNameAndReg)
 			paraRegStr := strings.Join(paramNameAndReg[1:paraLen], "")
-			log.Print(paraRegStr)
 			return &nodeVPathReg{
 				origin:    urlPart,
 				paramName: paramNameAndReg[0],
