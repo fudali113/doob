@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/fudali113/doob/router"
+	"fmt"
 )
 
 type doob struct {
@@ -21,7 +22,9 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	defer func(){
 		if err:=recover();err!=nil{
 			switch err.(type) {
-
+			default:
+				w.WriteHeader(500)
+				w.Write([]byte(fmt.Sprintf("%v",err)))
 			}
 		}
 	}()
@@ -37,7 +40,7 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	paramMap := make(map[string]string, 0)
 	handler, err := this.root.GetRT(url, paramMap)
 	if err != nil {
-		w.WriteHeader(500)
+		w.WriteHeader(404)
 		return
 	}
 	matchResult := &router.MatchResult{

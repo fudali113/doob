@@ -80,6 +80,7 @@ func staticPrefixFileHandlerFunc(w http.ResponseWriter, r *http.Request) {
 
 	fileBytes, err := ioutil.ReadFile(path)
 	if err != nil {
+		panic(err)
 		w.WriteHeader(404)
 		return
 	}

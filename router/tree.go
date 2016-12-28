@@ -67,7 +67,7 @@ func (this *Node) GetRT(url string, paramMap map[string]string) (reserveType, er
 			return node.GetRT(other, paramMap)
 		}
 	}
-	return nil, NotMatch{"this url not rt"}
+	return getRtAndErr(nil)
 }
 
 func (this *Node) GetNode(url string) *Node {
