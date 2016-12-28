@@ -5,12 +5,16 @@
 package doob
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
 
+	"github.com/fudali113/doob/router"
 	"github.com/fudali113/doob/utils"
+
+	. "github.com/fudali113/doob/http_const"
 )
 
 // http method
@@ -21,11 +25,27 @@ const (
 	DELETE  HttpMethod = "delete"
 	OPTIONS HttpMethod = "options"
 	HEAD    HttpMethod = "head"
+
+	url_split_symbol = "&&"
 )
 
 var (
 	staticFileCache = map[string][]byte{}
+
+	filters = make([]Filter, 0)
+	root    = router.GetRoot()
+
+	_doob = &doob{
+		filters: filters,
+		root:    root,
+	}
+
+	returnDealDefaultType = "auto"
 )
+
+func SetReturnDealDefaultType(t string) {
+	returnDealDefaultType = t
+}
 
 // start doob server
 func Start(port int) {
@@ -36,29 +56,27 @@ func Start(port int) {
 	}
 }
 
-func Get(url string, handler interface{}) {
-	AddHandlerFunc(url, handler, GET)
-}
-func Post(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, handler, POST)
-}
-func Put(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, handler, PUT)
-}
-func Delete(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, handler, DELETE)
-}
-func Options(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, handler, OPTIONS)
-}
-func Head(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, handler, HEAD)
+func DefaultRouter() Router {
+	return Router{node: root}
 }
 
-func AddStaicPrefix(prefixs ...string) {
+func GetRouter(prefix string) Router {
+	node := root.GetNode(prefix)
+	return Router{node: node}
+}
+
+func Listen(port int) error {
+	return http.ListenAndServe(fmt.Sprintf(":%d", port), _doob)
+}
+
+func AddFilter(fs ...Filter) {
+	filters = append(filters, fs...)
+}
+
+func AddStaticPrefix(prefixs ...string) {
 	for _, prefixUrl := range prefixs {
 		prefixUrl = prefixUrl + "/**"
-		AddHandlerFunc(prefixUrl, staticPrefixFileHandlerFunc, GET)
+		DefaultRouter().AddHandlerFunc(prefixUrl, staticPrefixFileHandlerFunc, GET)
 	}
 }
 
@@ -80,11 +98,11 @@ func staticPrefixFileHandlerFunc(w http.ResponseWriter, r *http.Request) {
 
 	fileBytes, err := ioutil.ReadFile(path)
 	if err != nil {
-		w.WriteHeader(404)
+		w.WriteHeader(NOT_FOUND)
 		return
 	}
 
 	staticFileCache[path] = fileBytes
-	w.WriteHeader(200)
+	w.WriteHeader(OK)
 	w.Write(fileBytes)
 }

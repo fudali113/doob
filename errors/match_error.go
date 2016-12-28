@@ -13,8 +13,8 @@ type URLMacthError struct {
 	matchError *MatchError
 }
 
-func (mme *URLMacthError) Error() string {
-	return mme.url
+func (me *URLMacthError) Error() string {
+	return me.url
 }
 
 type MethodMacthError struct {
@@ -23,6 +23,6 @@ type MethodMacthError struct {
 	matchError   *URLMacthError
 }
 
-func (mme *MethodMacthError) Error() string {
-	return mme.shouldMethod
+func (me *MethodMacthError) Error() string {
+	return me.shouldMethod
 }

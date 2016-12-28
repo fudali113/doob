@@ -28,6 +28,7 @@ func (*ReturnXmlDealer) Deal(returnType *ReturnType, w http.ResponseWriter) {
 	xml, err := xml.Marshal(data)
 	if err != nil {
 		log.Print("xml dealer is error , error is ", err)
+		w.WriteHeader(INTERNAL_SERVER_ERROR)
 		return
 	}
 	w.Header().Add(CONTENT_TYPE, APP_XML)

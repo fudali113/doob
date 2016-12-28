@@ -1,6 +1,8 @@
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 .*
 *.iml
+test
+demo
 
 # Folders
 _obj

@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+
+	. "github.com/fudali113/doob/http_const"
 )
 
 // 对 ResponseWriter 和 request 封装的上下文
@@ -62,7 +64,7 @@ func (this *Context) WriteJson(jsonStruct interface{}) {
 		return
 	}
 	this.response.Write(json)
-	this.SetHeader("context", "application/json")
+	this.SetHeader(CONTENT_TYPE, APP_JSON)
 }
 
 // redirect
@@ -78,6 +80,7 @@ func (this *Context) Redirect(url string, addresses ...string) {
 	res, err := client.Do(this.request)
 	if err != nil {
 		log.Print("Redirect is error , error is ", err)
+		this.SetHttpStatus(INTERNAL_SERVER_ERROR)
 		return
 	}
 	this.response.WriteHeader(res.StatusCode)
