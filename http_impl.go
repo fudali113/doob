@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/fudali113/doob/router"
+
+	. "github.com/fudali113/doob/http_const"
 )
 
 type doob struct {
@@ -23,7 +25,7 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		if err := recover(); err != nil {
 			switch err.(type) {
 			default:
-				w.WriteHeader(500)
+				w.WriteHeader(INTERNAL_SERVER_ERROR)
 				w.Write([]byte(fmt.Sprintf("%v", err)))
 			}
 		}
@@ -49,12 +51,4 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 	invoke(matchResult, w, req)
 
-}
-
-func (this *doob) addFilter(fs ...Filter) {
-	this.filters = append(this.filters, fs...)
-}
-
-func (this *doob) addRestHandler(url string, restHandler router.RestHandler) {
-	this.root.InsertChild(url, restHandler)
 }

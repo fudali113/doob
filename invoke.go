@@ -26,14 +26,14 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 
 	if matchResult == nil {
 		log.Print("no match url : ", url)
-		w.WriteHeader(404)
+		w.WriteHeader(NOT_FOUND)
 		return
 	}
 
 	handlerType := matchResult.Rest.GetHandler(method)
 	if handlerType == nil {
 		log.Printf("match url : %s , but method con`t match", url)
-		w.WriteHeader(405)
+		w.WriteHeader(METHOD_NOT_ALLOWED)
 		return
 	}
 

@@ -25,6 +25,7 @@ func (*ReturnJsonDealer) Deal(returnType *ReturnType, w http.ResponseWriter) {
 	json, err := json.Marshal(data)
 	if err != nil {
 		log.Print("json dealer is error , error is ", err)
+		w.WriteHeader(INTERNAL_SERVER_ERROR)
 		return
 	}
 	w.Header().Add(CONTENT_TYPE, APP_JSON)

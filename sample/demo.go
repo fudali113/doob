@@ -8,11 +8,6 @@ import (
 
 // 开始http服务
 func main() {
-	doob.AddStaicPrefix("/static")
-	doob.AddHandlerFunc("/doob/origin/{who}/{do}&&/doob/origin1/{who}/{do}", origin, doob.GET, doob.POST, doob.PUT, doob.DELETE)
-	doob.Get("/doob/di/{name}/{value}", di)
-	doob.Get("/doob/ctx/{haha:[0-9]{3,4}}", ctx)
-	doob.Get("/test", returnHtml)
 	doob.Start(8888)
 }
 
@@ -43,4 +38,15 @@ func ctx(ctx *doob.Context) interface{} {
 // 返回处理 template 文件 path 和数据进行处理并返回生成的html
 func returnHtml() (string, interface{}) {
 	return "tpl:static/test", map[string]string{"Name": "sdddddddddddddddddddddddddddddd"}
+}
+
+// init router
+func init() {
+	doob.AddStaticPrefix("/static")
+	router := doob.DefaultRouter()
+	router.AddHandlerFunc("/doob/origin/{who}/{do}", origin, doob.GET, doob.POST, doob.PUT, doob.DELETE)
+	router.Get("/test", returnHtml)
+	doobRouter := doob.GetRouter("doob")
+	doobRouter.Get("/di/{name}/{value}", di)
+	doobRouter.Get("/ctx/{haha:[0-9]{3,4}}", ctx)
 }

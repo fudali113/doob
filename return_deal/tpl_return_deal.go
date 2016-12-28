@@ -30,14 +30,14 @@ func getTemplateBytes(path string, data interface{}, w http.ResponseWriter) {
 	t, err := template.ParseFiles(path)
 	if err != nil {
 		log.Print("tpl dealer is error , error is ", err)
-		w.WriteHeader(500)
+		w.WriteHeader(INTERNAL_SERVER_ERROR)
 		return
 	}
 	w.Header().Add(CONTENT_TYPE, APP_HTML)
 	err = t.Execute(w, data)
 	if err != nil {
 		log.Print("tpl dealer is error , error is ", err)
-		w.WriteHeader(500)
+		w.WriteHeader(INTERNAL_SERVER_ERROR)
 	}
 }
 

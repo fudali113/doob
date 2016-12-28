@@ -13,19 +13,24 @@ doob.AddStaicPrefix("/static")
 
 * add url func , use `&&` split urls
 ```
-doob.AddHandlerFunc("/doob/origin/{who}/{do} && /doob/origin1/{who}/{do}", origin, doob.GET, doob.POST, doob.PUT, doob.DELETE)
+router := doob.DefaultRouter()
+
+router.AddHandlerFunc("/doob/origin/{who}/{do} && /doob/origin1/{who}/{do}", origin, doob.GET, doob.POST, doob.PUT, doob.DELETE)
 ```
 
 * use `Get,Post,Put,Delete,Options,Head` method
 ```
+  // get `/doob` at the beginning base router
+  doobPrefixRouter := doob.GetRouter("doob")
+
   // use `{}` distinction pathVariable
-  doob.Get("/doob/{name}/{value}", func)
+  doobPrefixRouter.Get("/{name}/{value}", func)
   // {} 中支持添加正则表达式，用`:`分割参数名和正则表达式
-  doob.Post("/doob/{name:[0-9]+}/{value}", func)
-  doob.Put("/doob/{name}/{value}", func)
-  doob.Delete("/doob/{name}/{value}", func)
-  doob.Options("/doob/{name}/{value}", func)
-  doob.Head("/doob/{name}/{value}", func)
+  doobPrefixRouter.Post("/{name:[0-9]+}/{value}", func)
+  doobPrefixRouter.Put("/{name}/{value}", func)
+  doobPrefixRouter.Delete("/{name}/{value}", func)
+  doobPrefixRouter.Options("/{name}/{value}", func)
+  doobPrefixRouter.Head("/{name}/{value}", func)
 ```
 
 * support func classify
