@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"log"
 )
 
 const (
@@ -33,10 +34,20 @@ type Node struct {
 // 递归插入
 // 知道url到最后
 func (this *Node) InsertChild(url string, rt reserveType) error {
+	method := rt.GetMethods()
+	log.Print(method)
 	prefix, other := splitUrl(url)
 	for _, node := range this.children {
 		if node.value.getOrigin() == prefix {
-			node.InsertChild(other, rt)
+			if other == "" {
+				if node.handler == nil {
+					node.handler = rt
+				}else {
+					node.handler.Joint(rt)
+				}
+			}else {
+				node.InsertChild(other, rt)
+			}
 			return nil
 		}
 	}
