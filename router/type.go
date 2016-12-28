@@ -138,7 +138,6 @@ type nodeVPathReg struct {
 // check url part is match this node value
 func (this nodeVPathReg) isMatch(urlPart string) (bool, bool) {
 	findStr := this.paramReg.FindString(urlPart)
-	log.Print(findStr, "====", urlPart)
 	return findStr == urlPart, false
 }
 func (this nodeVPathReg) paramValue(urlPart string, url string) (bool, map[string]string) {

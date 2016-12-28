@@ -5,31 +5,58 @@ doob is a rest and a simple router handler
 
 init invoke AddHandlerFunc(url,methodStr,func)
 such as
+
+* add static folder
 ```
-func test1(w http.ResponseWriter, r *http.Request) {
-	who := r.Form.Get("who")
-	do := r.Form.Get("do")
-	w.Write([]byte(who + ":" + do))
-}
-
-doob.AddHandlerFunc("/doob/{who}/{do}", test1, doob.GET, doob.POST, doob.PUT, doob.DELETE)
-doob.Get("/doob/{haha}", func(w http.ResponseWriter, r *http.Request) {
-  haha := r.Form.Get("haha")
-  w.Write([]byte(haha))
-})
-
-//use regexp in your url template
-doob.Get("/ooo/{name:\\w+}",func(w http.ResponseWriter, r *http.Request) {
-  haha := r.Form.Get("name")
-  w.Write([]byte(haha))
-})
+doob.AddStaicPrefix("/static")
 ```
-use r.From.Get() receive your urlpara value
 
-next use
+* add url func , use `&&` split urls
+```
+doob.AddHandlerFunc("/doob/origin/{who}/{do} && /doob/origin1/{who}/{do}", origin, doob.GET, doob.POST, doob.PUT, doob.DELETE)
+```
+
+* use `Get,Post,Put,Delete,Options,Head` method
+```
+    // use `{}` distinction pathVariable
+	doob.Get("/doob/{name}/{value}", func)
+    // {} 中支持添加正则表达式，用`:`分割参数名和正则表达式
+	doob.Post("/doob/{name:[0-9]+}/{value}", func)
+	doob.Put("/doob/{name}/{value}", func)
+	doob.Delete("/doob/{name}/{value}", func)
+	doob.Options("/doob/{name}/{value}", func)
+	doob.Head("/doob/{name}/{value}", func)
+```
+
+* support func type
+```
+// 兼容原始http方法类
+func origin(w http.ResponseWriter, r *http.Request) {}
+
+// 根据doob 里的context 进行获取参数或者返回
+func ctx(ctx *doob.Context) interface{} {}
+
+// 根据url参数自动注入参数
+// 返回值为string时为返回静态文件
+// 返回不为string时默认将解析该对象，并返回给请求用户
+func di(name, value string) interface{} {}
+
+// 返回 string 是 type， interface{} 是你需要处理的数据
+// 你的返回值将流向注册的返回值处理器进行匹配并处理
+// 当只返回string时，把interface当做nil
+//
+// 当只返回数据时，此时returnDealDefaultType 为 auto
+// 此时将根据 請求的header Accept参数进行判断type类型
+// 你可以通过SetReturnDealDefaultType(t string)设置默认的type类型
+func returnHtml() (string, interface{}) {}
+```
+
+* next use
+
 ```
 doob.Start(8888)
 ```
+
 run you application
 
 clone this project , run demo

@@ -9,7 +9,7 @@ import (
 // 开始http服务
 func main() {
 	doob.AddStaicPrefix("/static")
-	doob.AddHandlerFunc("/doob/origin/{who}/{do}", origin, doob.GET, doob.POST, doob.PUT, doob.DELETE)
+	doob.AddHandlerFunc("/doob/origin/{who}/{do}&&/doob/origin1/{who}/{do}", origin, doob.GET, doob.POST, doob.PUT, doob.DELETE)
 	doob.Get("/doob/di/{name}/{value}", di)
 	doob.Get("/doob/ctx/{haha:[0-9]{3,4}}", ctx)
 	doob.Get("/test", returnHtml)

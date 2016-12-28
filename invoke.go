@@ -14,14 +14,6 @@ import (
 	reflectUtils "github.com/fudali113/doob/utils/reflect"
 )
 
-var (
-	returnDealDefaultType = "auto"
-)
-
-func SetReturnDealDefaultType(t string) {
-	returnDealDefaultType = t
-}
-
 //
 // 根据路由匹配获取匹配的返回值
 // 根据返回值执行不同的逻辑操作
@@ -190,15 +182,12 @@ func getReqAccept(req *http.Request) string {
 	if returnDealDefaultType != "auto" {
 		return returnDealDefaultType
 	}
-	accepts := req.Header.Get("Accept")
-	for _, accept := range accepts {
-		acceptStr := string(accept)
-		if acceptStr == APP_JSON {
-			return "json"
-		}
-		if acceptStr == APP_XML {
-			return "xml"
-		}
+	accept := req.Header.Get("Accept")
+	if strings.Contains(accept, APP_JSON) {
+		return "json"
+	}
+	if strings.Contains(accept, APP_XML) {
+		return "xml"
 	}
 	return "json"
 }

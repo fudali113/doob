@@ -24,8 +24,13 @@ const (
 )
 
 var (
-	staticFileCache = map[string][]byte{}
+	staticFileCache       = map[string][]byte{}
+	returnDealDefaultType = "auto"
 )
+
+func SetReturnDealDefaultType(t string) {
+	returnDealDefaultType = t
+}
 
 // start doob server
 func Start(port int) {
@@ -80,7 +85,6 @@ func staticPrefixFileHandlerFunc(w http.ResponseWriter, r *http.Request) {
 
 	fileBytes, err := ioutil.ReadFile(path)
 	if err != nil {
-		panic(err)
 		w.WriteHeader(404)
 		return
 	}
