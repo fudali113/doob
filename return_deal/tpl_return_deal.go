@@ -19,7 +19,6 @@ func (*tplReturnDeal) MacthType(str string) bool {
 // 实现 Dealer 接口
 func (*tplReturnDeal) Deal(returnType *ReturnType, w http.ResponseWriter) {
 	path := getPath(returnType.TypeStr)
-	log.Print(path)
 	data := returnType.Data
 	if data != nil {
 		getTemplateBytes(path, data, w)
@@ -30,13 +29,15 @@ func (*tplReturnDeal) Deal(returnType *ReturnType, w http.ResponseWriter) {
 func getTemplateBytes(path string, data interface{}, w http.ResponseWriter) {
 	t, err := template.ParseFiles(path)
 	if err != nil {
+		log.Print("tpl dealer is error , error is ", err)
+		w.WriteHeader(INTERNAL_SERVER_ERROR)
 		return
 	}
 	w.Header().Add(CONTENT_TYPE, APP_HTML)
 	err = t.Execute(w, data)
 	if err != nil {
 		log.Print("tpl dealer is error , error is ", err)
-		w.WriteHeader(500)
+		w.WriteHeader(INTERNAL_SERVER_ERROR)
 	}
 }
 

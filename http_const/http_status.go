@@ -22,8 +22,8 @@ const (
 	TEMPORARY_REDIRECT              = 307
 	BAD_REQUEST                     = 400
 	UNAUTHORIZED                    = 401
-	Forbidden                       = 403
-	Not_Found                       = 404
+	FORBIDDEN                       = 403
+	NOT_FOUND                       = 404
 	METHOD_NOT_ALLOWED              = 405
 	NOT_ACCEPTABLE                  = 406
 	PROXY_AUTHENTICATION_REQUIRED   = 407

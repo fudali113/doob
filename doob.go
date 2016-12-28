@@ -13,6 +13,8 @@ import (
 
 	"github.com/fudali113/doob/router"
 	"github.com/fudali113/doob/utils"
+
+	. "github.com/fudali113/doob/http_const"
 )
 
 // http method
@@ -37,7 +39,13 @@ var (
 		filters: filters,
 		root:    root,
 	}
+
+	returnDealDefaultType = "auto"
 )
+
+func SetReturnDealDefaultType(t string) {
+	returnDealDefaultType = t
+}
 
 // start doob server
 func Start(port int) {
@@ -90,11 +98,11 @@ func staticPrefixFileHandlerFunc(w http.ResponseWriter, r *http.Request) {
 
 	fileBytes, err := ioutil.ReadFile(path)
 	if err != nil {
-		w.WriteHeader(404)
+		w.WriteHeader(NOT_FOUND)
 		return
 	}
 
 	staticFileCache[path] = fileBytes
-	w.WriteHeader(200)
+	w.WriteHeader(OK)
 	w.Write(fileBytes)
 }

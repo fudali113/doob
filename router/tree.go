@@ -36,7 +36,15 @@ func (this *Node) InsertChild(url string, rt reserveType) error {
 	prefix, other := splitUrl(url)
 	for _, node := range this.children {
 		if node.value.getOrigin() == prefix {
-			node.InsertChild(other, rt)
+			if other == "" {
+				if node.handler == nil {
+					node.handler = rt
+				} else {
+					node.handler.Joint(rt)
+				}
+			} else {
+				node.InsertChild(other, rt)
+			}
 			return nil
 		}
 	}
@@ -67,7 +75,7 @@ func (this *Node) GetRT(url string, paramMap map[string]string) (reserveType, er
 			return node.GetRT(other, paramMap)
 		}
 	}
-	return nil, NotMatch{"this url not rt"}
+	return getRtAndErr(nil)
 }
 
 func (this *Node) GetNode(url string) *Node {

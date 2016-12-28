@@ -37,7 +37,7 @@ func Test_getReturnType(t *testing.T) {
 func Test_getParamType(t *testing.T) {
 	params := []string{"string"}
 	params1 := []string{"string", "string"}
-	params2 := []string{"string", "string", "*core.Context"}
+	params2 := []string{"string", "string", "*doob.Context"}
 
 	if getParamType(params).Type != CI_PATHVARIABLE || getParamType(params).CiLen != 1 {
 		t.Error("args")
