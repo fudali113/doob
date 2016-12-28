@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	. "github.com/fudali113/doob/core/http_const"
+	. "github.com/fudali113/doob/http_const"
 )
 
 //	处理返回 type 为 json 或者返回单个对象的 func

@@ -2,7 +2,7 @@
 // 实际的逻辑处理
 // 并对各模块进行组装最后提供给外界完整的功能
 //
-package core
+package doob
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 
 	"log"
 
-	"github.com/fudali113/doob/core/router"
+	"github.com/fudali113/doob/router"
 	"github.com/fudali113/doob/utils"
 )
 
@@ -27,6 +27,10 @@ var (
 		root:    root,
 	}
 )
+
+func DefaultRouter() {
+	return
+}
 
 func Listen(port int) error {
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), _doob)

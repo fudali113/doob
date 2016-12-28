@@ -4,13 +4,12 @@ import (
 	"net/http"
 
 	"github.com/fudali113/doob"
-	"github.com/fudali113/doob/core"
 )
 
 // 开始http服务
 func main() {
 	doob.AddStaicPrefix("/static")
-	doob.AddHandlerFunc("/doob/origin/{who}/{do}", origin, doob.GET, doob.POST, doob.PUT, doob.DELETE)
+	doob.AddHandlerFunc("/doob/origin/{who}/{do}&&/doob/origin1/{who}/{do}", origin, doob.GET, doob.POST, doob.PUT, doob.DELETE)
 	doob.Get("/doob/di/{name}/{value}", di)
 	doob.Get("/doob/ctx/{haha:[0-9]{3,4}}", ctx)
 	doob.Get("/test", returnHtml)
@@ -34,7 +33,7 @@ func origin(w http.ResponseWriter, r *http.Request) {
 }
 
 // 根据doob 里的context 进行获取参数或者返回
-func ctx(ctx *core.Context) interface{} {
+func ctx(ctx *doob.Context) interface{} {
 	return map[string]int{
 		"haha": ctx.ParamInt("haha"),
 		"test": ctx.ParamInt("test"),
@@ -43,5 +42,5 @@ func ctx(ctx *core.Context) interface{} {
 
 // 返回处理 template 文件 path 和数据进行处理并返回生成的html
 func returnHtml() (string, interface{}) {
-	return "tpl:static/test", map[string]string{"Name": "test"}
+	return "tpl:static/test", map[string]string{"Name": "sdddddddddddddddddddddddddddddd"}
 }

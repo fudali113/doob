@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	. "github.com/fudali113/doob/core/http_const"
+	. "github.com/fudali113/doob/http_const"
 )
 
 type tplReturnDeal struct {
@@ -19,7 +19,6 @@ func (*tplReturnDeal) MacthType(str string) bool {
 // 实现 Dealer 接口
 func (*tplReturnDeal) Deal(returnType *ReturnType, w http.ResponseWriter) {
 	path := getPath(returnType.TypeStr)
-	log.Print(path)
 	data := returnType.Data
 	if data != nil {
 		getTemplateBytes(path, data, w)
@@ -30,6 +29,8 @@ func (*tplReturnDeal) Deal(returnType *ReturnType, w http.ResponseWriter) {
 func getTemplateBytes(path string, data interface{}, w http.ResponseWriter) {
 	t, err := template.ParseFiles(path)
 	if err != nil {
+		log.Print("tpl dealer is error , error is ", err)
+		w.WriteHeader(500)
 		return
 	}
 	w.Header().Add(CONTENT_TYPE, APP_HTML)

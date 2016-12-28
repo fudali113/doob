@@ -1,11 +1,12 @@
-package core
+package doob
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"time"
 
-	"github.com/fudali113/doob/core/router"
+	"github.com/fudali113/doob/router"
 )
 
 type doob struct {
@@ -17,7 +18,16 @@ type doob struct {
 func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	startTime := time.Now()
 	defer log.Printf("程序处理共消耗:%d ns", time.Now().Sub(startTime).Nanoseconds())
-
+	// TODO user can register err deal
+	defer func() {
+		if err := recover(); err != nil {
+			switch err.(type) {
+			default:
+				w.WriteHeader(500)
+				w.Write([]byte(fmt.Sprintf("%v", err)))
+			}
+		}
+	}()
 	for i := range this.filters {
 		if this.filters[i].doFilter(w, req) {
 			continue
@@ -30,7 +40,7 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	paramMap := make(map[string]string, 0)
 	handler, err := this.root.GetRT(url, paramMap)
 	if err != nil {
-		w.WriteHeader(500)
+		w.WriteHeader(404)
 		return
 	}
 	matchResult := &router.MatchResult{

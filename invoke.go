@@ -1,26 +1,18 @@
-package core
+package doob
 
 import (
 	"log"
 	"net/http"
 	"strings"
 
-	"github.com/fudali113/doob/core/register"
-	"github.com/fudali113/doob/core/router"
+	"github.com/fudali113/doob/register"
+	"github.com/fudali113/doob/router"
 
-	. "github.com/fudali113/doob/core/http_const"
+	. "github.com/fudali113/doob/http_const"
 
-	returnDeal "github.com/fudali113/doob/core/return_deal"
+	returnDeal "github.com/fudali113/doob/return_deal"
 	reflectUtils "github.com/fudali113/doob/utils/reflect"
 )
-
-var (
-	returnDealDefaultType = "auto"
-)
-
-func SetReturnDealDefaultType(t string) {
-	returnDealDefaultType = t
-}
 
 //
 // 根据路由匹配获取匹配的返回值
@@ -190,15 +182,12 @@ func getReqAccept(req *http.Request) string {
 	if returnDealDefaultType != "auto" {
 		return returnDealDefaultType
 	}
-	accepts := req.Header.Get("Accept")
-	for _, accept := range accepts {
-		acceptStr := string(accept)
-		if acceptStr == APP_JSON {
-			return "json"
-		}
-		if acceptStr == APP_XML {
-			return "xml"
-		}
+	accept := req.Header.Get("Accept")
+	if strings.Contains(accept, APP_JSON) {
+		return "json"
+	}
+	if strings.Contains(accept, APP_XML) {
+		return "xml"
 	}
 	return "json"
 }
