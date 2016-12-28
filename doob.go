@@ -5,11 +5,13 @@
 package doob
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
 
+	"github.com/fudali113/doob/router"
 	"github.com/fudali113/doob/utils"
 )
 
@@ -21,10 +23,20 @@ const (
 	DELETE  HttpMethod = "delete"
 	OPTIONS HttpMethod = "options"
 	HEAD    HttpMethod = "head"
+
+	url_split_symbol = "&&"
 )
 
 var (
 	staticFileCache = map[string][]byte{}
+
+	filters = make([]Filter, 0)
+	root    = router.GetRoot()
+
+	_doob = &doob{
+		filters: filters,
+		root:    root,
+	}
 )
 
 // start doob server
@@ -34,6 +46,23 @@ func Start(port int) {
 	if err != nil {
 		log.Printf("start is fail => %s", err.Error())
 	}
+}
+
+func DefaultRouter() Router {
+	return Router{node: root}
+}
+
+func GetRouter(prefix string) Router {
+	node := root.GetNode(prefix)
+	return Router{node: node}
+}
+
+func Listen(port int) error {
+	return http.ListenAndServe(fmt.Sprintf(":%d", port), _doob)
+}
+
+func AddFilter(fs ...Filter) {
+	filters = append(filters, fs...)
 }
 
 func AddStaticPrefix(prefixs ...string) {

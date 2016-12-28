@@ -18,8 +18,8 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	startTime := time.Now()
 	defer log.Printf("程序处理共消耗:%d ns", time.Now().Sub(startTime).Nanoseconds())
 	// TODO user can register err deal
-	defer func(){
-		if err:=recover();err!=nil{
+	defer func() {
+		if err := recover(); err != nil {
 			switch err.(type) {
 
 			}
@@ -46,12 +46,4 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 	invoke(matchResult, w, req)
 
-}
-
-func (this *doob) addFilter(fs ...Filter) {
-	this.filters = append(this.filters, fs...)
-}
-
-func (this *doob) addRestHandler(url string, restHandler router.RestHandler) {
-	this.root.InsertChild(url, restHandler)
 }

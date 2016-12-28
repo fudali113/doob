@@ -41,7 +41,7 @@ func returnHtml() (string, interface{}) {
 }
 
 // init router
-func init(){
+func init() {
 	doob.AddStaticPrefix("/static")
 	router := doob.DefaultRouter()
 	router.AddHandlerFunc("/doob/origin/{who}/{do}", origin, doob.GET, doob.POST, doob.PUT, doob.DELETE)
