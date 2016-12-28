@@ -36,29 +36,10 @@ func Start(port int) {
 	}
 }
 
-func Get(url string, handler interface{}) {
-	AddHandlerFunc(url, handler, GET)
-}
-func Post(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, handler, POST)
-}
-func Put(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, handler, PUT)
-}
-func Delete(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, handler, DELETE)
-}
-func Options(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, handler, OPTIONS)
-}
-func Head(url string, handler http.HandlerFunc) {
-	AddHandlerFunc(url, handler, HEAD)
-}
-
-func AddStaicPrefix(prefixs ...string) {
+func AddStaticPrefix(prefixs ...string) {
 	for _, prefixUrl := range prefixs {
 		prefixUrl = prefixUrl + "/**"
-		AddHandlerFunc(prefixUrl, staticPrefixFileHandlerFunc, GET)
+		DefaultRouter().AddHandlerFunc(prefixUrl, staticPrefixFileHandlerFunc, GET)
 	}
 }
 
