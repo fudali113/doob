@@ -1,6 +1,7 @@
 package register
 
 import (
+	"github.com/fudali113/doob"
 	"log"
 	"testing"
 )
@@ -47,5 +48,13 @@ func Test_getParamType(t *testing.T) {
 	}
 	if getParamType(params2).Type != CI_PATHVARIABLE_CTX || getParamType(params2).CiLen != 2 {
 		t.Error("args2")
+	}
+}
+
+func Test_ReturnType(t *testing.T) {
+	test := func(*doob.Context) {}
+	registerFunc := GetFuncRegisterType(test)
+	if registerFunc.ReturnType.Type != RETURN_NONE {
+		t.Error("dddddd")
 	}
 }

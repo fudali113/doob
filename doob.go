@@ -25,8 +25,6 @@ const (
 	DELETE  HttpMethod = "delete"
 	OPTIONS HttpMethod = "options"
 	HEAD    HttpMethod = "head"
-
-	url_split_symbol = "&&"
 )
 
 var (
@@ -39,13 +37,7 @@ var (
 		filters: filters,
 		root:    root,
 	}
-
-	returnDealDefaultType = "auto"
 )
-
-func SetReturnDealDefaultType(t string) {
-	returnDealDefaultType = t
-}
 
 // start doob server
 func Start(port int) {

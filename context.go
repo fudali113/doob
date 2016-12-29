@@ -2,6 +2,7 @@ package doob
 
 import (
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -12,9 +13,9 @@ import (
 
 // 对 ResponseWriter 和 request 封装的上下文
 type Context struct {
-	request  *http.Request
-	response http.ResponseWriter
-	Params   map[string]string
+	request    *http.Request
+	response   http.ResponseWriter
+	pathParams map[string]string
 }
 
 // 设置 http 返回状态码
@@ -29,7 +30,7 @@ func (this *Context) SetHeader(name, value string) {
 
 // 获取 参数名为 name 的参数值
 func (this *Context) Param(name string) string {
-	return this.Params[name]
+	return this.pathParams[name]
 }
 
 // 获取参数名为 name 的参数值并转化为int类型
@@ -69,20 +70,34 @@ func (this *Context) WriteJson(jsonStruct interface{}) {
 
 // redirect
 // no test
-func (this *Context) Redirect(url string, addresses ...string) {
+func (this *Context) Redirect(redirectUrl string, addresses ...string) {
 	if len(addresses) == 0 {
+		this.request.URL.Path = redirectUrl
 		_doob.ServeHTTP(this.response, this.request)
 		return
 	}
-	address := addresses[0]
+	address := addresses[0] + redirectUrl
 	client := &http.Client{}
-	this.request.URL.Parse(address + url)
-	res, err := client.Do(this.request)
+	request, err := http.NewRequest(this.request.Method, address, this.request.Body)
+	if err != nil {
+		log.Print("Redirect is error , error is ", err)
+		this.SetHttpStatus(INTERNAL_SERVER_ERROR)
+		return
+	}
+	res, err := client.Do(request)
 	if err != nil {
 		log.Print("Redirect is error , error is ", err)
 		this.SetHttpStatus(INTERNAL_SERVER_ERROR)
 		return
 	}
 	this.response.WriteHeader(res.StatusCode)
-	res.Write(this.response)
+	header := res.Header
+	for k, v := range header {
+		for _, v1 := range v {
+			this.response.Header().Add(k, v1)
+		}
+	}
+	reader := io.TeeReader(res.Body, this.response)
+	body := make([]byte, redirectDefaulBodytLen)
+	reader.Read(body)
 }

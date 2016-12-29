@@ -21,7 +21,7 @@ type Router struct {
 }
 
 func (r Router) AddHandlerFunc(allUrl string, handler interface{}, methods ...HttpMethod) {
-	urls := utils.Split(allUrl, url_split_symbol)
+	urls := utils.Split(allUrl, urlSplitSymbol)
 	for _, url := range urls {
 		for _, method := range methods {
 			methodStr := string(method)
