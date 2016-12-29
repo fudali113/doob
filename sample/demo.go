@@ -36,7 +36,7 @@ func ctx(ctx *doob.Context) interface{} {
 }
 
 func testRedirect(ctx *doob.Context) {
-	ctx.Redirect("", "http://www.baidu.com")
+	ctx.Redirect("/test")
 }
 
 // 返回处理 template 文件 path 和数据进行处理并返回生成的html

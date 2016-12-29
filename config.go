@@ -1,9 +1,9 @@
 package doob
 
 var (
-	urlSplitSymbol         = "&&"
-	returnDealDefaultType  = "auto"
-	redirectDefaulBodytLen = 1024
+	urlSplitSymbol          = "&&"
+	returnDealDefaultType   = "auto"
+	redirectDefaultBodytLen = 1024
 )
 
 func SetReturnDealDefaultType(t string) {
@@ -15,5 +15,5 @@ func SetUrlSplitSymbol(symbol string) {
 }
 
 func SetRedirectDefaulBodytLen(len int) {
-	redirectDefaulBodytLen = len
+	redirectDefaultBodytLen = len
 }

@@ -30,6 +30,14 @@ func (this *Context) SetHeader(name, value string) {
 
 // 获取 参数名为 name 的参数值
 func (this *Context) Param(name string) string {
+	return this.request.Form.Get(name)
+}
+
+func (this *Context) PostParam(name string) string {
+	return this.request.PostForm.Get(name)
+}
+
+func (this *Context) PathParam(name string) string {
 	return this.pathParams[name]
 }
 
@@ -68,15 +76,14 @@ func (this *Context) WriteJson(jsonStruct interface{}) {
 	this.SetHeader(CONTENT_TYPE, APP_JSON)
 }
 
-// redirect
-// no test
-func (this *Context) Redirect(redirectUrl string, addresses ...string) {
-	if len(addresses) == 0 {
-		this.request.URL.Path = redirectUrl
+// Forward one request
+func (this *Context) Forward(forwardUrl string, host ...string) {
+	if len(host) == 0 {
+		this.request.URL.Path = forwardUrl
 		_doob.ServeHTTP(this.response, this.request)
 		return
 	}
-	address := addresses[0] + redirectUrl
+	address := host[0] + forwardUrl
 	client := &http.Client{}
 	request, err := http.NewRequest(this.request.Method, address, this.request.Body)
 	if err != nil {
@@ -94,10 +101,22 @@ func (this *Context) Redirect(redirectUrl string, addresses ...string) {
 	header := res.Header
 	for k, v := range header {
 		for _, v1 := range v {
-			this.response.Header().Add(k, v1)
+			this.SetHeader(k, v1)
 		}
 	}
 	reader := io.TeeReader(res.Body, this.response)
-	body := make([]byte, redirectDefaulBodytLen)
+	body := make([]byte, redirectDefaultBodytLen)
 	reader.Read(body)
+}
+
+// Redirect one request
+func (this *Context) Redirect(redirectUrl string , host ...string )  {
+	address := func(host []string) string {
+		if len(host) > 0 {
+			return host[0]
+		}
+		return ""
+	}(host) + redirectUrl
+	this.SetHeader(LOCATION,address)
+	this.SetHttpStatus(MOVED_PERMANENTLY)
 }

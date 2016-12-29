@@ -1,7 +1,6 @@
 package register
 
 import (
-	"github.com/fudali113/doob"
 	"log"
 	"testing"
 )
@@ -52,9 +51,5 @@ func Test_getParamType(t *testing.T) {
 }
 
 func Test_ReturnType(t *testing.T) {
-	test := func(*doob.Context) {}
-	registerFunc := GetFuncRegisterType(test)
-	if registerFunc.ReturnType.Type != RETURN_NONE {
-		t.Error("dddddd")
-	}
+
 }
