@@ -2,56 +2,66 @@ package doob
 
 import (
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
 
+	"github.com/fudali113/doob/errors"
+
 	. "github.com/fudali113/doob/http_const"
-	"io"
 )
 
 // 对 ResponseWriter 和 request 封装的上下文
 type Context struct {
-	request    *http.Request
-	response   http.ResponseWriter
-	pathParams map[string]string
+	Request    *http.Request
+	Response   http.ResponseWriter
+	PathParams map[string]string
 }
 
 // 设置 http 返回状态码
 func (this *Context) SetHttpStatus(num int) {
-	this.response.WriteHeader(num)
+	this.Response.WriteHeader(num)
 }
 
 // 添加返回header
-func (this *Context) SetHeader(name, value string) {
-	this.response.Header().Add(name, value)
+func (this *Context) AddHeader(name, value string) {
+	this.Response.Header().Add(name, value)
 }
 
 // 获取 参数名为 name 的参数值
 func (this *Context) Param(name string) string {
-	return this.request.Form.Get(name)
+	return this.Request.Form.Get(name)
 }
 
 func (this *Context) PostParam(name string) string {
-	return this.request.PostForm.Get(name)
+	return this.Request.PostForm.Get(name)
 }
 
 func (this *Context) PathParam(name string) string {
-	return this.pathParams[name]
+	return this.PathParams[name]
 }
 
 // 获取参数名为 name 的参数值并转化为int类型
 // 当转化失败时返回 0
 func (this *Context) ParamInt(name string) int {
-	strValue := this.request.Form.Get(name)
+	strValue := this.Request.Form.Get(name)
 	value, _ := strconv.Atoi(strValue)
 	return value
 }
 
+func (this *Context) Ip() string {
+	return this.Request.RemoteAddr
+}
+
+func (this *Context) URI() string {
+	return this.Request.RequestURI
+}
+
 // 获取请求的 body 字符串
 func (this *Context) BodyJson() string {
-	body, err := ioutil.ReadAll(this.request.Body)
+	body, err := ioutil.ReadAll(this.Request.Body)
 	if err != nil {
 		log.Print("get body str : ", err.Error())
 		return ""
@@ -61,7 +71,7 @@ func (this *Context) BodyJson() string {
 
 // 往 responseWriter 中写入内容
 func (this *Context) WriteBytes(bytes []byte) {
-	this.response.Write(bytes)
+	this.Response.Write(bytes)
 }
 
 // 接受一个实体并转化为 json bytes
@@ -72,36 +82,42 @@ func (this *Context) WriteJson(jsonStruct interface{}) {
 	if err != nil {
 		return
 	}
-	this.response.Write(json)
-	this.SetHeader(CONTENT_TYPE, APP_JSON)
+	this.Response.Write(json)
+	this.AddHeader(CONTENT_TYPE, APP_JSON)
 }
 
 // Forward one request
+//
+// @panic DoobError
 func (this *Context) Forward(forwardUrl string, host ...string) {
 	if len(host) == 0 {
-		this.request.URL.Path = forwardUrl
-		_doob.ServeHTTP(this.response, this.request)
+		this.Request.URL.Path = forwardUrl
+		_doob.ServeHTTP(this.Response, this.Request)
 		return
 	}
 	address := host[0] + forwardUrl
 	client := &http.Client{}
-	request, err := http.NewRequest(this.request.Method, address, this.request.Body)
+	request, err := http.NewRequest(this.Request.Method, address, this.Request.Body)
 	if err != nil {
-		log.Print("Redirect is error , error is ", err)
-		this.SetHttpStatus(INTERNAL_SERVER_ERROR)
-		return
+		panic(errors.DoobError{
+			Err:       err,
+			Desc:      "forward : create request is error",
+			HttpStaus: INTERNAL_SERVER_ERROR,
+		})
 	}
 	res, err := client.Do(request)
 	if err != nil {
-		log.Print("Redirect is error , error is ", err)
-		this.SetHttpStatus(INTERNAL_SERVER_ERROR)
-		return
+		panic(errors.DoobError{
+			Err:       err,
+			Desc:      "forward : do request is error",
+			HttpStaus: INTERNAL_SERVER_ERROR,
+		})
 	}
-	this.response.Header().Del(CONTENT_TYPE)
+	this.Response.Header().Del(CONTENT_TYPE)
 	header := res.Header
 	for k, v := range header {
 		for _, v1 := range v {
-			this.SetHeader(k, v1)
+			this.AddHeader(k, v1)
 		}
 	}
 	body := make([]byte, 0)
@@ -117,7 +133,7 @@ func (this *Context) Forward(forwardUrl string, host ...string) {
 		body = append(body, buf[:n]...)
 	}
 	this.WriteBytes(body)
-	this.response.WriteHeader(res.StatusCode)
+	this.Response.WriteHeader(res.StatusCode)
 }
 
 // Redirect one request
@@ -128,9 +144,9 @@ func (this *Context) Redirect(redirectUrl string, host ...string) {
 		}
 		return ""
 	}(host) + redirectUrl
-	this.SetHeader(LOCATION, address)
+	this.AddHeader(LOCATION, address)
 	if isDev {
-		this.SetHeader(CACHE_CONTROL, NO_CACHE)
+		this.AddHeader(CACHE_CONTROL, NO_CACHE)
 	}
 	this.SetHttpStatus(MOVED_PERMANENTLY)
 }

@@ -169,9 +169,9 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 // According to the request and response for context
 func getContext(w http.ResponseWriter, req *http.Request) *Context {
 	return &Context{
-		request:    req,
-		response:   w,
-		pathParams: map[string]string{},
+		Request:    req,
+		Response:   w,
+		PathParams: map[string]string{},
 	}
 }
 

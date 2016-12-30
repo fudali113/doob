@@ -1,29 +1,32 @@
 package errors
 
-import (
-	"fmt"
-	"net/http"
-)
+import "fmt"
 
-type Error int
-
-func (err Error) Error() string {
-	return fmt.Sprintf("weight value is %d", int(err))
+type DoobError struct {
+	Err       error
+	Desc      string
+	HttpStaus int
 }
 
-func (err Error) GetWV() int {
-	return int(err)
+func (this DoobError) Error() string {
+	return fmt.Sprintf(`request error : should return http status code is <%d> ,
+		 description is <%s> , error is <%v>`, this.HttpStaus, this.Desc, this.Err)
 }
 
-type Matcher interface {
-	Match(err interface{}) bool
+type RequestError struct {
+	DoobError
+	Url string
 }
 
-type Dealer interface {
-	Deal(err interface{}, w http.ResponseWriter, r *http.Request)
+func (this RequestError) Error() string {
+	return fmt.Sprintf("url is <%s> , error is %v", this.Url, this.DoobError)
 }
 
-type ErrDealer interface {
-	Matcher
-	Dealer
+type MehtodNotMatchError struct {
+	RequestError
+	Method string
+}
+
+func (this MehtodNotMatchError) Error() string {
+	return fmt.Sprintf("url is <%s> ,method is <%s> , error is %v", this.Url, this.Method, this.DoobError)
 }
