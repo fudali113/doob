@@ -35,8 +35,12 @@ func ctx(ctx *doob.Context) interface{} {
 	}
 }
 
+func testForward(ctx *doob.Context) {
+	ctx.Forward("","http://www.23mofang.com")
+}
+
 func testRedirect(ctx *doob.Context) {
-	ctx.Redirect("/test")
+	ctx.Redirect("test",)
 }
 
 // 返回处理 template 文件 path 和数据进行处理并返回生成的html
@@ -49,7 +53,8 @@ func init() {
 	doob.AddStaticPrefix("/static")
 	router := doob.DefaultRouter()
 	router.AddHandlerFunc("/doob/origin/{who}/{do}", origin, doob.GET, doob.POST, doob.PUT, doob.DELETE)
-	router.Get("redirect", testRedirect)
+	router.Get("forward", testForward)
+	router.Get("redirect1", testRedirect)
 	router.Get("/test", returnHtml)
 	doobRouter := doob.GetRouter("doob")
 	doobRouter.Get("/di/{name}/{value}", di)

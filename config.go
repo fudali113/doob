@@ -1,6 +1,7 @@
 package doob
 
 var (
+	isDev			= true
 	urlSplitSymbol          = "&&"
 	returnDealDefaultType   = "auto"
 	redirectDefaultBodytLen = 1024
@@ -16,4 +17,8 @@ func SetUrlSplitSymbol(symbol string) {
 
 func SetRedirectDefaulBodytLen(len int) {
 	redirectDefaultBodytLen = len
+}
+
+func SetIsDev(isDevStatus bool){
+	isDev = isDevStatus
 }

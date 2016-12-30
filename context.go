@@ -2,13 +2,13 @@ package doob
 
 import (
 	"encoding/json"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
 
 	. "github.com/fudali113/doob/http_const"
+	"io"
 )
 
 // 对 ResponseWriter 和 request 封装的上下文
@@ -97,16 +97,27 @@ func (this *Context) Forward(forwardUrl string, host ...string) {
 		this.SetHttpStatus(INTERNAL_SERVER_ERROR)
 		return
 	}
-	this.response.WriteHeader(res.StatusCode)
+	this.response.Header().Del(CONTENT_TYPE)
 	header := res.Header
 	for k, v := range header {
 		for _, v1 := range v {
 			this.SetHeader(k, v1)
 		}
 	}
-	reader := io.TeeReader(res.Body, this.response)
-	body := make([]byte, redirectDefaultBodytLen)
-	reader.Read(body)
+	body := make([]byte, 0)
+	for {
+		buf := make([]byte,redirectDefaultBodytLen)
+		n,err := res.Body.Read(buf)
+		if err != nil && err != io.EOF {
+			panic(err)
+		}
+		if n == 0 {
+			break
+		}
+		body = append(body,buf[:n]...)
+	}
+	this.WriteBytes(body)
+	this.response.WriteHeader(res.StatusCode)
 }
 
 // Redirect one request
@@ -118,5 +129,8 @@ func (this *Context) Redirect(redirectUrl string , host ...string )  {
 		return ""
 	}(host) + redirectUrl
 	this.SetHeader(LOCATION,address)
+	if isDev {
+		this.SetHeader(CACHE_CONTROL,NO_CACHE)
+	}
 	this.SetHttpStatus(MOVED_PERMANENTLY)
 }

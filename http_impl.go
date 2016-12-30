@@ -24,7 +24,7 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			switch err.(type) {
 			default:
 				w.WriteHeader(500)
-				w.Write([]byte(fmt.Sprintf("%v", err)))
+				w.Write([]byte(fmt.Sprintf("err is %v", err)))
 			}
 		}
 	}()
