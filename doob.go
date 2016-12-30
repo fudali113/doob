@@ -15,6 +15,7 @@ import (
 	"github.com/fudali113/doob/utils"
 
 	. "github.com/fudali113/doob/http_const"
+	mw "github.com/fudali113/doob/middleware"
 )
 
 // http method
@@ -30,7 +31,7 @@ const (
 var (
 	staticFileCache = map[string][]byte{}
 
-	filters = make([]Filter, 0)
+	filters = make([]mw.BeforeFilter, 0)
 	root    = router.GetRoot()
 
 	_doob = &doob{
@@ -61,7 +62,7 @@ func Listen(port int) error {
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), _doob)
 }
 
-func AddFilter(fs ...Filter) {
+func AddFilter(fs ...mw.BeforeFilter) {
 	filters = append(filters, fs...)
 }
 

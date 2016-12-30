@@ -9,11 +9,12 @@ import (
 	"github.com/fudali113/doob/router"
 
 	. "github.com/fudali113/doob/http_const"
+	mw "github.com/fudali113/doob/middleware"
 )
 
 type doob struct {
 	root    *router.Node
-	filters []Filter
+	filters []mw.BeforeFilter
 }
 
 // 实现 http Handle 接口
@@ -27,7 +28,7 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 	}()
 	for i := range this.filters {
-		if this.filters[i].doFilter(w, req) {
+		if this.filters[i].DoBeforeFilter(w, req) {
 			continue
 		} else {
 			return
@@ -47,12 +48,4 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 	invoke(matchResult, w, req)
 
-}
-
-func (this *doob) addFilter(fs ...Filter) {
-	this.filters = append(this.filters, fs...)
-}
-
-func (this *doob) addRestHandler(url string, restHandler router.RestHandler) {
-	this.root.InsertChild(url, restHandler)
 }
