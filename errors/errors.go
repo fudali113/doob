@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"runtime/debug"
 
-	"errors"
 	. "github.com/fudali113/doob/http_const"
 )
 
@@ -20,11 +19,11 @@ func AddErrDealer(errDealer ...ErrDealer) {
 func CheckErr(err interface{}, w http.ResponseWriter, r *http.Request, isDev bool) {
 
 	defer func() {
-		if err := recover(); err != nil {
+		if e := recover(); e != nil {
 			// default err dealer
 			w.WriteHeader(INTERNAL_SERVER_ERROR)
 			if isDev {
-				WriteErrInfo(err, debug.Stack(), w)
+				WriteErrInfo(e, debug.Stack(), w)
 			}
 		}
 	}()

@@ -20,7 +20,7 @@ type Matcher interface {
 }
 
 type Dealer interface {
-	Deal(err interface{}, w http.ResponseWriter, r * http.Request)
+	Deal(err interface{}, w http.ResponseWriter, r *http.Request)
 }
 
 type ErrDealer interface {
