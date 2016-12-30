@@ -113,8 +113,12 @@ func getParamType(params []string) *ParamType {
 func getReturnType(returns []string) *ReturnType {
 	Type := func(returns []string) int {
 		switch len(returns) {
+		case 0:
+			return RETURN_NONE
 		case 1:
 			switch returns[0] {
+			case "":
+				return RETURN_NONE
 			case "string":
 				return FILE
 			default:
@@ -126,13 +130,11 @@ func getReturnType(returns []string) *ReturnType {
 			case "string":
 				return RETURN_TYPE
 			default:
-				log.Panic("您的函数doob不支持")
+				panic("您的函数doob不支持")
 			}
 		default:
-			return RETURN_NONE
+			panic("您的函数doob不支持")
 		}
-		log.Panic("您的函数doob不支持")
-		return RETURN_NONE
 	}(returns)
 	return &ReturnType{Type: Type}
 }

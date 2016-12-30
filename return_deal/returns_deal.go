@@ -22,10 +22,13 @@ import (
 // user can rewriter this name dealer
 // cover default dealer
 const (
-	DEFAULT_JSON_DEALER_NAME = "json_dealer"
-	DEFAULT_XML_DEALER_NAME  = "xml_dealer"
-	DEFAULT_HTML_DEALER_NAME = "html_dealer"
-	DEFAULT_TPL_DEALER_NAME  = "tpl_dealer"
+	DEFAULT_JSON_DEALER_NAME = "json"
+	DEFAULT_XML_DEALER_NAME  = "xml"
+	DEFAULT_HTML_DEALER_NAME = "html"
+	DEFAULT_TPL_DEALER_NAME  = "tpl"
+
+	JSON_DEAL_TYPE_STR = "json"
+	XML_DEAL_TYPE_STR  = "xml"
 )
 
 // dealer store

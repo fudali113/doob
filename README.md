@@ -3,7 +3,7 @@
 
 doob is a rest and a simple router handler
 
-init invoke AddHandlerFunc(url,methodStr,func)
+init invoke AddHandlerFunc(forwardUrl,methodStr,func)
 such as
 
 * add static folder
@@ -11,7 +11,7 @@ such as
 doob.AddStaicPrefix("/static")
 ```
 
-* add url func , use `&&` split urls
+* add forwardUrl func , use `&&` split urls
 ```
 router := doob.DefaultRouter()
 

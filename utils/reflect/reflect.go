@@ -51,6 +51,9 @@ func GetFuncParams(function interface{}) (params []string, returns []string) {
 }
 
 func getSlice(arg string) []string {
+	if strings.Replace(arg, " ", "", -1) == "" {
+		return []string{}
+	}
 	res := utils.Split(arg[1:len(arg)-1], ",")
 	return res
 }

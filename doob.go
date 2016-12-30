@@ -15,6 +15,7 @@ import (
 	"github.com/fudali113/doob/utils"
 
 	. "github.com/fudali113/doob/http_const"
+	mw "github.com/fudali113/doob/middleware"
 )
 
 // http method
@@ -25,27 +26,19 @@ const (
 	DELETE  HttpMethod = "delete"
 	OPTIONS HttpMethod = "options"
 	HEAD    HttpMethod = "head"
-
-	url_split_symbol = "&&"
 )
 
 var (
 	staticFileCache = map[string][]byte{}
 
-	filters = make([]Filter, 0)
+	filters = make([]mw.BeforeFilter, 0)
 	root    = router.GetRoot()
 
 	_doob = &doob{
 		filters: filters,
 		root:    root,
 	}
-
-	returnDealDefaultType = "auto"
 )
-
-func SetReturnDealDefaultType(t string) {
-	returnDealDefaultType = t
-}
 
 // start doob server
 func Start(port int) {
@@ -69,7 +62,7 @@ func Listen(port int) error {
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), _doob)
 }
 
-func AddFilter(fs ...Filter) {
+func AddFilter(fs ...mw.BeforeFilter) {
 	filters = append(filters, fs...)
 }
 

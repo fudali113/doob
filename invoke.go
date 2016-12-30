@@ -169,9 +169,9 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 // According to the request and response for context
 func getContext(w http.ResponseWriter, req *http.Request) *Context {
 	return &Context{
-		request:  req,
-		response: w,
-		Params:   map[string]string{},
+		Request:    req,
+		Response:   w,
+		PathParams: map[string]string{},
 	}
 }
 
@@ -182,12 +182,12 @@ func getReqAccept(req *http.Request) string {
 	if returnDealDefaultType != "auto" {
 		return returnDealDefaultType
 	}
-	accept := req.Header.Get("Accept")
+	accept := req.Header.Get(ACCEPT)
 	if strings.Contains(accept, APP_JSON) {
-		return "json"
+		return returnDeal.JSON_DEAL_TYPE_STR
 	}
 	if strings.Contains(accept, APP_XML) {
-		return "xml"
+		return returnDeal.XML_DEAL_TYPE_STR
 	}
-	return "json"
+	return returnDeal.JSON_DEAL_TYPE_STR
 }

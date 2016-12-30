@@ -1,35 +1,39 @@
 package errors
 
-import "fmt"
+import (
+	"net/http"
+	"runtime/debug"
 
-type Error int
+	. "github.com/fudali113/doob/http_const"
+)
 
-func (err Error) Error() string {
-	return fmt.Sprintf("weight value is %d", int(err))
+var (
+	errDealers = []ErrDealer{}
+)
+
+func AddErrDealer(errDealer ...ErrDealer) {
+	errDealers = append(errDealers, errDealer...)
 }
 
-func (err Error) GetWV() int {
-	return int(err)
-}
+// check panic err , match err and deal
+func CheckErr(err interface{}, w http.ResponseWriter, r *http.Request, isDev bool) {
 
-func GetMwthodMatchError(should, fact, url string, errors ...error) *MethodMacthError {
-	return &MethodMacthError{
-		shouldMethod: should,
-		factMethod:   fact,
-		matchError: &URLMacthError{
-			url: url,
-			matchError: &MatchError{
-				message: "",
-			},
-		},
+	defer func() {
+		if e := recover(); e != nil {
+			// default err dealer
+			w.WriteHeader(INTERNAL_SERVER_ERROR)
+			if isDev {
+				WriteErrInfo(e, debug.Stack(), w)
+			}
+		}
+	}()
+
+	// traverse errDealers match true dealer and deal
+	for _, errDealer := range errDealers {
+		if errDealer.Match(err) {
+			errDealer.Deal(err, w, r)
+			return
+		}
 	}
-}
 
-func GetURLMatchError(url, message string, errors ...error) *URLMacthError {
-	return &URLMacthError{
-		url: url,
-		matchError: &MatchError{
-			message: message,
-		},
-	}
 }
