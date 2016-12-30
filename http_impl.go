@@ -1,12 +1,14 @@
 package doob
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"time"
 
+	"github.com/fudali113/doob/errors"
 	"github.com/fudali113/doob/router"
+
+	. "github.com/fudali113/doob/http_const"
 )
 
 type doob struct {
@@ -21,11 +23,7 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// TODO user can register err deal
 	defer func() {
 		if err := recover(); err != nil {
-			switch err.(type) {
-			default:
-				w.WriteHeader(500)
-				w.Write([]byte(fmt.Sprintf("err is %v", err)))
-			}
+			errors.CheckErr(err, w, isDev)
 		}
 	}()
 	for i := range this.filters {
@@ -40,7 +38,7 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	paramMap := make(map[string]string, 0)
 	handler, err := this.root.GetRT(url, paramMap)
 	if err != nil {
-		w.WriteHeader(404)
+		w.WriteHeader(NOT_FOUND)
 		return
 	}
 	matchResult := &router.MatchResult{

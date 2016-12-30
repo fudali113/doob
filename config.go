@@ -1,7 +1,7 @@
 package doob
 
 var (
-	isDev			= true
+	isDev                   = true
 	urlSplitSymbol          = "&&"
 	returnDealDefaultType   = "auto"
 	redirectDefaultBodytLen = 1024
@@ -19,6 +19,6 @@ func SetRedirectDefaulBodytLen(len int) {
 	redirectDefaultBodytLen = len
 }
 
-func SetIsDev(isDevStatus bool){
+func SetIsDev(isDevStatus bool) {
 	isDev = isDevStatus
 }

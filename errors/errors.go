@@ -1,6 +1,23 @@
 package errors
 
-import "fmt"
+import (
+	"fmt"
+	"runtime/debug"
+	"net/http"
+
+	. "github.com/fudali113/doob/http_const"
+)
+
+// check panic err , match err and deal
+func CheckErr(err interface{}, w http.ResponseWriter, isDev bool)  {
+	switch err.(type) {
+	default:
+		w.WriteHeader(INTERNAL_SERVER_ERROR)
+		if isDev {
+			WriteErrInfo(err,debug.Stack(),w)
+		}
+	}
+}
 
 type Error int
 

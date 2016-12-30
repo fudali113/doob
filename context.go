@@ -106,31 +106,31 @@ func (this *Context) Forward(forwardUrl string, host ...string) {
 	}
 	body := make([]byte, 0)
 	for {
-		buf := make([]byte,redirectDefaultBodytLen)
-		n,err := res.Body.Read(buf)
+		buf := make([]byte, redirectDefaultBodytLen)
+		n, err := res.Body.Read(buf)
 		if err != nil && err != io.EOF {
 			panic(err)
 		}
 		if n == 0 {
 			break
 		}
-		body = append(body,buf[:n]...)
+		body = append(body, buf[:n]...)
 	}
 	this.WriteBytes(body)
 	this.response.WriteHeader(res.StatusCode)
 }
 
 // Redirect one request
-func (this *Context) Redirect(redirectUrl string , host ...string )  {
+func (this *Context) Redirect(redirectUrl string, host ...string) {
 	address := func(host []string) string {
 		if len(host) > 0 {
 			return host[0]
 		}
 		return ""
 	}(host) + redirectUrl
-	this.SetHeader(LOCATION,address)
+	this.SetHeader(LOCATION, address)
 	if isDev {
-		this.SetHeader(CACHE_CONTROL,NO_CACHE)
+		this.SetHeader(CACHE_CONTROL, NO_CACHE)
 	}
 	this.SetHttpStatus(MOVED_PERMANENTLY)
 }
