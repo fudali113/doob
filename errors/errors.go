@@ -1,52 +1,36 @@
 package errors
 
 import (
-	"fmt"
 	"runtime/debug"
 	"net/http"
 
 	. "github.com/fudali113/doob/http_const"
 )
 
+var (
+	errDealers = []ErrDealer{}
+)
+
+func AddErrDealer(errDealer ...ErrDealer)  {
+	errDealers = append(errDealers, errDealer...)
+}
+
 // check panic err , match err and deal
-func CheckErr(err interface{}, w http.ResponseWriter, isDev bool)  {
-	switch err.(type) {
-	default:
-		w.WriteHeader(INTERNAL_SERVER_ERROR)
-		if isDev {
-			WriteErrInfo(err,debug.Stack(),w)
+func CheckErr(err interface{}, w http.ResponseWriter, r *http.Request, isDev bool)  {
+
+	// traverse errDealers match true dealer and deal
+	for _,errDealer := range errDealers {
+		if errDealer.Match(err) {
+			errDealer.Deal(err,w,r)
+			return
 		}
 	}
-}
 
-type Error int
-
-func (err Error) Error() string {
-	return fmt.Sprintf("weight value is %d", int(err))
-}
-
-func (err Error) GetWV() int {
-	return int(err)
-}
-
-func GetMwthodMatchError(should, fact, url string, errors ...error) *MethodMacthError {
-	return &MethodMacthError{
-		shouldMethod: should,
-		factMethod:   fact,
-		matchError: &URLMacthError{
-			url: url,
-			matchError: &MatchError{
-				message: "",
-			},
-		},
+	// default err dealer
+	w.WriteHeader(INTERNAL_SERVER_ERROR)
+	if isDev {
+		WriteErrInfo(err,debug.Stack(),w)
 	}
+
 }
 
-func GetURLMatchError(url, message string, errors ...error) *URLMacthError {
-	return &URLMacthError{
-		url: url,
-		matchError: &MatchError{
-			message: message,
-		},
-	}
-}

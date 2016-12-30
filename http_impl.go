@@ -23,7 +23,7 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// TODO user can register err deal
 	defer func() {
 		if err := recover(); err != nil {
-			errors.CheckErr(err, w, isDev)
+			errors.CheckErr(err, w, req, isDev)
 		}
 	}()
 	for i := range this.filters {
