@@ -5,6 +5,7 @@ import (
 
 	"github.com/fudali113/doob/router"
 	"github.com/fudali113/doob/utils"
+	"regexp"
 )
 
 // 封装node，对外提供简单方法
@@ -48,4 +49,15 @@ func (r Router) Options(allUrl string, handler interface{}) {
 
 func (r Router) Head(allUrl string, handler interface{}) {
 	r.AddHandlerFunc(allUrl, handler, HEAD)
+}
+
+type HttpMethod string
+
+func checkHttpMethod(httpMethod HttpMethod) bool {
+	return checkMethodStr(string(httpMethod))
+}
+
+func checkMethodStr(httpMethod string) bool {
+	match, _ := regexp.MatchString("get|post|put|delete|options|head", httpMethod)
+	return match
 }
