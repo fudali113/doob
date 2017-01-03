@@ -45,11 +45,20 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(NOT_FOUND)
 		return
 	}
+
+	method := strings.ToLower(req.Method)
+	handlerType := handler.GetHandler(method)
+	if handlerType == nil {
+		log.Printf("match url : %s , but method con`t match", url)
+		w.WriteHeader(METHOD_NOT_ALLOWED)
+		return
+	}
+
 	matchResult := &router.MatchResult{
 		Rest:     handler,
 		ParamMap: paramMap,
 	}
-	invoke(matchResult, w, req)
+	invoke(matchResult, handlerType, w, req)
 
 }
 
@@ -59,22 +68,7 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 //
 // FIXME 此方法有些复杂，需要进行拆解
 //
-func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Request) {
-	url := req.URL.Path
-	method := strings.ToLower(req.Method)
-
-	if matchResult == nil {
-		log.Print("no match url : ", url)
-		w.WriteHeader(NOT_FOUND)
-		return
-	}
-
-	handlerType := matchResult.Rest.GetHandler(method)
-	if handlerType == nil {
-		log.Printf("match url : %s , but method con`t match", url)
-		w.WriteHeader(METHOD_NOT_ALLOWED)
-		return
-	}
+func invoke(matchResult *router.MatchResult, handlerType register.RegisterHandlerType, w http.ResponseWriter, req *http.Request) {
 
 	// 获取路劲参数并存入request参数中
 	urlParam := matchResult.ParamMap
