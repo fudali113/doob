@@ -24,7 +24,11 @@ type doob struct {
 // 实现 http Handle 接口
 func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	startTime := time.Now()
-	defer log.Printf("程序处理共消耗:%d ns", time.Now().Sub(startTime).Nanoseconds())
+	url := req.URL.Path
+	method := strings.ToLower(req.Method)
+
+
+	defer log.Printf("url: %s | method: %s | deal time: %d ns", url, method, time.Now().Sub(startTime).Nanoseconds())
 	defer func() {
 		if err := recover(); err != nil {
 			errors.CheckErr(err, w, req, isDev)
@@ -38,7 +42,6 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	url := req.URL.Path
 	paramMap := make(map[string]string, 0)
 	handler, err := this.root.GetRT(url, paramMap)
 	if err != nil {
@@ -46,7 +49,6 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	method := strings.ToLower(req.Method)
 	handlerType := handler.GetHandler(method)
 	if handlerType == nil {
 		log.Printf("match url : %s , but method con`t match", url)
