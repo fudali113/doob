@@ -17,8 +17,10 @@ import (
 )
 
 type doob struct {
-	root    *router.Node
-	filters []mw.BeforeFilter
+	root     *router.Node
+	bFilters []mw.BeforeFilter
+	lFilters []mw.LaterFilter
+	middlerwares []mw.Middleware
 }
 
 // 实现 http Handle 接口
@@ -31,11 +33,20 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	defer log.Printf("url: %s | method: %s | deal time: %d ns", url, method, time.Now().Sub(startTime).Nanoseconds())
 	defer func() {
 		if err := recover(); err != nil {
-			errors.CheckErr(err, w, req, isDev)
+			errors.CheckErr(err, w, req, IsDev)
 		}
 	}()
-	for i := range this.filters {
-		if this.filters[i].DoBeforeFilter(w, req) {
+
+	for i := range this.middlerwares {
+		if this.bFilters[i].DoBeforeFilter(w, req) {
+			continue
+		} else {
+			return
+		}
+	}
+
+	for i := range this.bFilters {
+		if this.bFilters[i].DoBeforeFilter(w, req) {
 			continue
 		} else {
 			return
@@ -62,6 +73,13 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 	invoke(matchResult, handlerType, w, req)
 
+	for i := range this.lFilters {
+		this.lFilters[i].DoLaterFilter(w, req)
+	}
+
+	for i := range this.middlerwares {
+		this.bFilters[len(this.middlerwares) - 1 - i].DoBeforeFilter(w, req)
+	}
 }
 
 //
@@ -105,7 +123,7 @@ func invoke(matchResult *router.MatchResult, handlerType register.RegisterHandle
 				handler := handlerInterface.(func() interface{})
 				returnValue := handler()
 				returnDeal.DealReturn(&returnDeal.ReturnType{
-					TypeStr: returnDealDefaultType,
+					TypeStr: ReturnDealDefaultType,
 					Data:    returnValue,
 				}, w)
 
@@ -210,12 +228,12 @@ func getContext(w http.ResponseWriter, req *http.Request) *Context {
 	}
 }
 
-// if user don`t set returnDealDefaultType
-// returnDealDefaultType deafault value is "auto"
+// if user don`t set ReturnDealDefaultType
+// ReturnDealDefaultType deafault value is "auto"
 // Will automatically think return type according to the request to accept
 func getReqAccept(req *http.Request) string {
-	if returnDealDefaultType != "auto" {
-		return returnDealDefaultType
+	if ReturnDealDefaultType != "auto" {
+		return ReturnDealDefaultType
 	}
 	accept := req.Header.Get(ACCEPT)
 	if strings.Contains(accept, APP_JSON) {

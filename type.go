@@ -14,12 +14,15 @@ type Router struct {
 }
 
 func (r Router) AddHandlerFunc(allUrl string, handler interface{}, methods ...HttpMethod) {
-	urls := utils.Split(allUrl, urlSplitSymbol)
+	urls := utils.Split(allUrl, UrlSplitSymbol)
 	for _, url := range urls {
 		for _, method := range methods {
 			methodStr := string(method)
 			if checkMethodStr(methodStr) {
 				r.node.InsertChild(url, router.GetSimpleRestHandler(methodStr, handler))
+				if AutoAddHead && methodStr == string(GET) {
+					r.node.InsertChild(url, router.GetSimpleRestHandler(string(HEAD), handler))
+				}
 			} else {
 				log.Printf("%s method is unsupport", methodStr)
 			}

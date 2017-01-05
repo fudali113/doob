@@ -17,3 +17,9 @@ type Middleware interface {
 	BeforeFilter
 	LaterFilter
 }
+
+type HeadHTTPMethodDealer func(res http.ResponseWriter, req *http.Request)
+
+func (this HeadHTTPMethodDealer) DoLaterFilter(res http.ResponseWriter, req *http.Request){
+	this(res, req)
+}

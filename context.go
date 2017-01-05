@@ -122,7 +122,7 @@ func (this *Context) Forward(forwardUrl string, host ...string) {
 	}
 	body := make([]byte, 0)
 	for {
-		buf := make([]byte, redirectDefaultBodytLen)
+		buf := make([]byte, RedirectDefaultBodytLen)
 		n, err := res.Body.Read(buf)
 		if err != nil && err != io.EOF {
 			panic(err)
@@ -145,7 +145,7 @@ func (this *Context) Redirect(redirectUrl string, host ...string) {
 		return ""
 	}(host) + redirectUrl
 	this.AddHeader(LOCATION, address)
-	if isDev {
+	if IsDev {
 		this.AddHeader(CACHE_CONTROL, NO_CACHE)
 	}
 	this.SetHttpStatus(MOVED_PERMANENTLY)

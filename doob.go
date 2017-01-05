@@ -31,11 +31,15 @@ const (
 var (
 	staticFileCache = map[string][]byte{}
 
-	filters = make([]mw.BeforeFilter, 0)
+	beforeFilters = make([]mw.BeforeFilter, 0)
+	laterFilters = make([]mw.LaterFilter, 0)
+	middlerwares = make([]mw.Middleware, 0)
 	root    = router.GetRoot()
 
 	_doob = &doob{
-		filters: filters,
+		bFilters: beforeFilters,
+		lFilters:laterFilters,
+		middlerwares:middlerwares,
 		root:    root,
 	}
 )
@@ -62,8 +66,16 @@ func Listen(port int) error {
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), _doob)
 }
 
-func AddFilter(fs ...mw.BeforeFilter) {
-	filters = append(filters, fs...)
+func AddBFilter(fs ...mw.BeforeFilter) {
+	beforeFilters = append(beforeFilters, fs...)
+}
+
+func AddLFilter(fs ...mw.LaterFilter) {
+	laterFilters = append(laterFilters, fs...)
+}
+
+func AddMiddlerware(fs ...mw.Middleware) {
+	middlerwares = append(middlerwares, fs...)
 }
 
 func AddStaticPrefix(prefixs ...string) {
@@ -98,4 +110,13 @@ func staticPrefixFileHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	staticFileCache[path] = fileBytes
 	w.WriteHeader(OK)
 	w.Write(fileBytes)
+}
+
+func init()  {
+	AddLFilter(mw.HeadHTTPMethodDealer(func(w http.ResponseWriter, req *http.Request) {
+		methodStr := strings.ToLower(req.Method)
+		if methodStr == string(HEAD) {
+			w.Write([]byte{})
+		}
+	}))
 }
