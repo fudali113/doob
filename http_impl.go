@@ -17,9 +17,9 @@ import (
 )
 
 type doob struct {
-	root     *router.Node
-	bFilters []mw.BeforeFilter
-	lFilters []mw.LaterFilter
+	root         *router.Node
+	bFilters     []mw.BeforeFilter
+	lFilters     []mw.LaterFilter
 	middlerwares []mw.Middleware
 }
 
@@ -29,7 +29,6 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	url := req.URL.Path
 	method := strings.ToLower(req.Method)
 
-
 	defer log.Printf("url: %s | method: %s | deal time: %d ns", url, method, time.Now().Sub(startTime).Nanoseconds())
 	defer func() {
 		if err := recover(); err != nil {
@@ -37,6 +36,7 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 	}()
 
+	// 前处理
 	for i := range this.middlerwares {
 		if this.bFilters[i].DoBeforeFilter(w, req) {
 			continue
@@ -62,8 +62,17 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	handlerType := handler.GetHandler(method)
 	if handlerType == nil {
-		log.Printf("match url : %s , but method con`t match", url)
-		w.WriteHeader(METHOD_NOT_ALLOWED)
+
+		if AutoAddOptions && method == string(OPTIONS) {
+			methods := handler.GetMethods()
+			returnDeal.DealReturn(&returnDeal.ReturnType{
+				TypeStr: returnDeal.DEFAULT_JSON_DEALER_NAME,
+				Data:    methods,
+			}, w)
+		} else {
+			log.Printf("match url : %s , but method con`t match", url)
+			w.WriteHeader(METHOD_NOT_ALLOWED)
+		}
 		return
 	}
 
@@ -73,12 +82,13 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 	invoke(matchResult, handlerType, w, req)
 
+	// 后处理
 	for i := range this.lFilters {
 		this.lFilters[i].DoLaterFilter(w, req)
 	}
 
 	for i := range this.middlerwares {
-		this.bFilters[len(this.middlerwares) - 1 - i].DoBeforeFilter(w, req)
+		this.bFilters[len(this.middlerwares)-1-i].DoBeforeFilter(w, req)
 	}
 }
 

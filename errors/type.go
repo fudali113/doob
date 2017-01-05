@@ -5,7 +5,6 @@ import (
 	"net/http"
 )
 
-
 type Matcher interface {
 	Match(err interface{}) bool
 }

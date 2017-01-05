@@ -32,15 +32,15 @@ var (
 	staticFileCache = map[string][]byte{}
 
 	beforeFilters = make([]mw.BeforeFilter, 0)
-	laterFilters = make([]mw.LaterFilter, 0)
-	middlerwares = make([]mw.Middleware, 0)
-	root    = router.GetRoot()
+	laterFilters  = make([]mw.LaterFilter, 0)
+	middlerwares  = make([]mw.Middleware, 0)
+	root          = router.GetRoot()
 
 	_doob = &doob{
-		bFilters: beforeFilters,
-		lFilters:laterFilters,
-		middlerwares:middlerwares,
-		root:    root,
+		bFilters:     beforeFilters,
+		lFilters:     laterFilters,
+		middlerwares: middlerwares,
+		root:         root,
 	}
 )
 
@@ -112,7 +112,7 @@ func staticPrefixFileHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	w.Write(fileBytes)
 }
 
-func init()  {
+func init() {
 	AddLFilter(mw.HeadHTTPMethodDealer(func(w http.ResponseWriter, req *http.Request) {
 		methodStr := strings.ToLower(req.Method)
 		if methodStr == string(HEAD) {
