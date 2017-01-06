@@ -8,6 +8,8 @@ const (
 	NO_CACHE      = "no-cache"
 	ACCEPT        = "Accept"
 	LOCATION      = "Location"
+	SET_COOKIE    = "Set-Cookie"
+	COOKIE        = "Cookie"
 
 	CONTENT_TYPE = "Content-Type"
 	APP_JSON     = "application/json"

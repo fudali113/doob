@@ -2,6 +2,12 @@ package middlerware
 
 import "net/http"
 
+var Middlerwares = make([]Middleware, 0)
+
+func AddMiddlerware(fs ...Middleware) {
+	Middlerwares = append(Middlerwares, fs...)
+}
+
 // Filter接口
 type BeforeFilter interface {
 	// Filter 的实际操作

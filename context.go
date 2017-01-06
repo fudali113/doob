@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/fudali113/doob/errors"
+	"github.com/fudali113/doob/session"
 
 	. "github.com/fudali113/doob/http_const"
 )
@@ -41,6 +42,14 @@ func (this *Context) PostParam(name string) string {
 
 func (this *Context) PathParam(name string) string {
 	return this.PathParams[name]
+}
+
+func (this *Context) Seesion() session.Session {
+	s, err := session.GetSession(this.Request)
+	if err != nil {
+		return nil
+	}
+	return s
 }
 
 // 获取参数名为 name 的参数值并转化为int类型

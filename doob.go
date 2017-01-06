@@ -33,14 +33,12 @@ var (
 
 	beforeFilters = make([]mw.BeforeFilter, 0)
 	laterFilters  = make([]mw.LaterFilter, 0)
-	middlerwares  = make([]mw.Middleware, 0)
 	root          = router.GetRoot()
 
 	_doob = &doob{
-		bFilters:     beforeFilters,
-		lFilters:     laterFilters,
-		middlerwares: middlerwares,
-		root:         root,
+		bFilters: beforeFilters,
+		lFilters: laterFilters,
+		root:     root,
 	}
 )
 
@@ -75,7 +73,7 @@ func AddLFilter(fs ...mw.LaterFilter) {
 }
 
 func AddMiddlerware(fs ...mw.Middleware) {
-	middlerwares = append(middlerwares, fs...)
+	mw.AddMiddlerware(fs...)
 }
 
 func AddStaticPrefix(prefixs ...string) {

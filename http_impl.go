@@ -37,15 +37,15 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}()
 
 	// 前处理
-	for i := range this.middlerwares {
-		if this.bFilters[i].DoBeforeFilter(w, req) {
+	for i, _ := range mw.Middlerwares {
+		if mw.Middlerwares[i].DoBeforeFilter(w, req) {
 			continue
 		} else {
 			return
 		}
 	}
 
-	for i := range this.bFilters {
+	for i, _ := range this.bFilters {
 		if this.bFilters[i].DoBeforeFilter(w, req) {
 			continue
 		} else {
@@ -83,12 +83,12 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	invoke(matchResult, handlerType, w, req)
 
 	// 后处理
-	for i := range this.lFilters {
+	for i, _ := range this.lFilters {
 		this.lFilters[i].DoLaterFilter(w, req)
 	}
 
-	for i := range this.middlerwares {
-		this.bFilters[len(this.middlerwares)-1-i].DoBeforeFilter(w, req)
+	for i, _ := range mw.Middlerwares {
+		mw.Middlerwares[len(mw.Middlerwares)-1-i].DoBeforeFilter(w, req)
 	}
 }
 
