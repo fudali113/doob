@@ -1,4 +1,4 @@
-package http_const
+package http
 
 // http status const
 const (

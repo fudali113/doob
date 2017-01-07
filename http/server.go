@@ -1,4 +1,4 @@
-package doob
+package http
 
 import (
 	"log"
@@ -6,25 +6,27 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fudali113/doob/config"
 	"github.com/fudali113/doob/errors"
+	"github.com/fudali113/doob/http/router"
 	"github.com/fudali113/doob/register"
-	"github.com/fudali113/doob/router"
 
-	. "github.com/fudali113/doob/http_const"
+	. "github.com/fudali113/doob/http/const"
+
 	mw "github.com/fudali113/doob/middleware"
 	returnDeal "github.com/fudali113/doob/return_deal"
 	reflectUtils "github.com/fudali113/doob/utils/reflect"
 )
 
-type doob struct {
-	root         *router.Node
+type Doob struct {
+	Root         *router.Node
 	bFilters     []mw.BeforeFilter
 	lFilters     []mw.LaterFilter
 	middlerwares []mw.Middleware
 }
 
 // 实现 http Handle 接口
-func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (this *Doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	startTime := time.Now()
 	url := req.URL.Path
 	method := strings.ToLower(req.Method)
@@ -32,7 +34,7 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	defer log.Printf("url: %s | method: %s | deal time: %d ns", url, method, time.Now().Sub(startTime).Nanoseconds())
 	defer func() {
 		if err := recover(); err != nil {
-			errors.CheckErr(err, w, req, IsDev)
+			errors.CheckErr(err, w, req, config.IsDev)
 		}
 	}()
 
@@ -54,7 +56,7 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	paramMap := make(map[string]string, 0)
-	handler, err := this.root.GetRT(url, paramMap)
+	handler, err := this.Root.GetRT(url, paramMap)
 	if err != nil {
 		w.WriteHeader(NOT_FOUND)
 		return
@@ -63,7 +65,7 @@ func (this *doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	handlerType := handler.GetHandler(method)
 	if handlerType == nil {
 
-		if AutoAddOptions && method == string(OPTIONS) {
+		if config.AutoAddOptions && method == string(OPTIONS) {
 			methods := handler.GetMethods()
 			returnDeal.DealReturn(&returnDeal.ReturnType{
 				TypeStr: returnDeal.DEFAULT_JSON_DEALER_NAME,
@@ -133,7 +135,7 @@ func invoke(matchResult *router.MatchResult, handlerType register.RegisterHandle
 				handler := handlerInterface.(func() interface{})
 				returnValue := handler()
 				returnDeal.DealReturn(&returnDeal.ReturnType{
-					TypeStr: ReturnDealDefaultType,
+					TypeStr: config.ReturnDealDefaultType,
 					Data:    returnValue,
 				}, w)
 
@@ -242,8 +244,8 @@ func getContext(w http.ResponseWriter, req *http.Request) *Context {
 // ReturnDealDefaultType deafault value is "auto"
 // Will automatically think return type according to the request to accept
 func getReqAccept(req *http.Request) string {
-	if ReturnDealDefaultType != "auto" {
-		return ReturnDealDefaultType
+	if config.ReturnDealDefaultType != "auto" {
+		return config.ReturnDealDefaultType
 	}
 	accept := req.Header.Get(ACCEPT)
 	if strings.Contains(accept, APP_JSON) {

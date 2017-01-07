@@ -2,10 +2,13 @@ package doob
 
 import (
 	"log"
-
-	"github.com/fudali113/doob/router"
-	"github.com/fudali113/doob/utils"
 	"regexp"
+
+	"github.com/fudali113/doob/utils"
+	"github.com/fudali113/doob/config"
+	"github.com/fudali113/doob/http/router"
+
+	. "github.com/fudali113/doob/http/const"
 )
 
 // 封装node，对外提供简单方法
@@ -14,13 +17,13 @@ type Router struct {
 }
 
 func (r Router) AddHandlerFunc(allUrl string, handler interface{}, methods ...HttpMethod) {
-	urls := utils.Split(allUrl, UrlSplitSymbol)
+	urls := utils.Split(allUrl, config.UrlSplitSymbol)
 	for _, url := range urls {
 		for _, method := range methods {
 			methodStr := string(method)
 			if checkMethodStr(methodStr) {
 				r.node.InsertChild(url, router.GetSimpleRestHandler(methodStr, handler))
-				if AutoAddHead && methodStr == string(GET) {
+				if config.AutoAddHead && methodStr == string(GET) {
 					r.node.InsertChild(url, router.GetSimpleRestHandler(string(HEAD), handler))
 				}
 			} else {

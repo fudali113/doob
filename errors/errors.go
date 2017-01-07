@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"runtime/debug"
 
-	. "github.com/fudali113/doob/http_const"
+	. "github.com/fudali113/doob/http/const"
 )
 
 var (

@@ -11,21 +11,12 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/fudali113/doob/router"
 	"github.com/fudali113/doob/utils"
 
-	. "github.com/fudali113/doob/http_const"
-	mw "github.com/fudali113/doob/middleware"
-)
+	. "github.com/fudali113/doob/http/const"
 
-// http method
-const (
-	GET     HttpMethod = "get"
-	POST    HttpMethod = "post"
-	PUT     HttpMethod = "put"
-	DELETE  HttpMethod = "delete"
-	OPTIONS HttpMethod = "options"
-	HEAD    HttpMethod = "head"
+	myHttp "github.com/fudali113/doob/http"
+	mw "github.com/fudali113/doob/middleware"
 )
 
 var (
@@ -33,13 +24,9 @@ var (
 
 	beforeFilters = make([]mw.BeforeFilter, 0)
 	laterFilters  = make([]mw.LaterFilter, 0)
-	root          = router.GetRoot()
+	root          = doob.Root
 
-	_doob = &doob{
-		bFilters: beforeFilters,
-		lFilters: laterFilters,
-		root:     root,
-	}
+	doob = myHttp.GetDoob()
 )
 
 // start doob server
@@ -61,7 +48,7 @@ func GetRouter(prefix string) Router {
 }
 
 func Listen(port int) error {
-	return http.ListenAndServe(fmt.Sprintf(":%d", port), _doob)
+	return http.ListenAndServe(fmt.Sprintf(":%d", port), doob)
 }
 
 func AddBFilter(fs ...mw.BeforeFilter) {

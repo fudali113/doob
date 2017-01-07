@@ -5,7 +5,9 @@ import (
 
 	"github.com/fudali113/doob"
 
-	_ "github.com/fudali113/doob/session"
+	. "github.com/fudali113/doob/http/const"
+
+	doobhttp "github.com/fudali113/doob/http"
 )
 
 // 开始http服务
@@ -30,23 +32,23 @@ func origin(w http.ResponseWriter, r *http.Request) {
 }
 
 // 根据doob 里的context 进行获取参数或者返回
-func ctx(ctx *doob.Context) interface{} {
+func ctx(ctx *doobhttp.Context) interface{} {
 	return map[string]interface{}{
 		"haha": ctx.ParamInt("haha"),
 		"test": ctx.Seesion().Get("test"),
 	}
 }
 
-func testForward(ctx *doob.Context) {
+func testForward(ctx *doobhttp.Context) {
 	ctx.Forward("", "http://www.23mofang.com")
 }
 
-func testRedirect(ctx *doob.Context) {
+func testRedirect(ctx *doobhttp.Context) {
 	ctx.Redirect("test")
 }
 
 // 返回处理 template 文件 path 和数据进行处理并返回生成的html
-func returnHtml(ctx *doob.Context) (string, interface{}) {
+func returnHtml(ctx *doobhttp.Context) (string, interface{}) {
 	session := ctx.Seesion()
 	session.Set("test", "ooooooooo")
 	return "tpl:static/test", map[string]string{"Name": "sdddddddddddddddddddddddddddddd"}
@@ -56,7 +58,7 @@ func returnHtml(ctx *doob.Context) (string, interface{}) {
 func init() {
 	doob.AddStaticPrefix("/static")
 	router := doob.DefaultRouter()
-	router.AddHandlerFunc("/doob/origin/{who}/{do}", origin, doob.GET, doob.POST, doob.PUT, doob.DELETE)
+	router.AddHandlerFunc("/doob/origin/{who}/{do}", origin, GET, POST, PUT, DELETE)
 	router.Get("forward", testForward)
 	router.Get("redirect1", testRedirect)
 	router.Get("/test", returnHtml)

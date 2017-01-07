@@ -1,4 +1,4 @@
-package doob
+package http
 
 import (
 	"encoding/json"
@@ -9,9 +9,10 @@ import (
 	"strconv"
 
 	"github.com/fudali113/doob/errors"
-	"github.com/fudali113/doob/session"
+	"github.com/fudali113/doob/config"
+	"github.com/fudali113/doob/middleware/session"
 
-	. "github.com/fudali113/doob/http_const"
+	. "github.com/fudali113/doob/http/const"
 )
 
 // 对 ResponseWriter 和 request 封装的上下文
@@ -101,7 +102,7 @@ func (this *Context) WriteJson(jsonStruct interface{}) {
 func (this *Context) Forward(forwardUrl string, host ...string) {
 	if len(host) == 0 {
 		this.Request.URL.Path = forwardUrl
-		_doob.ServeHTTP(this.Response, this.Request)
+		doob.ServeHTTP(this.Response, this.Request)
 		return
 	}
 	address := host[0] + forwardUrl
@@ -131,7 +132,7 @@ func (this *Context) Forward(forwardUrl string, host ...string) {
 	}
 	body := make([]byte, 0)
 	for {
-		buf := make([]byte, RedirectDefaultBodytLen)
+		buf := make([]byte, config.RedirectDefaultBodytLen)
 		n, err := res.Body.Read(buf)
 		if err != nil && err != io.EOF {
 			panic(err)
@@ -154,7 +155,7 @@ func (this *Context) Redirect(redirectUrl string, host ...string) {
 		return ""
 	}(host) + redirectUrl
 	this.AddHeader(LOCATION, address)
-	if IsDev {
+	if config.IsDev {
 		this.AddHeader(CACHE_CONTROL, NO_CACHE)
 	}
 	this.SetHttpStatus(MOVED_PERMANENTLY)

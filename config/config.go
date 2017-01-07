@@ -1,4 +1,4 @@
-package doob
+package config
 
 var (
 	IsDev                   = true

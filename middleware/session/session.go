@@ -9,8 +9,9 @@ import (
 	"net/http"
 	"reflect"
 
-	. "github.com/fudali113/doob/http_const"
 	"github.com/fudali113/doob/middleware"
+
+	. "github.com/fudali113/doob/http/const"
 )
 
 const (
@@ -69,7 +70,8 @@ func (this SessionMW) DoBeforeFilter(w http.ResponseWriter, req *http.Request) (
 			}
 			return GetMd5String(base64.URLEncoding.EncodeToString(b))
 		}()
-		this.Repo[cookieV] = sessionMemryRepo(map[string]interface{}{})
+		thisSession := sessionMemryRepo(map[string]interface{}{})
+		this.Repo[cookieV] = &thisSession
 		w.Header().Add(SET_COOKIE, cookieName+"="+cookieV)
 		return
 	}
