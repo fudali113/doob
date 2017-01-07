@@ -13,14 +13,14 @@ Doob.AddStaicPrefix("/static")
 
 * add forwardUrl func , use `&&` split urls
 ```
-router := Doob.DefaultRouter()
+  router := Doob.DefaultRouter()
 
-router.AddHandlerFunc("/Doob/origin/{who}/{do} && /Doob/origin1/{who}/{do}", origin, Doob.GET, Doob.POST, Doob.PUT, Doob.DELETE)
+  router.AddHandlerFunc("/Doob/origin/{who}/{do} && /Doob/origin1/{who}/{do}", origin, Doob.GET, Doob.POST, Doob.PUT, Doob.DELETE)
 ```
 
 * use `Get,Post,Put,Delete,Options,Head` method
 ```
-  // get `/Doob` at the beginning base router
+  // get '/Doob' at the beginning base router
   doobPrefixRouter := Doob.GetRouter("Doob")
 
   // use `{}` distinction pathVariable
@@ -31,6 +31,12 @@ router.AddHandlerFunc("/Doob/origin/{who}/{do} && /Doob/origin1/{who}/{do}", ori
   doobPrefixRouter.Delete("/{name}/{value}", func)
   doobPrefixRouter.Options("/{name}/{value}", func)
   doobPrefixRouter.Head("/{name}/{value}", func)
+```
+
+* if your not has HEAD or OPTIONS method , doob is add default HEAD and OPTIOND method
+```
+  HEAD is return this url get method headers
+  OPTIONS is return this url support methods
 ```
 
 * support func classify
@@ -55,6 +61,7 @@ router.AddHandlerFunc("/Doob/origin/{who}/{do} && /Doob/origin1/{who}/{do}", ori
   // 你可以通过SetReturnDealDefaultType(t string)设置默认的type类型
   func returnHtml() (string, interface{}) {}
 ```
+
 
 * next use
 ```
