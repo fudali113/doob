@@ -4,7 +4,7 @@ import (
 	"encoding/xml"
 	"net/http"
 
-	. "github.com/fudali113/doob/http_const"
+	. "github.com/fudali113/doob/http/const"
 )
 
 //	处理返回 type 为 xml 或者返回单个对象的 func

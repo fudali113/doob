@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"runtime/debug"
 
-	. "github.com/fudali113/doob/http_const"
+	. "github.com/fudali113/doob/http/const"
 )
 
 var (
@@ -20,11 +20,7 @@ func CheckErr(err interface{}, w http.ResponseWriter, r *http.Request, isDev boo
 
 	defer func() {
 		if e := recover(); e != nil {
-			// default err dealer
-			w.WriteHeader(INTERNAL_SERVER_ERROR)
-			if isDev {
-				WriteErrInfo(e, debug.Stack(), w)
-			}
+			defaultErrDeal(e, w, isDev)
 		}
 	}()
 
@@ -36,4 +32,14 @@ func CheckErr(err interface{}, w http.ResponseWriter, r *http.Request, isDev boo
 		}
 	}
 
+	defaultErrDeal(err, w, isDev)
+
+}
+
+func defaultErrDeal(err interface{}, w http.ResponseWriter, isDev bool) {
+	// default err dealer
+	w.WriteHeader(INTERNAL_SERVER_ERROR)
+	if isDev {
+		WriteErrInfo(err, debug.Stack(), w)
+	}
 }
