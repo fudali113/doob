@@ -82,7 +82,7 @@ func getParamType(params []string) *ParamType {
 			if hasCTX > 0 {
 				log.Panic("自动注入url参数必须放在参数最前面")
 			}
-		case "*http.Context":
+		case "*doob.Context":
 			hasCTX++
 		default:
 		}

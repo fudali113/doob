@@ -4,13 +4,12 @@
 package http
 
 const (
-	GET = "get"
-	POST = "post"
-	PUT = "put"
-	DELETE = "delete"
-	HEAD = "head"
+	GET     = "get"
+	POST    = "post"
+	PUT     = "put"
+	DELETE  = "delete"
+	HEAD    = "head"
 	OPTIONS = "options"
-
 
 	CACHE_CONTROL = "Cache-Control"
 	NO_CACHE      = "no-cache"

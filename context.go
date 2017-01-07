@@ -1,4 +1,4 @@
-package http
+package doob
 
 import (
 	"encoding/json"
@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/fudali113/doob/errors"
 	"github.com/fudali113/doob/config"
+	"github.com/fudali113/doob/errors"
 	"github.com/fudali113/doob/middleware/session"
 
 	. "github.com/fudali113/doob/http/const"

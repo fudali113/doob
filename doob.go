@@ -11,22 +11,25 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/fudali113/doob/http/router"
+	"github.com/fudali113/doob/middleware"
 	"github.com/fudali113/doob/utils"
 
 	. "github.com/fudali113/doob/http/const"
-
-	myHttp "github.com/fudali113/doob/http"
-	mw "github.com/fudali113/doob/middleware"
 )
 
 var (
 	staticFileCache = map[string][]byte{}
 
-	beforeFilters = make([]mw.BeforeFilter, 0)
-	laterFilters  = make([]mw.LaterFilter, 0)
-	root          = doob.Root
+	beforeFilters = make([]middleware.BeforeFilter, 0)
+	laterFilters  = make([]middleware.LaterFilter, 0)
+	root          = router.GetRoot()
 
-	doob = myHttp.GetDoob()
+	doob = &Doob{
+		bFilters: beforeFilters,
+		lFilters: laterFilters,
+		Root:     root,
+	}
 )
 
 // start doob server
@@ -51,16 +54,16 @@ func Listen(port int) error {
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), doob)
 }
 
-func AddBFilter(fs ...mw.BeforeFilter) {
+func AddBFilter(fs ...middleware.BeforeFilter) {
 	beforeFilters = append(beforeFilters, fs...)
 }
 
-func AddLFilter(fs ...mw.LaterFilter) {
+func AddLFilter(fs ...middleware.LaterFilter) {
 	laterFilters = append(laterFilters, fs...)
 }
 
-func AddMiddlerware(fs ...mw.Middleware) {
-	mw.AddMiddlerware(fs...)
+func AddMiddlerware(fs ...middleware.Middleware) {
+	middleware.AddMiddlerware(fs...)
 }
 
 func AddStaticPrefix(prefixs ...string) {
@@ -98,7 +101,7 @@ func staticPrefixFileHandlerFunc(w http.ResponseWriter, r *http.Request) {
 }
 
 func init() {
-	AddLFilter(mw.HeadHTTPMethodDealer(func(w http.ResponseWriter, req *http.Request) {
+	AddLFilter(middleware.HeadHTTPMethodDealer(func(w http.ResponseWriter, req *http.Request) {
 		methodStr := strings.ToLower(req.Method)
 		if methodStr == string(HEAD) {
 			w.Write([]byte{})

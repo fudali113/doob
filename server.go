@@ -1,4 +1,4 @@
-package http
+package doob
 
 import (
 	"log"
@@ -13,16 +13,16 @@ import (
 
 	. "github.com/fudali113/doob/http/const"
 
-	mw "github.com/fudali113/doob/middleware"
-	returnDeal "github.com/fudali113/doob/return_deal"
+	returnDeal "github.com/fudali113/doob/http/return_deal"
+	middleware "github.com/fudali113/doob/middleware"
 	reflectUtils "github.com/fudali113/doob/utils/reflect"
 )
 
 type Doob struct {
 	Root         *router.Node
-	bFilters     []mw.BeforeFilter
-	lFilters     []mw.LaterFilter
-	middlerwares []mw.Middleware
+	bFilters     []middleware.BeforeFilter
+	lFilters     []middleware.LaterFilter
+	middlerwares []middleware.Middleware
 }
 
 // 实现 http Handle 接口
@@ -39,8 +39,8 @@ func (this *Doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}()
 
 	// 前处理
-	for i, _ := range mw.Middlerwares {
-		if mw.Middlerwares[i].DoBeforeFilter(w, req) {
+	for i, _ := range middleware.Middlerwares {
+		if middleware.Middlerwares[i].DoBeforeFilter(w, req) {
 			continue
 		} else {
 			return
@@ -89,8 +89,8 @@ func (this *Doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		this.lFilters[i].DoLaterFilter(w, req)
 	}
 
-	for i, _ := range mw.Middlerwares {
-		mw.Middlerwares[len(mw.Middlerwares)-1-i].DoBeforeFilter(w, req)
+	for i, _ := range middleware.Middlerwares {
+		middleware.Middlerwares[len(middleware.Middlerwares)-1-i].DoBeforeFilter(w, req)
 	}
 }
 

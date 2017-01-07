@@ -110,5 +110,5 @@ func (this sessionMemryRepo) GetByPointer(k string, vPointer interface{}) {
 }
 
 func init() {
-	middlerware.AddMiddlerware(session)
+	middleware.AddMiddlerware(session)
 }
