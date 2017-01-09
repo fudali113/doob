@@ -2,11 +2,11 @@ package session
 
 import (
 	"net/http"
-	"reflect"
 
 	"github.com/fudali113/doob/config"
 	"github.com/fudali113/doob/middleware"
 	"github.com/fudali113/doob/utils"
+	"github.com/fudali113/doob/utils/reflect"
 
 	. "github.com/fudali113/doob/http/const"
 )
@@ -40,6 +40,8 @@ func GetSession(req *http.Request) (Session, error) {
 	return thisSession, nil
 }
 
+// session 中间件
+// 实现中间件接口
 type SessionMW struct {
 	Repo map[string]Session
 }
@@ -69,12 +71,16 @@ func (this SessionMW) DoLaterFilter(res http.ResponseWriter, req *http.Request) 
 
 }
 
+// seesion 接口
+// session 可进行如家操作
 type Session interface {
 	Set(string, interface{})
 	Get(string) interface{}
 	GetByPointer(string, interface{})
 }
 
+// 简单的session实现
+// 以内存map来储存session
 type sessionMemryRepo map[string]interface{}
 
 func (this sessionMemryRepo) Set(k string, v interface{}) {
@@ -87,12 +93,10 @@ func (this sessionMemryRepo) Get(k string) interface{} {
 
 func (this sessionMemryRepo) GetByPointer(k string, vPointer interface{}) {
 	v := this[k]
-	vType := reflect.TypeOf(&v)
-	vPointerType := reflect.TypeOf(vPointer)
-	if vType == vPointerType {
+	if reflect.ContrastType(vPointer, &v) {
 		vPointer = &v
 	} else {
-		panic("oo")
+		panic("you use diff type receive value")
 	}
 }
 
