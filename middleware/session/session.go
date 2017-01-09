@@ -1,15 +1,12 @@
 package session
 
 import (
-	"crypto/md5"
-	"crypto/rand"
-	"encoding/base64"
-	"encoding/hex"
-	"io"
 	"net/http"
 	"reflect"
 
+	"github.com/fudali113/doob/config"
 	"github.com/fudali113/doob/middleware"
+	"github.com/fudali113/doob/utils"
 
 	. "github.com/fudali113/doob/http/const"
 )
@@ -20,6 +17,10 @@ const (
 
 var (
 	session = &SessionMW{Repo: map[string]Session{}}
+
+	CreateSeesionCookieValueFunc = func() string {
+		return utils.GetMd5String(utils.GetRandomStr(), config.SessionCreateSecretKey)
+	}
 )
 
 func GetSession(req *http.Request) (Session, error) {
@@ -43,13 +44,6 @@ type SessionMW struct {
 	Repo map[string]Session
 }
 
-//生成32位md5字串
-func GetMd5String(s string) string {
-	h := md5.New()
-	h.Write([]byte(s))
-	return hex.EncodeToString(h.Sum(nil))
-}
-
 func (this SessionMW) DoBeforeFilter(w http.ResponseWriter, req *http.Request) (isPass bool) {
 
 	isPass = true
@@ -62,14 +56,7 @@ func (this SessionMW) DoBeforeFilter(w http.ResponseWriter, req *http.Request) (
 		cookieV = cookie.Value
 	}
 	if cookieV == "" || this.Repo[cookieV] == nil {
-		cookieV = func() string {
-			b := make([]byte, 48)
-
-			if _, err := io.ReadFull(rand.Reader, b); err != nil {
-				return ""
-			}
-			return GetMd5String(base64.URLEncoding.EncodeToString(b))
-		}()
+		cookieV = CreateSeesionCookieValueFunc()
 		thisSession := sessionMemryRepo(map[string]interface{}{})
 		this.Repo[cookieV] = &thisSession
 		w.Header().Add(SET_COOKIE, cookieName+"="+cookieV)

@@ -7,4 +7,6 @@ var (
 	UrlSplitSymbol          = "&&"
 	ReturnDealDefaultType   = "auto"
 	RedirectDefaultBodytLen = 1024
+
+	SessionCreateSecretKey = "doobssssssss"
 )
