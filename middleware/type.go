@@ -2,10 +2,10 @@ package middleware
 
 import "net/http"
 
-var Middlerwares = make([]Middleware, 0)
+var Middlewares = make([]Middleware, 0)
 
-func AddMiddlerware(fs ...Middleware) {
-	Middlerwares = append(Middlerwares, fs...)
+func AddMiddleware(fs ...Middleware) {
+	Middlewares = append(Middlewares, fs...)
 }
 
 // Filter接口
@@ -24,8 +24,19 @@ type Middleware interface {
 	LaterFilter
 }
 
+type DefaultMiddleware struct {
+}
+
+func (DefaultMiddleware) DoBeforeFilter(res http.ResponseWriter, req *http.Request) bool{
+	return true
+}
+
+func (DefaultMiddleware) DoLaterFilter(res http.ResponseWriter, req *http.Request){
+}
+
 type HeadHTTPMethodDealer func(res http.ResponseWriter, req *http.Request)
 
 func (this HeadHTTPMethodDealer) DoLaterFilter(res http.ResponseWriter, req *http.Request) {
 	this(res, req)
 }
+
