@@ -146,17 +146,8 @@ func (this *Context) Forward(forwardUrl string, host ...string) {
 	this.Response.WriteHeader(res.StatusCode)
 }
 
-// Redirect one request
-func (this *Context) Redirect(redirectUrl string, host ...string) {
-	address := func(host []string) string {
-		if len(host) > 0 {
-			return host[0]
-		}
-		return ""
-	}(host) + redirectUrl
-	this.AddHeader(LOCATION, address)
-	if config.IsDev {
-		this.AddHeader(CACHE_CONTROL, NO_CACHE)
-	}
-	this.SetHttpStatus(MOVED_PERMANENTLY)
+func (this *Context) Redirect(redirectUrl string, code int) {
+	http.Redirect(this.Response, this.Request, redirectUrl, code)
 }
+
+
