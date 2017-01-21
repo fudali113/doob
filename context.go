@@ -13,6 +13,7 @@ import (
 	"github.com/fudali113/doob/middleware/session"
 
 	. "github.com/fudali113/doob/http/const"
+	"net/url"
 )
 
 // 对 ResponseWriter 和 request 封装的上下文
@@ -99,15 +100,19 @@ func (this *Context) WriteJson(jsonStruct interface{}) {
 // Forward one request
 //
 // @panic DoobError
-func (this *Context) Forward(forwardUrl string, host ...string) {
-	if len(host) == 0 {
+func (this *Context) Forward(forwardUrl string) {
+
+	url,err := url.Parse(forwardUrl)
+	if err != nil {
+		return
+	}
+	if url.Host == "" {
 		this.Request.URL.Path = forwardUrl
 		doob.ServeHTTP(this.Response, this.Request)
 		return
 	}
-	address := host[0] + forwardUrl
 	client := &http.Client{}
-	request, err := http.NewRequest(this.Request.Method, address, this.Request.Body)
+	request, err := http.NewRequest(this.Request.Method, forwardUrl, this.Request.Body)
 	if err != nil {
 		panic(errors.DoobError{
 			Err:       err,
