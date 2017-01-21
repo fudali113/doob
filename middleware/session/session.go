@@ -1,15 +1,12 @@
 package session
 
 import (
-	"crypto/md5"
-	"crypto/rand"
-	"encoding/base64"
-	"encoding/hex"
-	"io"
 	"net/http"
-	"reflect"
 
+	"github.com/fudali113/doob/config"
 	"github.com/fudali113/doob/middleware"
+	"github.com/fudali113/doob/utils"
+	"github.com/fudali113/doob/utils/reflect"
 
 	. "github.com/fudali113/doob/http/const"
 )
@@ -20,6 +17,10 @@ const (
 
 var (
 	session = &SessionMW{Repo: map[string]Session{}}
+
+	CreateSessionCookieValueFunc = func() string {
+		return utils.GetMd5String(utils.GetRandomStr(), config.SessionCreateSecretKey)
+	}
 )
 
 func GetSession(req *http.Request) (Session, error) {
@@ -39,15 +40,11 @@ func GetSession(req *http.Request) (Session, error) {
 	return thisSession, nil
 }
 
+// session 中间件
+// 实现中间件接口
 type SessionMW struct {
+	middleware.DefaultMiddleware
 	Repo map[string]Session
-}
-
-//生成32位md5字串
-func GetMd5String(s string) string {
-	h := md5.New()
-	h.Write([]byte(s))
-	return hex.EncodeToString(h.Sum(nil))
 }
 
 func (this SessionMW) DoBeforeFilter(w http.ResponseWriter, req *http.Request) (isPass bool) {
@@ -62,14 +59,7 @@ func (this SessionMW) DoBeforeFilter(w http.ResponseWriter, req *http.Request) (
 		cookieV = cookie.Value
 	}
 	if cookieV == "" || this.Repo[cookieV] == nil {
-		cookieV = func() string {
-			b := make([]byte, 48)
-
-			if _, err := io.ReadFull(rand.Reader, b); err != nil {
-				return ""
-			}
-			return GetMd5String(base64.URLEncoding.EncodeToString(b))
-		}()
+		cookieV = CreateSessionCookieValueFunc()
 		thisSession := sessionMemryRepo(map[string]interface{}{})
 		this.Repo[cookieV] = &thisSession
 		w.Header().Add(SET_COOKIE, cookieName+"="+cookieV)
@@ -78,16 +68,16 @@ func (this SessionMW) DoBeforeFilter(w http.ResponseWriter, req *http.Request) (
 	return
 }
 
-func (this SessionMW) DoLaterFilter(res http.ResponseWriter, req *http.Request) {
-
-}
-
+// seesion 接口
+// session 可进行如家操作
 type Session interface {
 	Set(string, interface{})
 	Get(string) interface{}
 	GetByPointer(string, interface{})
 }
 
+// 简单的session实现
+// 以内存map来储存session
 type sessionMemryRepo map[string]interface{}
 
 func (this sessionMemryRepo) Set(k string, v interface{}) {
@@ -100,15 +90,13 @@ func (this sessionMemryRepo) Get(k string) interface{} {
 
 func (this sessionMemryRepo) GetByPointer(k string, vPointer interface{}) {
 	v := this[k]
-	vType := reflect.TypeOf(&v)
-	vPointerType := reflect.TypeOf(vPointer)
-	if vType == vPointerType {
+	if reflect.ContrastType(vPointer, &v) {
 		vPointer = &v
 	} else {
-		panic("oo")
+		panic("you use diff type receive value")
 	}
 }
 
 func init() {
-	middleware.AddMiddlerware(session)
+	middleware.AddMiddleware(session)
 }

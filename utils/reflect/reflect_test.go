@@ -21,6 +21,25 @@ func Test_GetFuncParams(t *testing.T) {
 	}
 }
 
+func Test_ContrastType(t *testing.T) {
+	type test struct {
+		oo string
+		aa string
+	}
+
+	a := test{"a", "b"}
+	b := test{"b", "a"}
+	if !ContrastType(a, b) {
+		t.Error("ContrastType func has bug")
+	}
+
+	var a1 interface{} = test{"a", "b"}
+	b1 := &test{"b", "a"}
+	if !ContrastType(&a1, b1) {
+		t.Error("ContrastType func has bug")
+	}
+}
+
 func test1(name string) string {
 	return name
 }
