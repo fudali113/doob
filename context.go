@@ -137,7 +137,7 @@ func (this *Context) Forward(forwardUrl string) {
 	}
 	body := make([]byte, 0)
 	for {
-		buf := make([]byte, config.RedirectDefaultBodytLen)
+		buf := make([]byte, config.RedirectDefaultBodyLen)
 		n, err := res.Body.Read(buf)
 		if err != nil && err != io.EOF {
 			panic(err)

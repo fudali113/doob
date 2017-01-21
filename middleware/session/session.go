@@ -18,7 +18,7 @@ const (
 var (
 	session = &SessionMW{Repo: map[string]Session{}}
 
-	CreateSeesionCookieValueFunc = func() string {
+	CreateSessionCookieValueFunc = func() string {
 		return utils.GetMd5String(utils.GetRandomStr(), config.SessionCreateSecretKey)
 	}
 )
@@ -43,6 +43,7 @@ func GetSession(req *http.Request) (Session, error) {
 // session 中间件
 // 实现中间件接口
 type SessionMW struct {
+	middleware.DefaultMiddleware
 	Repo map[string]Session
 }
 
@@ -58,17 +59,13 @@ func (this SessionMW) DoBeforeFilter(w http.ResponseWriter, req *http.Request) (
 		cookieV = cookie.Value
 	}
 	if cookieV == "" || this.Repo[cookieV] == nil {
-		cookieV = CreateSeesionCookieValueFunc()
+		cookieV = CreateSessionCookieValueFunc()
 		thisSession := sessionMemryRepo(map[string]interface{}{})
 		this.Repo[cookieV] = &thisSession
 		w.Header().Add(SET_COOKIE, cookieName+"="+cookieV)
 		return
 	}
 	return
-}
-
-func (this SessionMW) DoLaterFilter(res http.ResponseWriter, req *http.Request) {
-
 }
 
 // seesion 接口
@@ -101,5 +98,5 @@ func (this sessionMemryRepo) GetByPointer(k string, vPointer interface{}) {
 }
 
 func init() {
-	middleware.AddMiddlerware(session)
+	middleware.AddMiddleware(session)
 }

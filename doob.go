@@ -63,7 +63,7 @@ func AddLFilter(fs ...middleware.LaterFilter) {
 }
 
 func AddMiddlerware(fs ...middleware.Middleware) {
-	middleware.AddMiddlerware(fs...)
+	middleware.AddMiddleware(fs...)
 }
 
 func AddStaticPrefix(prefixs ...string) {
