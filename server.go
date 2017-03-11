@@ -40,7 +40,8 @@ func (this *Doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	// 前处理
 	for i, _ := range middleware.Middlewares {
-		if middleware.Middlewares[i].DoBeforeFilter(w, req) {
+		mw := middleware.Middlewares[i]
+		if mw != nil && mw.DoBeforeFilter(w, req) {
 			continue
 		} else {
 			return

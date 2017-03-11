@@ -9,4 +9,6 @@ var (
 	RedirectDefaultBodyLen = 1024
 
 	SessionCreateSecretKey = "doobssssssss"
+	OpenBasicAuth          = true
+	BasicAuthUserInConfig  = map[string]string{"admin": "123456"}
 )
