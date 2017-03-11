@@ -18,6 +18,7 @@ const (
 	SET_COOKIE    = "Set-Cookie"
 	COOKIE        = "Cookie"
 	BASIC_AUTH    = "Authorization"
+	WWW_AUTH      = "WWW-Authenticate"
 
 	CONTENT_TYPE = "Content-Type"
 	APP_JSON     = "application/json"

@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/fudali113/doob"
 	. "github.com/fudali113/doob/http/const"
@@ -60,6 +61,7 @@ func init() {
 	router.Get("redirect1", testRedirect)
 	router.Get("/test", returnHtml)
 	doobRouter := doob.GetRouter("doob")
+	strings.Compare("", "")
 	doobRouter.Get("/di/{name}/{value}", di)
 	doobRouter.Get("/ctx/{haha:[0-9]{3,4}}", ctx)
 }

@@ -8,7 +8,9 @@ var (
 	ReturnDealDefaultType  = "auto"
 	RedirectDefaultBodyLen = 1024
 
+	BasicAuthReminder = "doob basic auth"
+
 	SessionCreateSecretKey = "doobssssssss"
-	OpenBasicAuth          = true
+	OpenBasicAuth          = false
 	BasicAuthUserInConfig  = map[string]string{"admin": "123456"}
 )
