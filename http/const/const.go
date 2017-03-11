@@ -17,6 +17,7 @@ const (
 	LOCATION      = "Location"
 	SET_COOKIE    = "Set-Cookie"
 	COOKIE        = "Cookie"
+	BASIC_AUTH    = "Authorization"
 
 	CONTENT_TYPE = "Content-Type"
 	APP_JSON     = "application/json"

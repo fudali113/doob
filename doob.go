@@ -15,6 +15,8 @@ import (
 	"github.com/fudali113/doob/middleware"
 	"github.com/fudali113/doob/utils"
 
+	_ "github.com/fudali113/doob/middleware/basicauth"
+
 	. "github.com/fudali113/doob/http/const"
 )
 
@@ -26,8 +28,8 @@ var (
 	root          = router.GetRoot()
 
 	doob = &Doob{
-		bFilters: beforeFilters,
-		lFilters: laterFilters,
+		bFilters: middleware.BFilters,
+		lFilters: middleware.LFilters,
 		Root:     root,
 	}
 )
