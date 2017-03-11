@@ -49,3 +49,7 @@ func Test_getParamType(t *testing.T) {
 		t.Error("args2")
 	}
 }
+
+func Test_ReturnType(t *testing.T) {
+
+}

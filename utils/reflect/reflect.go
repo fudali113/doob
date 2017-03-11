@@ -27,9 +27,7 @@ func Invoke(function interface{}, params ...interface{}) []interface{} {
 	return returns
 }
 
-/**
- * 获取方法的参数和返回值类型数组
- */
+// 获取方法的参数和返回值类型数组
 func GetFuncParams(function interface{}) (params []string, returns []string) {
 	funcType := reflect.TypeOf(function)
 	funcStr := funcType.String()
@@ -50,7 +48,23 @@ func GetFuncParams(function interface{}) (params []string, returns []string) {
 	return
 }
 
+// 比较两个类型是否相同
+func ContrastType(a, b interface{}) (eq bool) {
+	defer func() {
+		if err := recover(); err != nil {
+			eq = false
+		}
+	}()
+	aType := reflect.TypeOf(a).Name()
+	bType := reflect.TypeOf(b).Name()
+	eq = aType == bType
+	return
+}
+
 func getSlice(arg string) []string {
+	if strings.Replace(arg, " ", "", -1) == "" {
+		return []string{}
+	}
 	res := utils.Split(arg[1:len(arg)-1], ",")
 	return res
 }

@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	. "github.com/fudali113/doob/http_const"
+	. "github.com/fudali113/doob/http/const"
 )
 
 type tplReturnDeal struct {

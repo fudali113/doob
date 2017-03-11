@@ -1,27 +1,27 @@
-# doob
-![-_-](https://travis-ci.org/fudali113/doob.svg?branch=master)
+# Doob
+![-_-](https://travis-ci.org/fudali113/Doob.svg?branch=master)
 
-doob is a rest and a simple router handler
+Doob is a rest and a simple router handler
 
-init invoke AddHandlerFunc(url,methodStr,func)
+init invoke AddHandlerFunc(forwardUrl,methodStr,func)
 such as
 
 * add static folder
 ```
-doob.AddStaicPrefix("/static")
+Doob.AddStaicPrefix("/static")
 ```
 
-* add url func , use `&&` split urls
+* add forwardUrl func , use `&&` split urls
 ```
-router := doob.DefaultRouter()
+  router := Doob.DefaultRouter()
 
-router.AddHandlerFunc("/doob/origin/{who}/{do} && /doob/origin1/{who}/{do}", origin, doob.GET, doob.POST, doob.PUT, doob.DELETE)
+  router.AddHandlerFunc("/Doob/origin/{who}/{do} && /Doob/origin1/{who}/{do}", origin, Doob.GET, Doob.POST, Doob.PUT, Doob.DELETE)
 ```
 
 * use `Get,Post,Put,Delete,Options,Head` method
 ```
-  // get `/doob` at the beginning base router
-  doobPrefixRouter := doob.GetRouter("doob")
+  // get '/Doob' at the beginning base router
+  doobPrefixRouter := Doob.GetRouter("Doob")
 
   // use `{}` distinction pathVariable
   doobPrefixRouter.Get("/{name}/{value}", func)
@@ -33,13 +33,19 @@ router.AddHandlerFunc("/doob/origin/{who}/{do} && /doob/origin1/{who}/{do}", ori
   doobPrefixRouter.Head("/{name}/{value}", func)
 ```
 
+* if your not has HEAD or OPTIONS method , doob is add default HEAD and OPTIOND method
+```
+  HEAD is return this url get method headers
+  OPTIONS is return this url support methods
+```
+
 * support func classify
 ```
   // 兼容原始http方法类
   func origin(w http.ResponseWriter, r *http.Request) {}
 
   // 根据doob 里的context 进行获取参数或者返回
-  func ctx(ctx *doob.Context) interface{} {}
+  func ctx(ctx *Doob.Context) interface{} {}
 
   // 根据url参数自动注入参数
   // 返回值为string时为返回静态文件
@@ -56,9 +62,10 @@ router.AddHandlerFunc("/doob/origin/{who}/{do} && /doob/origin1/{who}/{do}", ori
   func returnHtml() (string, interface{}) {}
 ```
 
+
 * next use
 ```
-  doob.Start(8888)
+  Doob.Start(8888)
 ```
 
 run you application

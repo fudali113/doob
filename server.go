@@ -4,15 +4,96 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
+	"github.com/fudali113/doob/config"
+	"github.com/fudali113/doob/errors"
+	"github.com/fudali113/doob/http/router"
 	"github.com/fudali113/doob/register"
-	"github.com/fudali113/doob/router"
 
-	. "github.com/fudali113/doob/http_const"
+	. "github.com/fudali113/doob/http/const"
 
-	returnDeal "github.com/fudali113/doob/return_deal"
+	returnDeal "github.com/fudali113/doob/http/return_deal"
+	middleware "github.com/fudali113/doob/middleware"
 	reflectUtils "github.com/fudali113/doob/utils/reflect"
 )
+
+type Doob struct {
+	Root         *router.Node
+	bFilters     []middleware.BeforeFilter
+	lFilters     []middleware.LaterFilter
+	middlerwares []middleware.Middleware
+}
+
+// 实现 http Handle 接口
+func (this *Doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	startTime := time.Now()
+	url := req.URL.Path
+	method := strings.ToLower(req.Method)
+
+	defer log.Printf("url: %s | method: %s | deal time: %d ns", url, method, time.Now().Sub(startTime).Nanoseconds())
+	defer func() {
+		if err := recover(); err != nil {
+			errors.CheckErr(err, w, req, config.IsDev)
+		}
+	}()
+
+	// 前处理
+	for i, _ := range middleware.Middlewares {
+		mw := middleware.Middlewares[i]
+		if  mw.DoBeforeFilter(w, req) {
+			continue
+		} else {
+			return
+		}
+	}
+
+	for i, _ := range this.bFilters {
+		if this.bFilters[i].DoBeforeFilter(w, req) {
+			continue
+		} else {
+			return
+		}
+	}
+
+	paramMap := make(map[string]string, 0)
+	handler, err := this.Root.GetRT(url, paramMap)
+	if err != nil {
+		w.WriteHeader(NOT_FOUND)
+		return
+	}
+
+	handlerType := handler.GetHandler(method)
+	if handlerType == nil {
+
+		if config.AutoAddOptions && method == string(OPTIONS) {
+			methods := handler.GetMethods()
+			returnDeal.DealReturn(&returnDeal.ReturnType{
+				TypeStr: returnDeal.DEFAULT_JSON_DEALER_NAME,
+				Data:    methods,
+			}, w)
+		} else {
+			log.Printf("match url : %s , but method con`t match", url)
+			w.WriteHeader(METHOD_NOT_ALLOWED)
+		}
+		return
+	}
+
+	matchResult := &router.MatchResult{
+		Rest:     handler,
+		ParamMap: paramMap,
+	}
+	invoke(matchResult, handlerType, w, req)
+
+	// 后处理
+	for i, _ := range this.lFilters {
+		this.lFilters[i].DoLaterFilter(w, req)
+	}
+
+	for i, _ := range middleware.Middlewares {
+		middleware.Middlewares[len(middleware.Middlewares)-1-i].DoBeforeFilter(w, req)
+	}
+}
 
 //
 // 根据路由匹配获取匹配的返回值
@@ -20,22 +101,7 @@ import (
 //
 // FIXME 此方法有些复杂，需要进行拆解
 //
-func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Request) {
-	url := req.URL.Path
-	method := strings.ToLower(req.Method)
-
-	if matchResult == nil {
-		log.Print("no match url : ", url)
-		w.WriteHeader(NOT_FOUND)
-		return
-	}
-
-	handlerType := matchResult.Rest.GetHandler(method)
-	if handlerType == nil {
-		log.Printf("match url : %s , but method con`t match", url)
-		w.WriteHeader(METHOD_NOT_ALLOWED)
-		return
-	}
+func invoke(matchResult *router.MatchResult, handlerType register.RegisterHandlerType, w http.ResponseWriter, req *http.Request) {
 
 	// 获取路劲参数并存入request参数中
 	urlParam := matchResult.ParamMap
@@ -70,7 +136,7 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 				handler := handlerInterface.(func() interface{})
 				returnValue := handler()
 				returnDeal.DealReturn(&returnDeal.ReturnType{
-					TypeStr: returnDealDefaultType,
+					TypeStr: config.ReturnDealDefaultType,
 					Data:    returnValue,
 				}, w)
 
@@ -169,25 +235,25 @@ func invoke(matchResult *router.MatchResult, w http.ResponseWriter, req *http.Re
 // According to the request and response for context
 func getContext(w http.ResponseWriter, req *http.Request) *Context {
 	return &Context{
-		request:  req,
-		response: w,
-		Params:   map[string]string{},
+		Request:    req,
+		Response:   w,
+		PathParams: map[string]string{},
 	}
 }
 
-// if user don`t set returnDealDefaultType
-// returnDealDefaultType deafault value is "auto"
+// if user don`t set ReturnDealDefaultType
+// ReturnDealDefaultType deafault value is "auto"
 // Will automatically think return type according to the request to accept
 func getReqAccept(req *http.Request) string {
-	if returnDealDefaultType != "auto" {
-		return returnDealDefaultType
+	if config.ReturnDealDefaultType != "auto" {
+		return config.ReturnDealDefaultType
 	}
-	accept := req.Header.Get("Accept")
+	accept := req.Header.Get(ACCEPT)
 	if strings.Contains(accept, APP_JSON) {
-		return "json"
+		return returnDeal.JSON_DEAL_TYPE_STR
 	}
 	if strings.Contains(accept, APP_XML) {
-		return "xml"
+		return returnDeal.XML_DEAL_TYPE_STR
 	}
-	return "json"
+	return returnDeal.JSON_DEAL_TYPE_STR
 }
