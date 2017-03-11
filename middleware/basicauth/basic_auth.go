@@ -1,4 +1,4 @@
-package basic_auth
+package basicauth
 
 import (
 	"encoding/base64"
@@ -16,7 +16,7 @@ const (
 	BASIC_AUTH_PREFIX = "Basic "
 )
 
-// impl basic auth
+// BasicAuth impl basic auth
 func BasicAuth(res http.ResponseWriter, req *http.Request) (ispass bool) {
 	authStr := req.Header.Get(BASIC_AUTH)
 	if config.OpenBasicAuth {
