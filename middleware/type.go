@@ -2,9 +2,9 @@ package middleware
 
 import "net/http"
 
-var Middlewares = make([]Middleware, 3)
-var BFilters = make([]BeforeFilter, 3)
-var LFilters = make([]LaterFilter, 3)
+var Middlewares = make([]Middleware, 0)
+var BFilters = make([]BeforeFilter, 0)
+var LFilters = make([]LaterFilter, 0)
 
 func AddMiddleware(fs ...Middleware) {
 	Middlewares = append(Middlewares, fs...)

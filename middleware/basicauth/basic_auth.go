@@ -49,5 +49,6 @@ func BasicAuth(res http.ResponseWriter, req *http.Request) (ispass bool) {
 }
 
 func init() {
-	middleware.AddBFilter(middleware.BeforeFilterFunc(BasicAuth))
+	basicAuhtFilter := middleware.BeforeFilterFunc(BasicAuth)
+	middleware.AddBFilter(&basicAuhtFilter)
 }
