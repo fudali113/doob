@@ -39,6 +39,7 @@ func BasicAuth(res http.ResponseWriter, req *http.Request) (ispass bool) {
 		}
 	deal:
 		if !ispass {
+			res.Header().Add("WWW-Authenticate", `Basic realm="doob"`)
 			res.WriteHeader(UNAUTHORIZED)
 		}
 		return
