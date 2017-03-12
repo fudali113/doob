@@ -8,12 +8,14 @@ import (
 	"github.com/fudali113/doob/register"
 )
 
-// 返回值类型
+// MatchResult 返回值类型
+// 用于装在获取的返回值
 type MatchResult struct {
 	ParamMap map[string]string
 	Rest     RestHandler
 }
 
+// RestHandler 同于存储不同方法的不同处理器
 type RestHandler interface {
 	// 获取该实列包含哪些method
 	GetMethods() []string
@@ -27,25 +29,28 @@ type RestHandler interface {
 	Joint(RestHandler)
 }
 
-// 实现 register package RegisterHandlerType 借口
+// RegisterHandler 实现 register package RegisterHandlerType 借口
 type RegisterHandler struct {
 	Handler      interface{}
 	RegisterType *register.RegisterType
 }
 
-func (this *RegisterHandler) GetHandler() interface{} {
-	return this.Handler
-}
-func (this *RegisterHandler) GetRegisterType() *register.RegisterType {
-	return this.RegisterType
+// GetHandler 获取handler
+func (rh *RegisterHandler) GetHandler() interface{} {
+	return rh.Handler
 }
 
-// RestHandler的简单实现
+// GetRegisterType 获取注册类型
+func (rh *RegisterHandler) GetRegisterType() *register.RegisterType {
+	return rh.RegisterType
+}
+
+// SimpleRestHandler RestHandler的简单实现
 type SimpleRestHandler struct {
 	methodHandlerMap map[string]register.RegisterHandlerType
 }
 
-// 获取一个 SimpleRestHandler 实例
+// GetSimpleRestHandler 获取一个 SimpleRestHandler 实例
 func GetSimpleRestHandler(method string, sh interface{}) *SimpleRestHandler {
 	registerHandler := &RegisterHandler{
 		Handler:      sh,
@@ -56,26 +61,32 @@ func GetSimpleRestHandler(method string, sh interface{}) *SimpleRestHandler {
 	}
 }
 
-func (this *SimpleRestHandler) GetMethods() []string {
+// GetMethods 获取有哪些http方法
+func (srh *SimpleRestHandler) GetMethods() []string {
 	res := make([]string, 0)
-	for k, _ := range this.methodHandlerMap {
+	for k := range srh.methodHandlerMap {
 		res = append(res, k)
 	}
 	return res
 }
 
-func (this *SimpleRestHandler) PutMethod(method string, handler register.RegisterHandlerType) {
-	this.methodHandlerMap[method] = handler
+// PutMethod add a method handler
+func (srh *SimpleRestHandler) PutMethod(method string, handler register.RegisterHandlerType) {
+	srh.methodHandlerMap[method] = handler
 }
-func (this *SimpleRestHandler) GetHandler(method string) register.RegisterHandlerType {
-	res, ok := this.methodHandlerMap[method]
+
+// GetHandler get a method handler with method
+func (srh *SimpleRestHandler) GetHandler(method string) register.RegisterHandlerType {
+	res, ok := srh.methodHandlerMap[method]
 	if !ok {
 		res = nil
 	}
 	return res
 }
-func (this *SimpleRestHandler) GetSigninHandler() register.RegisterHandlerType {
-	for _, handler := range this.methodHandlerMap {
+
+// GetSigninHandler 获取注册方法
+func (srh *SimpleRestHandler) GetSigninHandler() register.RegisterHandlerType {
+	for _, handler := range srh.methodHandlerMap {
 		if handler != nil {
 			return handler
 		}
@@ -84,25 +95,26 @@ func (this *SimpleRestHandler) GetSigninHandler() register.RegisterHandlerType {
 	return nil
 }
 
-func (this *SimpleRestHandler) Joint(restHandler RestHandler) {
+// Joint 合并另外一个RestHandler
+func (srh *SimpleRestHandler) Joint(restHandler RestHandler) {
 	methods := restHandler.GetMethods()
 	for _, method := range methods {
-		this.PutMethod(method, restHandler.GetSigninHandler())
+		srh.PutMethod(method, restHandler.GetSigninHandler())
 	}
 }
 
 // 实现Sort的接口
 type nodes []*Node
 
-func (this nodes) Len() int {
-	return len(this)
+func (n nodes) Len() int {
+	return len(n)
 }
-func (this nodes) Swap(i, j int) {
-	this[i], this[j] = this[j], this[i]
+func (n nodes) Swap(i, j int) {
+	n[i], n[j] = n[j], n[i]
 }
-func (this nodes) Less(i, j int) bool {
-	a := this[i]
-	b := this[j]
+func (n nodes) Less(i, j int) bool {
+	a := n[i]
+	b := n[j]
 	return b.class > a.class
 }
 
@@ -119,14 +131,14 @@ type nodeVNormal struct {
 	origin string
 }
 
-func (this nodeVNormal) isMatch(urlPart string) (bool, bool) {
-	return this.origin == urlPart, false
+func (nvn nodeVNormal) isMatch(urlPart string) (bool, bool) {
+	return nvn.origin == urlPart, false
 }
-func (this nodeVNormal) paramValue(urlPart string, url string) (bool, map[string]string) {
+func (nvn nodeVNormal) paramValue(urlPart string, url string) (bool, map[string]string) {
 	return false, nil
 }
-func (this nodeVNormal) getOrigin() string {
-	return this.origin
+func (nvn nodeVNormal) getOrigin() string {
+	return nvn.origin
 }
 
 type nodeVPathReg struct {
@@ -135,16 +147,16 @@ type nodeVPathReg struct {
 	paramReg  *regexp.Regexp
 }
 
-// check url part is match this node value
-func (this nodeVPathReg) isMatch(urlPart string) (bool, bool) {
-	findStr := this.paramReg.FindString(urlPart)
+// check url part is match nvpg node value
+func (nvpg nodeVPathReg) isMatch(urlPart string) (bool, bool) {
+	findStr := nvpg.paramReg.FindString(urlPart)
 	return findStr == urlPart, false
 }
-func (this nodeVPathReg) paramValue(urlPart string, url string) (bool, map[string]string) {
-	return true, map[string]string{this.paramName: urlPart}
+func (nvpg nodeVPathReg) paramValue(urlPart string, url string) (bool, map[string]string) {
+	return true, map[string]string{nvpg.paramName: urlPart}
 }
-func (this nodeVPathReg) getOrigin() string {
-	return this.origin
+func (nvpg nodeVPathReg) getOrigin() string {
+	return nvpg.origin
 }
 
 type nodeVPathVar struct {
@@ -152,14 +164,14 @@ type nodeVPathVar struct {
 	paramName string
 }
 
-func (this nodeVPathVar) isMatch(urlPart string) (bool, bool) {
+func (nvpv nodeVPathVar) isMatch(urlPart string) (bool, bool) {
 	return true, false
 }
-func (this nodeVPathVar) paramValue(urlPart string, url string) (bool, map[string]string) {
-	return true, map[string]string{this.paramName: urlPart}
+func (nvpv nodeVPathVar) paramValue(urlPart string, url string) (bool, map[string]string) {
+	return true, map[string]string{nvpv.paramName: urlPart}
 }
-func (this nodeVPathVar) getOrigin() string {
-	return this.origin
+func (nvpv nodeVPathVar) getOrigin() string {
+	return nvpv.origin
 }
 
 type nodeVMatchAll struct {
@@ -167,13 +179,13 @@ type nodeVMatchAll struct {
 	prefix string
 }
 
-func (this nodeVMatchAll) isMatch(urlPart string) (bool, bool) {
-	return strings.HasPrefix(urlPart, this.prefix), true
+func (nvma nodeVMatchAll) isMatch(urlPart string) (bool, bool) {
+	return strings.HasPrefix(urlPart, nvma.prefix), true
 }
-func (this nodeVMatchAll) paramValue(urlPart string, url string) (bool, map[string]string) {
-	paramValue := strings.TrimPrefix(urlPart, this.prefix) + url
+func (nvma nodeVMatchAll) paramValue(urlPart string, url string) (bool, map[string]string) {
+	paramValue := strings.TrimPrefix(urlPart, nvma.prefix) + url
 	return true, map[string]string{"**": paramValue}
 }
-func (this nodeVMatchAll) getOrigin() string {
-	return this.origin
+func (nvma nodeVMatchAll) getOrigin() string {
+	return nvma.origin
 }

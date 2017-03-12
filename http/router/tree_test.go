@@ -19,6 +19,7 @@ func TestNode_insertChildren(t *testing.T) {
 	testUrl := ""
 	testNode.InsertChild(testUrl, &SimpleRestHandler{})
 	res, err := testNode.GetRT(testUrl, nil)
+	t.Error("Node_insertChildren have bug")
 	if err != nil || res == nil {
 		t.Error("Node_insertChildren have bug")
 	}
