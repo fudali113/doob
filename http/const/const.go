@@ -19,7 +19,8 @@ const (
 	COOKIE        = "Cookie"
 	BASIC_AUTH    = "Authorization"
 	WWW_AUTH      = "WWW-Authenticate"
-	ALLOW_METHODS = "Allow-Methods"
+	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Allow
+	ALLOW_METHODS = "Allow"
 	SERVER        = "Server"
 
 	CONTENT_TYPE = "Content-Type"

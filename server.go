@@ -69,12 +69,10 @@ func (d *Doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	handlerType := handler.GetHandler(method)
 	if handlerType == nil {
-
-		if config.AutoAddOptions && method == string(OPTIONS) {
-			methods := handler.GetMethods()
-			methods = append(methods, OPTIONS)
-			w.Header().Add(ALLOW_METHODS, strings.Join(methods, ","))
-		} else {
+		methods := handler.GetMethods()
+		methods = append(methods, OPTIONS)
+		w.Header().Add(ALLOW_METHODS, strings.Join(methods, ","))
+		if !(config.AutoAddOptions && method == string(OPTIONS)) {
 			log.Printf("match url : %s , but method con`t match", url)
 			w.WriteHeader(METHOD_NOT_ALLOWED)
 		}
