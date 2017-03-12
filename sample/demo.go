@@ -45,7 +45,7 @@ func testRedirect(ctx *doob.Context) {
 }
 
 // 返回处理 template 文件 path 和数据进行处理并返回生成的html
-func returnHtml(ctx *doob.Context) (string, interface{}) {
+func returnHTML(ctx *doob.Context) (string, interface{}) {
 	session := ctx.Seesion()
 	session.Set("test", "ooooooooo")
 	return "tpl:static/test", map[string]string{"Name": "sdddddddddddddddddddddddddddddd"}
@@ -58,7 +58,7 @@ func init() {
 	router.AddHandlerFunc("/doob/origin/{who}/{do}", origin, GET, POST, PUT, DELETE)
 	router.Get("forward", testForward)
 	router.Get("redirect1", testRedirect)
-	router.Get("/test", returnHtml)
+	router.Get("/test", returnHTML)
 	doobRouter := doob.GetRouter("doob")
 	doobRouter.Get("/di/{name}/{value}", di)
 	doobRouter.Get("/ctx/{haha:[0-9]{3,4}}", ctx)

@@ -16,27 +16,26 @@ var (
 
 func TestNode_insertChildren(t *testing.T) {
 
-	testUrl := ""
-	testNode.InsertChild(testUrl, &SimpleRestHandler{})
-	res, err := testNode.GetRT(testUrl, nil)
-	t.Error("Node_insertChildren have bug")
+	testURL := ""
+	testNode.InsertChild(testURL, &SimpleRestHandler{})
+	res, err := testNode.GetRT(testURL, nil)
 	if err != nil || res == nil {
 		t.Error("Node_insertChildren have bug")
 	}
 
-	testUrl1 := "/oooo/bbbb/**"
-	_testUrl1 := "/oooo/bbbb/o"
-	testNode.InsertChild(testUrl1, &SimpleRestHandler{})
-	_, err1 := testNode.GetRT(_testUrl1, nil)
+	testURL1 := "/oooo/bbbb/**"
+	_testURL1 := "/oooo/bbbb/o"
+	testNode.InsertChild(testURL1, &SimpleRestHandler{})
+	_, err1 := testNode.GetRT(_testURL1, nil)
 	if err1 != nil {
 		t.Error("Node_insertChildren have bug 1")
 	}
 
-	testUrl2 := "hhhh/{mmm:\\d{3}}/ddddd"
-	_testUrl2 := "hhhh/124/ddddd"
+	testURL2 := "hhhh/{mmm:\\d{3}}/ddddd"
+	_testURL2 := "hhhh/124/ddddd"
 	paramMap := map[string]string{}
-	testNode.InsertChild(testUrl2, &SimpleRestHandler{})
-	_, err2 := testNode.GetRT(_testUrl2, paramMap)
+	testNode.InsertChild(testURL2, &SimpleRestHandler{})
+	_, err2 := testNode.GetRT(_testURL2, paramMap)
 	if err2 != nil {
 		t.Error("Node_insertChildren have bug 3")
 	}
