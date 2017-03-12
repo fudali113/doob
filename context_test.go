@@ -1,15 +1,15 @@
 package doob
 
 import (
-	"testing"
 	"net/url"
+	"testing"
 )
 
-func Test_urlParse(t *testing.T)  {
-	testUrl := "/ooooo"
-	url , _ := url.Parse(testUrl)
+func Test_urlParse(t *testing.T) {
+	testURL := "/ooooo"
+	url, _ := url.Parse(testURL)
 	t.Log(url.Host, url.Path)
-	testUrl1 := "https://github.com/astaxie/beego/blob/master/context/context.go"
-	url1 , _ := url.Parse(testUrl1)
+	testURL1 := "https://github.com/astaxie/beego/blob/master/context/context.go"
+	url1, _ := url.Parse(testURL1)
 	t.Log(url1.Host, url1.Path, url1.Scheme)
 }

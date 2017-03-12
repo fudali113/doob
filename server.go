@@ -18,6 +18,7 @@ import (
 	reflectUtils "github.com/fudali113/doob/utils/reflect"
 )
 
+// Doob 实现 http Handle 接口
 type Doob struct {
 	Root         *router.Node
 	bFilters     []middleware.BeforeFilter
@@ -25,11 +26,14 @@ type Doob struct {
 	middlerwares []middleware.Middleware
 }
 
-// 实现 http Handle 接口
-func (this *Doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+// ServeHTTP 实现 http Handle 接口
+func (d *Doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	startTime := time.Now()
 	url := req.URL.Path
 	method := strings.ToLower(req.Method)
+
+	// 添加服务器header
+	w.Header().Add(SERVER, DOOB+VERSION)
 
 	defer log.Printf("url: %s | method: %s | deal time: %d ns", url, method, time.Now().Sub(startTime).Nanoseconds())
 	defer func() {
@@ -39,17 +43,17 @@ func (this *Doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}()
 
 	// 前处理
-	for i, _ := range middleware.Middlewares {
+	for i := range middleware.Middlewares {
 		mw := middleware.Middlewares[i]
-		if  mw.DoBeforeFilter(w, req) {
+		if mw.DoBeforeFilter(w, req) {
 			continue
 		} else {
 			return
 		}
 	}
 
-	for i, _ := range this.bFilters {
-		if this.bFilters[i].DoBeforeFilter(w, req) {
+	for i := range d.bFilters {
+		if d.bFilters[i].DoBeforeFilter(w, req) {
 			continue
 		} else {
 			return
@@ -57,7 +61,7 @@ func (this *Doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	paramMap := make(map[string]string, 0)
-	handler, err := this.Root.GetRT(url, paramMap)
+	handler, err := d.Root.GetRT(url, paramMap)
 	if err != nil {
 		w.WriteHeader(NOT_FOUND)
 		return
@@ -68,10 +72,8 @@ func (this *Doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 		if config.AutoAddOptions && method == string(OPTIONS) {
 			methods := handler.GetMethods()
-			returnDeal.DealReturn(&returnDeal.ReturnType{
-				TypeStr: returnDeal.DEFAULT_JSON_DEALER_NAME,
-				Data:    methods,
-			}, w)
+			methods = append(methods, OPTIONS)
+			w.Header().Add(ALLOW_METHODS, strings.Join(methods, ","))
 		} else {
 			log.Printf("match url : %s , but method con`t match", url)
 			w.WriteHeader(METHOD_NOT_ALLOWED)
@@ -86,11 +88,11 @@ func (this *Doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	invoke(matchResult, handlerType, w, req)
 
 	// 后处理
-	for i, _ := range this.lFilters {
-		this.lFilters[i].DoLaterFilter(w, req)
+	for i := range d.lFilters {
+		d.lFilters[i].DoLaterFilter(w, req)
 	}
 
-	for i, _ := range middleware.Middlewares {
+	for i := range middleware.Middlewares {
 		middleware.Middlewares[len(middleware.Middlewares)-1-i].DoBeforeFilter(w, req)
 	}
 }
@@ -187,7 +189,7 @@ func invoke(matchResult *router.MatchResult, handlerType register.RegisterHandle
 			var returns []interface{}
 			ciLen := paramType.CiLen
 			paraNames := make([]string, 0)
-			for k, _ := range matchResult.ParamMap {
+			for k := range matchResult.ParamMap {
 				paraNames = append(paraNames, k)
 			}
 			if ciLen > len(paraNames) {

@@ -3,6 +3,7 @@
 *.iml
 test
 demo
+debug
 
 # Folders
 _obj

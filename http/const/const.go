@@ -19,6 +19,8 @@ const (
 	COOKIE        = "Cookie"
 	BASIC_AUTH    = "Authorization"
 	WWW_AUTH      = "WWW-Authenticate"
+	ALLOW_METHODS = "Allow-Methods"
+	SERVER        = "Server"
 
 	CONTENT_TYPE = "Content-Type"
 	APP_JSON     = "application/json"
