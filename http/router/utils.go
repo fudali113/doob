@@ -17,12 +17,6 @@ var (
 	pathVarReg = utils.GetRegexp(pathVarRegStr)
 )
 
-func getURLNodeValue(url string) (string, string) {
-	url = strings.TrimPrefix(url, "/")
-	prefixAndSuffix := strings.SplitN(url, "/", 1)
-	return prefixAndSuffix[0], prefixAndSuffix[1]
-}
-
 // splitURL 获取url的前缀和剩余的部分
 func splitURL(URL string) (string, string) {
 	URL = strings.TrimPrefix(URL, urlSplitSymbol)
@@ -75,17 +69,7 @@ func createNodeValue(urlPart string) nodeV {
 	return &nodeVNormal{origin: urlPart}
 }
 
-func isMatch(fact, origin string, class int) bool {
-	switch class {
-	case normal:
-		return fact == origin
-	case pathReg:
-		return false
-	}
-	return false
-}
-
-// 根据参数获取参数类别
+// getClass 根据参数获取参数类别
 func getClass(s string) int {
 	if s == suffixMatchSymbol {
 		return matchAll
@@ -100,13 +84,7 @@ func getClass(s string) int {
 	return normal
 }
 
-func getRtAndErr(rt ReserveType) (ReserveType, error) {
-	if rt == nil {
-		return nil, NotMatch{"this url not rt"}
-	}
-	return rt, nil
-}
-
+// addValueToPathParam 将参数值添加到map中
 func addValueToPathParam(paramMap map[string]string, k, v string) {
 	if paramMap != nil {
 		paramMap[k] = v

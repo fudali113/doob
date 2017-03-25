@@ -2,6 +2,7 @@ package router
 
 import "fmt"
 
+// node的类别
 const (
 	normal = iota
 	pathReg
@@ -18,6 +19,16 @@ func GetRoot() *Node {
 // ReserveType 转化储存的实体类型
 // 一面后面修改麻烦
 type ReserveType RestHandler
+
+// conflictRTDealFunc 注册时冲突处理函数type
+type conflictRTDealFunc func(old, new ReserveType) ReserveType
+
+var (
+	crtdf conflictRTDealFunc = func(old, new ReserveType) ReserveType {
+		old.Joint(new)
+		return old
+	}
+)
 
 // Node 装载url每一个由`/`隔开的分段的实体
 // 递归结构
@@ -41,7 +52,7 @@ func (n *Node) insert(URL string, rt ReserveType) {
 		if n.handler == nil {
 			n.handler = rt
 		}
-		n.handler.Joint(rt)
+		n.handler = crtdf(n.handler, rt)
 		return
 	}
 	if n.children == nil {
@@ -71,7 +82,7 @@ func (n *Node) GetRT(url string, paramMap map[string]string) (ReserveType, error
 	isMatch := false
 	node := n.getNode(url, paramMap, &isMatch)
 	if !isMatch {
-		return nil, fmt.Errorf("not match")
+		return nil, NotMatch{"this url not rt"}
 	}
 	return node.handler, nil
 }
@@ -126,4 +137,66 @@ func (n *Node) GetNode(url string) *Node {
 // String 打印内容
 func (n *Node) String() string {
 	return fmt.Sprintf("{ class:%d,value:%v,handler:%v,children:%v }", n.class, n.value, n.handler, n.children)
+}
+
+// childrens 用于封装该node的所有子node
+// 不同的类型使用不同的储存方式
+// 以提高性能
+type childrens struct {
+	normal   map[string]*Node
+	regexp   []*Node
+	allMatch *Node
+	// 尾部全匹配以栈的形式随方法存入
+	// 当最后没有匹配是，将获取栈中的倒数第一个元素放回
+	suffixMatch *Node
+}
+
+// getNode 根据以`/`分段的url获取子Node
+// passageURL 一段URL
+func (c *childrens) getNode(passageURL string, paramMap map[string]string) (node *Node) {
+	ok := false
+	var v *Node
+	if c.normal != nil {
+		v, ok = c.normal[passageURL]
+	}
+	if ok {
+		node = v
+	} else if c.regexp != nil {
+		for i := 0; i < len(c.regexp); i++ {
+			nowNode := c.regexp[i]
+			value := nowNode.value
+			if match := value.isMatch(passageURL); match {
+				node = nowNode
+				value.paramValue(passageURL, paramMap)
+				break
+			}
+		}
+	} else if c.allMatch != nil {
+		node = c.allMatch
+		c.allMatch.value.paramValue(passageURL, paramMap)
+	}
+	return
+}
+
+func (c *childrens) insert(node *Node) {
+	switch node.class {
+	case normal:
+		if c.normal == nil {
+			c.normal = make(map[string]*Node)
+		}
+		c.normal[node.value.getOrigin()] = node
+	case pathReg:
+		if c.regexp == nil {
+			c.regexp = make([]*Node, 0, 3)
+		}
+		c.regexp = append(c.regexp, node)
+	case pathVar:
+		c.allMatch = node
+	case matchAll:
+		c.suffixMatch = node
+	}
+}
+
+func (c *childrens) String() string {
+	return fmt.Sprintf("{ normal:%v,regexp:%v,allMatch:%v,suffixMatch:%v }", c.normal, c.regexp, c.allMatch, c.suffixMatch)
 }

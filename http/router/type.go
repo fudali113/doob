@@ -103,62 +103,8 @@ func (srh *SimpleRestHandler) Joint(restHandler RestHandler) {
 	}
 }
 
-type childrens struct {
-	normal   map[string]*Node
-	regexp   []*Node
-	allMatch *Node
-	// 尾部全匹配以栈的形式随方法存入
-	// 当最后没有匹配是，将获取栈中的倒数第一个元素放回
-	suffixMatch *Node
-}
-
-// getNode 根据以`/`分段的url获取子Node
-// passageURL 一段URL
-func (c *childrens) getNode(passageURL string, paramMap map[string]string) (node *Node) {
-	ok := false
-	var v *Node
-	if c.normal != nil {
-		v, ok = c.normal[passageURL]
-	}
-	if ok {
-		node = v
-	} else if c.regexp != nil {
-		for i := 0; i < len(c.regexp); i++ {
-			nowNode := c.regexp[i]
-			value := nowNode.value
-			if match := value.isMatch(passageURL); match {
-				node = nowNode
-				value.paramValue(passageURL, paramMap)
-				break
-			}
-		}
-	} else if c.allMatch != nil {
-		node = c.allMatch
-		c.allMatch.value.paramValue(passageURL, paramMap)
-	}
-	return
-}
-
-func (c *childrens) insert(node *Node) {
-	switch node.class {
-	case normal:
-		if c.normal == nil {
-			c.normal = make(map[string]*Node)
-		}
-		c.normal[node.value.getOrigin()] = node
-	case pathReg:
-		if c.regexp == nil {
-			c.regexp = make([]*Node, 0, 3)
-		}
-		c.regexp = append(c.regexp, node)
-	case pathVar:
-		c.allMatch = node
-	case matchAll:
-		c.suffixMatch = node
-	}
-}
-
 // 各类型储存接口
+// FIXME
 type nodeV interface {
 	// 是否匹配
 	isMatch(urlPart string) bool
