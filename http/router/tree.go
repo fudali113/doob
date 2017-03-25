@@ -36,7 +36,7 @@ func (n *Node) InsertChild(URL string, rt ReserveType) {
 }
 
 func (n *Node) insert(URL string, rt ReserveType) {
-	prefix, other := splitUrl(URL)
+	prefix, other := splitURL(URL)
 	if prefix == "" {
 		if n.handler == nil {
 			n.handler = rt
@@ -87,7 +87,7 @@ func (n *Node) getNode(url string, paramMap map[string]string, isMatch *bool) (n
 		node = n
 	}
 
-	prefix, other := splitUrl(url)
+	prefix, other := splitURL(url)
 	if prefix == "" {
 		setNode(n)
 		return
@@ -95,7 +95,7 @@ func (n *Node) getNode(url string, paramMap map[string]string, isMatch *bool) (n
 	childrens := n.children
 	defer func() {
 		if childrens.suffixMatch != nil && !*isMatch {
-			addValueToPathParam(paramMap, "**", url)
+			addValueToPathParam(paramMap, suffixMatchSymbol, url)
 			setNode(childrens.suffixMatch)
 		}
 	}()
@@ -123,6 +123,7 @@ func (n *Node) GetNode(url string) *Node {
 	return n.getNode(url, nil, &_true)
 }
 
+// String 打印内容
 func (n *Node) String() string {
 	return fmt.Sprintf("{ class:%d,value:%v,handler:%v,children:%v }", n.class, n.value, n.handler, n.children)
 }

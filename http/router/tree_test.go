@@ -23,7 +23,7 @@ func TestNode_insertChildren(t *testing.T) {
 		t.Error("Node_insertChildren have bug")
 	}
 
-	testURL1 := "/oooo/bbbb/**"
+	testURL1 := "/oooo/*/*"
 	_testURL1 := "/oooo/bbbb/o/oooo"
 	testNode.InsertChild(testURL1, &SimpleRestHandler{})
 	paramMap := map[string]string{}

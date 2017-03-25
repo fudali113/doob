@@ -8,22 +8,23 @@ import (
 )
 
 const (
-	urlSplitSymbol = "/"
-	pathVarRegStr  = "{\\S+}"
+	urlSplitSymbol    = "/"
+	pathVarRegStr     = "{\\S+}"
+	suffixMatchSymbol = "*"
 )
 
 var (
 	pathVarReg = utils.GetRegexp(pathVarRegStr)
 )
 
-func getUrlNodeValue(url string) (string, string) {
+func getURLNodeValue(url string) (string, string) {
 	url = strings.TrimPrefix(url, "/")
 	prefixAndSuffix := strings.SplitN(url, "/", 1)
 	return prefixAndSuffix[0], prefixAndSuffix[1]
 }
 
-// splitUrl 获取url的前缀和剩余的部分
-func splitUrl(URL string) (string, string) {
+// splitURL 获取url的前缀和剩余的部分
+func splitURL(URL string) (string, string) {
 	URL = strings.TrimPrefix(URL, urlSplitSymbol)
 	prefixAndOther := strings.SplitN(URL, urlSplitSymbol, 2)
 	if len(prefixAndOther) == 1 {
@@ -34,11 +35,19 @@ func splitUrl(URL string) (string, string) {
 
 // 根据url的每一部分生成一个特定的value
 // 用于寻找路径是做匹配
+// bug  当初先`/d/s*`情况时将出现bug
 func createNodeValue(urlPart string) nodeV {
-	if strings.HasSuffix(urlPart, "**") {
-		prefixStr := strings.Replace(urlPart, "**", "", 1)
-		if strings.HasSuffix(prefixStr, "**") {
-			log.Panic("只允许在最后添加**")
+	if strings.HasSuffix(urlPart, suffixMatchSymbol) {
+		prefixStr := strings.Replace(urlPart, suffixMatchSymbol, "", 1)
+		if strings.HasSuffix(prefixStr, suffixMatchSymbol) {
+			log.Panic(`
+			"*" 字符只允许出现在路由的最末端
+			right: 
+				- a/b/cap/*
+			error:
+				- /a/d/**
+				- /*/d/c  这样你后面的参数将无效
+			`)
 		}
 		return &nodeVMatchAll{
 			origin: urlPart,
@@ -78,7 +87,7 @@ func isMatch(fact, origin string, class int) bool {
 
 // 根据参数获取参数类别
 func getClass(s string) int {
-	if s == "**" {
+	if s == suffixMatchSymbol {
 		return matchAll
 	}
 	if matchStr := pathVarReg.FindAllString(s, -1); len(matchStr) > 0 {
