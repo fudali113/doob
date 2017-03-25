@@ -40,7 +40,7 @@ func TestNode_insertChildren(t *testing.T) {
 		t.Error("Node_insertChildren have bug 3")
 	}
 	if paramMap["mmm"] != "124" {
-		t.Error("Node_insertChildren have bug 3")
+		t.Error("Node_insertChildren have bug 3 + ")
 	}
 	log.Print(testNode)
 }

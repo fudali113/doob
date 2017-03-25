@@ -1,9 +1,6 @@
 package router
 
-import (
-	"fmt"
-	"log"
-)
+import "fmt"
 
 const (
 	normal = iota
@@ -36,7 +33,6 @@ type Node struct {
 // 直到url到最后
 func (n *Node) InsertChild(URL string, rt ReserveType) {
 	n.insert(URL, rt)
-	log.Print(n, "==============")
 }
 
 func (n *Node) insert(URL string, rt ReserveType) {
@@ -75,15 +71,17 @@ func (n *Node) GetRT(url string, paramMap map[string]string) (ReserveType, error
 // 用户获取路由Node
 // 与下方的GetNode不同，GetNode用于获取注册Node
 func (n *Node) getNode(url string, paramMap map[string]string, isMatch *bool) (node *Node) {
-	log.Println("-----", n, url)
-	prefix, other := splitUrl(url)
-	if prefix == "" {
-		return n
-	}
+
 	// 设置node的值并返回
 	var setNode = func(n *Node) {
 		*isMatch = true
 		node = n
+	}
+
+	prefix, other := splitUrl(url)
+	if prefix == "" {
+		setNode(n)
+		return
 	}
 	childrens := n.children
 	defer func() {
@@ -92,8 +90,10 @@ func (n *Node) getNode(url string, paramMap map[string]string, isMatch *bool) (n
 		}
 	}()
 	node = childrens.getNode(prefix)
-	if other == "" && node != nil {
-		setNode(node)
+	if other == "" {
+		if node != nil {
+			setNode(node)
+		}
 	} else {
 		node = node.getNode(other, paramMap, isMatch)
 	}

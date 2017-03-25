@@ -137,7 +137,6 @@ func (c *childrens) getNode(passageURL string) (node *Node) {
 }
 
 func (c *childrens) insert(node *Node) {
-	log.Println("++++++", node.class)
 	switch node.class {
 	case normal:
 		if c.normal == nil {
