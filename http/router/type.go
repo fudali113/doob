@@ -103,23 +103,62 @@ func (srh *SimpleRestHandler) Joint(restHandler RestHandler) {
 	}
 }
 
-// 实现Sort的接口
-type nodes []*Node
+type childrens struct {
+	normal   map[string]*Node
+	regexp   []*Node
+	allMatch *Node
+	// 尾部全匹配以栈的形式随方法存入
+	// 当最后没有匹配是，将获取栈中的倒数第一个元素放回
+	suffixMatch *Node
+}
 
-func (n nodes) Len() int {
-	return len(n)
+// getNode 根据以`/`分段的url获取子Node
+// passageURL 一段URL
+func (c *childrens) getNode(passageURL string) (node *Node) {
+	ok := false
+	var v *Node
+	if c.normal != nil {
+		v, ok = c.normal[passageURL]
+	}
+	if ok {
+		node = v
+	} else if c.regexp != nil {
+		for i := 0; i < len(c.regexp); i++ {
+			nowNode := c.regexp[i]
+			if match, _ := nowNode.value.isMatch(passageURL); match {
+				node = nowNode
+				break
+			}
+		}
+	} else if c.allMatch != nil {
+		node = c.allMatch
+	}
+	return
 }
-func (n nodes) Swap(i, j int) {
-	n[i], n[j] = n[j], n[i]
-}
-func (n nodes) Less(i, j int) bool {
-	a := n[i]
-	b := n[j]
-	return b.class > a.class
+
+func (c *childrens) insert(node *Node) {
+	log.Println("++++++", node.class)
+	switch node.class {
+	case normal:
+		if c.normal == nil {
+			c.normal = make(map[string]*Node)
+		}
+		c.normal[node.value.getOrigin()] = node
+	case pathReg:
+		if c.regexp == nil {
+			c.regexp = make([]*Node, 0, 3)
+		}
+		c.regexp = append(c.regexp, node)
+	case pathVar:
+		c.allMatch = node
+	case matchAll:
+		c.suffixMatch = node
+	}
 }
 
 // 各类型储存接口
 type nodeV interface {
+	// 是否匹配
 	isMatch(urlPart string) (bool, bool)
 	// if need pathvar
 	// return in this method

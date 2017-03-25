@@ -69,7 +69,7 @@ func Benchmark_test(b *testing.B) {
 		class:    normal,
 		value:    nil,
 		handler:  nil,
-		children: make([]*Node, 0),
+		children: new(childrens),
 	}
 	testVar := &RegisterHandler{
 		Handler: &testType{

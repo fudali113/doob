@@ -10,7 +10,7 @@ var (
 		class:    normal,
 		value:    nil,
 		handler:  nil,
-		children: make([]*Node, 0),
+		children: new(childrens),
 	}
 )
 
@@ -43,41 +43,6 @@ func TestNode_insertChildren(t *testing.T) {
 		t.Error("Node_insertChildren have bug 3")
 	}
 	log.Print(testNode)
-}
-
-func TestNode_Sort(t *testing.T) {
-
-	nodeRoot := &Node{
-		class:    normal,
-		value:    nil,
-		handler:  nil,
-		children: make([]*Node, 0),
-	}
-
-	nodeSlice1 := []*Node{
-		&Node{class: 12},
-		&Node{class: 15},
-		&Node{class: 11},
-		&Node{class: 16},
-	}
-
-	nodeSlice2 := []*Node{
-		&Node{class: 16},
-		&Node{class: 11},
-	}
-	nodeSlice := []*Node{
-		&Node{class: 0},
-		&Node{class: 1},
-		&Node{class: 2, children: nodeSlice2},
-		&Node{class: 3},
-		&Node{class: 2},
-		&Node{class: 5, children: nodeSlice1},
-		&Node{class: 1},
-		&Node{class: 6},
-	}
-
-	nodeRoot.children = nodes(nodeSlice)
-	nodeRoot.Sort()
 }
 
 func TestNode_getNode(t *testing.T) {

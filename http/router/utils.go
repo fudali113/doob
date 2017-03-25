@@ -22,10 +22,10 @@ func getUrlNodeValue(url string) (string, string) {
 	return prefixAndSuffix[0], prefixAndSuffix[1]
 }
 
-// 获取url的前缀和剩余的部分
-func splitUrl(url string) (string, string) {
-	url = strings.TrimPrefix(url, urlSplitSymbol)
-	prefixAndOther := strings.SplitN(url, urlSplitSymbol, 2)
+// splitUrl 获取url的前缀和剩余的部分
+func splitUrl(URL string) (string, string) {
+	URL = strings.TrimPrefix(URL, urlSplitSymbol)
+	prefixAndOther := strings.SplitN(URL, urlSplitSymbol, 2)
 	if len(prefixAndOther) == 1 {
 		return prefixAndOther[0], ""
 	}
