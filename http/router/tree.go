@@ -47,13 +47,22 @@ func (n *Node) insert(URL string, rt ReserveType) {
 	if n.children == nil {
 		n.children = new(childrens)
 	}
-	node := n.children.getNode(prefix)
+	node := n.children.getNode(prefix, nil)
 	if node == nil {
 		node = creatNode(prefix)
 	}
 	node.insert(other, rt)
 	n.children.insert(node)
 
+}
+
+// creatNode create a new Node
+func creatNode(passageURL string) *Node {
+	return &Node{
+		class:    getClass(passageURL),
+		value:    createNodeValue(passageURL),
+		children: new(childrens),
+	}
 }
 
 // GetRT get reserve type
@@ -86,16 +95,17 @@ func (n *Node) getNode(url string, paramMap map[string]string, isMatch *bool) (n
 	childrens := n.children
 	defer func() {
 		if childrens.suffixMatch != nil && !*isMatch {
+			addValueToPathParam(paramMap, "**", url)
 			setNode(childrens.suffixMatch)
 		}
 	}()
-	node = childrens.getNode(prefix)
-	if other == "" {
-		if node != nil {
+	node = childrens.getNode(prefix, paramMap)
+	if node != nil {
+		if other == "" {
 			setNode(node)
+		} else {
+			node = node.getNode(other, paramMap, isMatch)
 		}
-	} else {
-		node = node.getNode(other, paramMap, isMatch)
 	}
 	return
 }
@@ -110,25 +120,9 @@ func (n *Node) GetNode(url string) *Node {
 		n.InsertChild(url, nil)
 	}
 	_true := true
-	return n.getNode(url, map[string]string{}, &_true)
+	return n.getNode(url, nil, &_true)
 }
 
 func (n *Node) String() string {
 	return fmt.Sprintf("{ class:%d,value:%v,handler:%v,children:%v }", n.class, n.value, n.handler, n.children)
-}
-
-// creatNode create a new Node
-func creatNode(passageURL string) *Node {
-	return &Node{
-		class:    getClass(passageURL),
-		value:    createNodeValue(passageURL),
-		children: new(childrens),
-	}
-}
-
-func getRtAndErr(rt ReserveType) (ReserveType, error) {
-	if rt == nil {
-		return nil, NotMatch{"this url not rt"}
-	}
-	return rt, nil
 }

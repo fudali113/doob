@@ -90,3 +90,16 @@ func getClass(s string) int {
 	}
 	return normal
 }
+
+func getRtAndErr(rt ReserveType) (ReserveType, error) {
+	if rt == nil {
+		return nil, NotMatch{"this url not rt"}
+	}
+	return rt, nil
+}
+
+func addValueToPathParam(paramMap map[string]string, k, v string) {
+	if paramMap != nil {
+		paramMap[k] = v
+	}
+}
