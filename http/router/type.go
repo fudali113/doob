@@ -103,27 +103,68 @@ func (srh *SimpleRestHandler) Joint(restHandler RestHandler) {
 	}
 }
 
-// 实现Sort的接口
-type nodes []*Node
+type childrens struct {
+	normal   map[string]*Node
+	regexp   []*Node
+	allMatch *Node
+	// 尾部全匹配以栈的形式随方法存入
+	// 当最后没有匹配是，将获取栈中的倒数第一个元素放回
+	suffixMatch *Node
+}
 
-func (n nodes) Len() int {
-	return len(n)
+// getNode 根据以`/`分段的url获取子Node
+// passageURL 一段URL
+func (c *childrens) getNode(passageURL string, paramMap map[string]string) (node *Node) {
+	ok := false
+	var v *Node
+	if c.normal != nil {
+		v, ok = c.normal[passageURL]
+	}
+	if ok {
+		node = v
+	} else if c.regexp != nil {
+		for i := 0; i < len(c.regexp); i++ {
+			nowNode := c.regexp[i]
+			value := nowNode.value
+			if match := value.isMatch(passageURL); match {
+				node = nowNode
+				value.paramValue(passageURL, paramMap)
+				break
+			}
+		}
+	} else if c.allMatch != nil {
+		node = c.allMatch
+		c.allMatch.value.paramValue(passageURL, paramMap)
+	}
+	return
 }
-func (n nodes) Swap(i, j int) {
-	n[i], n[j] = n[j], n[i]
-}
-func (n nodes) Less(i, j int) bool {
-	a := n[i]
-	b := n[j]
-	return b.class > a.class
+
+func (c *childrens) insert(node *Node) {
+	switch node.class {
+	case normal:
+		if c.normal == nil {
+			c.normal = make(map[string]*Node)
+		}
+		c.normal[node.value.getOrigin()] = node
+	case pathReg:
+		if c.regexp == nil {
+			c.regexp = make([]*Node, 0, 3)
+		}
+		c.regexp = append(c.regexp, node)
+	case pathVar:
+		c.allMatch = node
+	case matchAll:
+		c.suffixMatch = node
+	}
 }
 
 // 各类型储存接口
 type nodeV interface {
-	isMatch(urlPart string) (bool, bool)
+	// 是否匹配
+	isMatch(urlPart string) bool
 	// if need pathvar
 	// return in this method
-	paramValue(urlPart string, url string) (bool, map[string]string)
+	paramValue(urlPart string, paramMap map[string]string)
 	getOrigin() string
 }
 
@@ -131,11 +172,10 @@ type nodeVNormal struct {
 	origin string
 }
 
-func (nvn nodeVNormal) isMatch(urlPart string) (bool, bool) {
-	return nvn.origin == urlPart, false
+func (nvn nodeVNormal) isMatch(urlPart string) bool {
+	return nvn.origin == urlPart
 }
-func (nvn nodeVNormal) paramValue(urlPart string, url string) (bool, map[string]string) {
-	return false, nil
+func (nvn nodeVNormal) paramValue(urlPart string, paramMap map[string]string) {
 }
 func (nvn nodeVNormal) getOrigin() string {
 	return nvn.origin
@@ -148,12 +188,12 @@ type nodeVPathReg struct {
 }
 
 // check url part is match nvpg node value
-func (nvpg nodeVPathReg) isMatch(urlPart string) (bool, bool) {
+func (nvpg nodeVPathReg) isMatch(urlPart string) bool {
 	findStr := nvpg.paramReg.FindString(urlPart)
-	return findStr == urlPart, false
+	return findStr == urlPart
 }
-func (nvpg nodeVPathReg) paramValue(urlPart string, url string) (bool, map[string]string) {
-	return true, map[string]string{nvpg.paramName: urlPart}
+func (nvpg nodeVPathReg) paramValue(urlPart string, paramMap map[string]string) {
+	addValueToPathParam(paramMap, nvpg.paramName, urlPart)
 }
 func (nvpg nodeVPathReg) getOrigin() string {
 	return nvpg.origin
@@ -164,11 +204,11 @@ type nodeVPathVar struct {
 	paramName string
 }
 
-func (nvpv nodeVPathVar) isMatch(urlPart string) (bool, bool) {
-	return true, false
+func (nvpv nodeVPathVar) isMatch(urlPart string) bool {
+	return true
 }
-func (nvpv nodeVPathVar) paramValue(urlPart string, url string) (bool, map[string]string) {
-	return true, map[string]string{nvpv.paramName: urlPart}
+func (nvpv nodeVPathVar) paramValue(urlPart string, paramMap map[string]string) {
+	addValueToPathParam(paramMap, nvpv.paramName, urlPart)
 }
 func (nvpv nodeVPathVar) getOrigin() string {
 	return nvpv.origin
@@ -179,12 +219,10 @@ type nodeVMatchAll struct {
 	prefix string
 }
 
-func (nvma nodeVMatchAll) isMatch(urlPart string) (bool, bool) {
-	return strings.HasPrefix(urlPart, nvma.prefix), true
+func (nvma nodeVMatchAll) isMatch(urlPart string) bool {
+	return strings.HasPrefix(urlPart, nvma.prefix)
 }
-func (nvma nodeVMatchAll) paramValue(urlPart string, url string) (bool, map[string]string) {
-	paramValue := strings.TrimPrefix(urlPart, nvma.prefix) + url
-	return true, map[string]string{"**": paramValue}
+func (nvma nodeVMatchAll) paramValue(urlPart string, paramMap map[string]string) {
 }
 func (nvma nodeVMatchAll) getOrigin() string {
 	return nvma.origin

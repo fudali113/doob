@@ -11,11 +11,12 @@ var (
 	errDealers = []ErrDealer{}
 )
 
+// AddErrDealer 添加一个错误处理器
 func AddErrDealer(errDealer ...ErrDealer) {
 	errDealers = append(errDealers, errDealer...)
 }
 
-// check panic err , match err and deal
+// CheckErr check panic err , match err and deal
 func CheckErr(err interface{}, w http.ResponseWriter, r *http.Request, isDev bool) {
 
 	defer func() {

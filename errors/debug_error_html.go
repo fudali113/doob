@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	debug_html_tpl_str = `
+	debugHTMLTplStr = `
 		<html>
 			<body>
 				<font size="8" color="red">error info : </font>
@@ -23,6 +23,7 @@ const (
 	`
 )
 
+// WriteErrInfo 返回错误信息
 func WriteErrInfo(err interface{}, stack []byte, w http.ResponseWriter) {
 	stackStr := string(stack)
 	stackSlice := utils.Split(stackStr, "\n")
@@ -49,7 +50,7 @@ func WriteErrInfo(err interface{}, stack []byte, w http.ResponseWriter) {
 		}
 		stackStr += html
 	}
-	html := fmt.Sprintf(debug_html_tpl_str, err, stackStr)
+	html := fmt.Sprintf(debugHTMLTplStr, err, stackStr)
 	w.Header().Add(CONTENT_TYPE, APP_HTML)
 	w.Write([]byte(html))
 }

@@ -35,7 +35,7 @@ func (d *Doob) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// 添加服务器header
 	w.Header().Add(SERVER, DOOB+VERSION)
 
-	defer log.Printf("url: %s | method: %s | deal time: %d ns", url, method, time.Now().Sub(startTime).Nanoseconds())
+	defer log.Printf("url: %s | method: %s | consuming: %d ns", url, method, time.Now().Sub(startTime).Nanoseconds())
 	defer func() {
 		if err := recover(); err != nil {
 			errors.CheckErr(err, w, req, config.IsDev)

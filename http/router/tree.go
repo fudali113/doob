@@ -1,10 +1,6 @@
 package router
 
-import (
-	"fmt"
-	"sort"
-	"strings"
-)
+import "fmt"
 
 const (
 	normal = iota
@@ -29,59 +25,92 @@ type Node struct {
 	class    int
 	value    nodeV
 	handler  RestHandler
-	children nodes
+	children *childrens
 }
 
 // InsertChild 插入一个子node到一个node中
 // 递归插入
-// 知道url到最后
-func (n *Node) InsertChild(url string, rt ReserveType) error {
-	prefix, other := splitUrl(url)
-	for _, node := range n.children {
-		if node.value.getOrigin() == prefix {
-			if other == "" {
-				if node.handler == nil {
-					node.handler = rt
-				} else {
-					node.handler.Joint(rt)
-				}
-			} else {
-				node.InsertChild(other, rt)
-			}
-			return nil
+// 直到url到最后
+func (n *Node) InsertChild(URL string, rt ReserveType) {
+	n.insert(URL, rt)
+}
+
+func (n *Node) insert(URL string, rt ReserveType) {
+	prefix, other := splitURL(URL)
+	if prefix == "" {
+		if n.handler == nil {
+			n.handler = rt
 		}
+		n.handler.Joint(rt)
+		return
 	}
-	newNode, isOver := creatNode(url, rt)
-	n.children = append(n.children, newNode)
-	if !isOver {
-		newNode.InsertChild(other, rt)
+	if n.children == nil {
+		n.children = new(childrens)
 	}
-	return nil
+	node := n.children.getNode(prefix, nil)
+	if node == nil {
+		node = creatNode(prefix)
+	}
+	node.insert(other, rt)
+	n.children.insert(node)
+
+}
+
+// creatNode create a new Node
+func creatNode(passageURL string) *Node {
+	return &Node{
+		class:    getClass(passageURL),
+		value:    createNodeValue(passageURL),
+		children: new(childrens),
+	}
 }
 
 // GetRT get reserve type
 // if reserve type value is nil , return error
 func (n *Node) GetRT(url string, paramMap map[string]string) (ReserveType, error) {
-	prefix, other := splitUrl(url)
-	for _, node := range n.children {
-		nodeValue := node.value
-		if match, over := nodeValue.isMatch(prefix); match {
-			hasParam, paramMapPart := nodeValue.paramValue(prefix, url)
-			if hasParam && paramMap != nil {
-				for k, v := range paramMapPart {
-					paramMap[k] = v
-				}
-			}
-			if over || other == "" {
-				return getRtAndErr(node.handler)
-			}
-			return node.GetRT(other, paramMap)
-		}
+	isMatch := false
+	node := n.getNode(url, paramMap, &isMatch)
+	if !isMatch {
+		return nil, fmt.Errorf("not match")
 	}
-	return getRtAndErr(nil)
+	return node.handler, nil
 }
 
-// GetNode 根据url 获取一个node
+// getNode 递归获取 匹配的node
+// 用户获取路由Node
+// 与下方的GetNode不同，GetNode用于获取注册Node
+func (n *Node) getNode(url string, paramMap map[string]string, isMatch *bool) (node *Node) {
+
+	// 设置node的值并返回
+	var setNode = func(n *Node) {
+		*isMatch = true
+		node = n
+	}
+
+	prefix, other := splitURL(url)
+	if prefix == "" {
+		setNode(n)
+		return
+	}
+	childrens := n.children
+	defer func() {
+		if childrens.suffixMatch != nil && !*isMatch {
+			addValueToPathParam(paramMap, suffixMatchSymbol, url)
+			setNode(childrens.suffixMatch)
+		}
+	}()
+	node = childrens.getNode(prefix, paramMap)
+	if node != nil {
+		if other == "" {
+			setNode(node)
+		} else {
+			node = node.getNode(other, paramMap, isMatch)
+		}
+	}
+	return
+}
+
+// GetNode 根据url 获取一个注册Node
 func (n *Node) GetNode(url string) *Node {
 	if url == "" {
 		return n
@@ -90,51 +119,11 @@ func (n *Node) GetNode(url string) *Node {
 	if err != nil {
 		n.InsertChild(url, nil)
 	}
-	prefix, other := splitUrl(url)
-	for _, node := range n.children {
-		if node.value.getOrigin() == prefix {
-			return node.GetNode(other)
-		}
-	}
-	return nil
+	_true := true
+	return n.getNode(url, nil, &_true)
 }
 
-// Sort 对子node进行排序
-// 将会递归所有子node排序
-func (n *Node) Sort() {
-	if n.children == nil {
-		return
-	}
-	sort.Sort(n.children)
-	for _, node := range n.children {
-		node.Sort()
-	}
-}
-
+// String 打印内容
 func (n *Node) String() string {
-	return fmt.Sprintf("{ class:%d,value:%s,handler:%v,children:%v }", n.class, n.value, n.handler, n.children)
-}
-
-// create a new Node
-func creatNode(url string, rt ReserveType) (newNode *Node, isOver bool) {
-	prefix, other := splitUrl(url)
-	isOver = false
-	newNode = &Node{
-		class: getClass(prefix),
-		value: createNodeValue(prefix),
-	}
-	if strings.TrimSpace(other) == "" {
-		newNode.handler = rt
-		isOver = true
-	} else {
-		newNode.children = make([]*Node, 0)
-	}
-	return
-}
-
-func getRtAndErr(rt ReserveType) (ReserveType, error) {
-	if rt == nil {
-		return nil, NotMatch{"this url not rt"}
-	}
-	return rt, nil
+	return fmt.Sprintf("{ class:%d,value:%v,handler:%v,children:%v }", n.class, n.value, n.handler, n.children)
 }
