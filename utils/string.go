@@ -6,9 +6,8 @@ import (
 	"strings"
 )
 
-/**
- * golang1.6 Strings.split()有问题
- */
+// Split golang1.6 Strings.split()有问题
+// 如果以``" "`分割将出现很多`""`字符串
 func Split(s, sep string) []string {
 	sepSave := 0
 	n := strings.Count(s, sep) + 1
@@ -35,7 +34,7 @@ func Split(s, sep string) []string {
 	return a[:na]
 }
 
-// 获取正则表达式
+// GetRegexp 获取正则表达式
 func GetRegexp(reg string) *regexp.Regexp {
 	r, err := regexp.Compile(reg)
 	if err != nil {
@@ -43,4 +42,44 @@ func GetRegexp(reg string) *regexp.Regexp {
 		return nil
 	}
 	return r
+}
+
+// GetGroupMatch 成对的获取字符串
+// md ， 正则平衡组太难理解
+func GetGroupMatch(origin string, prefix, suffix rune) (match, notMatch []string) {
+	originRunes := []rune(origin)
+	getGroupMatch(originRunes, prefix, suffix, &match, &notMatch)
+	return
+}
+
+func getGroupMatch(originRunes []rune, prefix, suffix rune, match, notMatch *[]string) {
+	prefixMatchIndex := 0
+	suffixMatchIndex := 0
+	nowPrefixMatchNum := 0
+	nowSuffixMatchNum := 0
+	for i := 0; i < len(originRunes); i++ {
+		nowRune := originRunes[i]
+		if nowRune == prefix {
+			if nowPrefixMatchNum == 0 {
+				prefixMatchIndex = i
+			}
+			nowPrefixMatchNum++
+		}
+		if nowRune == suffix && nowPrefixMatchNum > nowSuffixMatchNum {
+			suffixMatchIndex = i
+			nowSuffixMatchNum++
+		}
+		if nowPrefixMatchNum > 0 && nowPrefixMatchNum == nowSuffixMatchNum {
+			*notMatch = append(*notMatch, string(originRunes[0:prefixMatchIndex]))
+			*match = append(*match, string(originRunes[prefixMatchIndex:suffixMatchIndex+1]))
+			nextOrigin := originRunes[suffixMatchIndex+1:]
+			if len(nextOrigin) > 0 {
+				getGroupMatch(nextOrigin, prefix, suffix, match, notMatch)
+			}
+			break
+		}
+		if i == len(originRunes)-1 {
+			*notMatch = append(*notMatch, string(originRunes))
+		}
+	}
 }

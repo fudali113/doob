@@ -1,6 +1,10 @@
 package router
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"log"
+)
 
 // node的类别
 const (
@@ -10,10 +14,14 @@ const (
 	matchAll
 )
 
+var (
+	root = &Node{Class: normal}
+)
+
 // GetRoot get a root node
 // this node start with '/'
 func GetRoot() *Node {
-	return &Node{class: normal}
+	return root
 }
 
 // ReserveType 转化储存的实体类型
@@ -33,10 +41,10 @@ var (
 // Node 装载url每一个由`/`隔开的分段的实体
 // 递归结构
 type Node struct {
-	class    int
-	value    nodeV
+	Class    int
+	Value    nodeV
 	handler  RestHandler
-	children *childrens
+	Children *childrens
 }
 
 // InsertChild 插入一个子node到一个node中
@@ -55,30 +63,31 @@ func (n *Node) insert(URL string, rt ReserveType) {
 		n.handler = crtdf(n.handler, rt)
 		return
 	}
-	if n.children == nil {
-		n.children = new(childrens)
+	if n.Children == nil {
+		n.Children = new(childrens)
 	}
-	node := n.children.getNode(prefix, nil)
+	node := n.Children.getNode(prefix, nil)
 	if node == nil {
 		node = creatNode(prefix)
 	}
 	node.insert(other, rt)
-	n.children.insert(node)
+	n.Children.insert(node)
 
 }
 
 // creatNode create a new Node
 func creatNode(passageURL string) *Node {
 	return &Node{
-		class:    getClass(passageURL),
-		value:    createNodeValue(passageURL),
-		children: new(childrens),
+		Class:    getClass(passageURL),
+		Value:    createNodeValue(passageURL),
+		Children: new(childrens),
 	}
 }
 
 // GetRT get reserve type
 // if reserve type value is nil , return error
 func (n *Node) GetRT(url string, paramMap map[string]string) (ReserveType, error) {
+	log.Println("root_>", root)
 	isMatch := false
 	node := n.getNode(url, paramMap, &isMatch)
 	if !isMatch {
@@ -103,11 +112,11 @@ func (n *Node) getNode(url string, paramMap map[string]string, isMatch *bool) (n
 		setNode(n)
 		return
 	}
-	childrens := n.children
+	childrens := n.Children
 	defer func() {
-		if childrens.suffixMatch != nil && !*isMatch {
+		if childrens.SuffixMatch != nil && !*isMatch {
 			addValueToPathParam(paramMap, suffixMatchSymbol, url)
-			setNode(childrens.suffixMatch)
+			setNode(childrens.SuffixMatch)
 		}
 	}()
 	node = childrens.getNode(prefix, paramMap)
@@ -136,19 +145,20 @@ func (n *Node) GetNode(url string) *Node {
 
 // String 打印内容
 func (n *Node) String() string {
-	return fmt.Sprintf("{ class:%d,value:%v,handler:%v,children:%v }", n.class, n.value, n.handler, n.children)
+	jsonStr, _ := json.Marshal(n)
+	return string(jsonStr)
 }
 
 // childrens 用于封装该node的所有子node
 // 不同的类型使用不同的储存方式
 // 以提高性能
 type childrens struct {
-	normal   map[string]*Node
-	regexp   []*Node
-	allMatch *Node
+	Normal   map[string]*Node
+	Regexp   []*Node
+	AllMatch *Node
 	// 尾部全匹配以栈的形式随方法存入
 	// 当最后没有匹配是，将获取栈中的倒数第一个元素放回
-	suffixMatch *Node
+	SuffixMatch *Node
 }
 
 // getNode 根据以`/`分段的url获取子Node
@@ -156,47 +166,47 @@ type childrens struct {
 func (c *childrens) getNode(passageURL string, paramMap map[string]string) (node *Node) {
 	ok := false
 	var v *Node
-	if c.normal != nil {
-		v, ok = c.normal[passageURL]
+	if c.Normal != nil {
+		v, ok = c.Normal[passageURL]
 	}
 	if ok {
 		node = v
-	} else if c.regexp != nil {
-		for i := 0; i < len(c.regexp); i++ {
-			nowNode := c.regexp[i]
-			value := nowNode.value
+	} else if c.Regexp != nil {
+		for i := 0; i < len(c.Regexp); i++ {
+			nowNode := c.Regexp[i]
+			value := nowNode.Value
 			if match := value.isMatch(passageURL); match {
 				node = nowNode
 				value.paramValue(passageURL, paramMap)
 				break
 			}
 		}
-	} else if c.allMatch != nil {
-		node = c.allMatch
-		c.allMatch.value.paramValue(passageURL, paramMap)
+	} else if c.AllMatch != nil {
+		node = c.AllMatch
+		c.AllMatch.Value.paramValue(passageURL, paramMap)
 	}
 	return
 }
 
 func (c *childrens) insert(node *Node) {
-	switch node.class {
+	switch node.Class {
 	case normal:
-		if c.normal == nil {
-			c.normal = make(map[string]*Node)
+		if c.Normal == nil {
+			c.Normal = make(map[string]*Node)
 		}
-		c.normal[node.value.getOrigin()] = node
+		c.Normal[node.Value.getOrigin()] = node
 	case pathReg:
-		if c.regexp == nil {
-			c.regexp = make([]*Node, 0, 3)
+		if c.Regexp == nil {
+			c.Regexp = make([]*Node, 0, 3)
 		}
-		c.regexp = append(c.regexp, node)
+		c.Regexp = append(c.Regexp, node)
 	case pathVar:
-		c.allMatch = node
+		c.AllMatch = node
 	case matchAll:
-		c.suffixMatch = node
+		c.SuffixMatch = node
 	}
 }
 
 func (c *childrens) String() string {
-	return fmt.Sprintf("{ normal:%v,regexp:%v,allMatch:%v,suffixMatch:%v }", c.normal, c.regexp, c.allMatch, c.suffixMatch)
+	return fmt.Sprintf("{ normal:%v,regexp:%v,allMatch:%v,suffixMatch:%v }", c.Normal, c.Regexp, c.AllMatch, c.SuffixMatch)
 }

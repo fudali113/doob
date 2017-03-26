@@ -66,10 +66,10 @@ func (t testType) String() string {
 
 func Benchmark_test(b *testing.B) {
 	node := &Node{
-		class:    normal,
-		value:    nil,
+		Class:    normal,
+		Value:    nil,
 		handler:  nil,
-		children: new(childrens),
+		Children: new(childrens),
 	}
 	testVar := &RegisterHandler{
 		Handler: &testType{

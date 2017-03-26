@@ -112,41 +112,49 @@ type nodeV interface {
 	// return in this method
 	paramValue(urlPart string, paramMap map[string]string)
 	getOrigin() string
+	String() string
 }
 
 type nodeVNormal struct {
-	origin string
+	Origin string
 }
 
 func (nvn nodeVNormal) isMatch(urlPart string) bool {
-	return nvn.origin == urlPart
+	return nvn.Origin == urlPart
 }
 func (nvn nodeVNormal) paramValue(urlPart string, paramMap map[string]string) {
 }
 func (nvn nodeVNormal) getOrigin() string {
-	return nvn.origin
+	return nvn.Origin
+}
+func (nvn nodeVNormal) String() string {
+	return nvn.Origin
 }
 
 type nodeVPathReg struct {
-	origin    string
+	Origin    string
 	paramName string
-	paramReg  *regexp.Regexp
+	ParamReg  *regexp.Regexp
 }
 
 // check url part is match nvpg node value
 func (nvpg nodeVPathReg) isMatch(urlPart string) bool {
-	findStr := nvpg.paramReg.FindString(urlPart)
+	findStr := nvpg.ParamReg.FindString(urlPart)
 	return findStr == urlPart
 }
 func (nvpg nodeVPathReg) paramValue(urlPart string, paramMap map[string]string) {
 	addValueToPathParam(paramMap, nvpg.paramName, urlPart)
 }
 func (nvpg nodeVPathReg) getOrigin() string {
-	return nvpg.origin
+	return nvpg.Origin
+}
+
+func (nvpg nodeVPathReg) String() string {
+	return nvpg.Origin + "-->" + nvpg.ParamReg.String()
 }
 
 type nodeVPathVar struct {
-	origin    string
+	Origin    string
 	paramName string
 }
 
@@ -157,11 +165,15 @@ func (nvpv nodeVPathVar) paramValue(urlPart string, paramMap map[string]string) 
 	addValueToPathParam(paramMap, nvpv.paramName, urlPart)
 }
 func (nvpv nodeVPathVar) getOrigin() string {
-	return nvpv.origin
+	return nvpv.Origin
+}
+
+func (nvpv nodeVPathVar) String() string {
+	return nvpv.Origin
 }
 
 type nodeVMatchAll struct {
-	origin string
+	Origin string
 	prefix string
 }
 
@@ -171,5 +183,9 @@ func (nvma nodeVMatchAll) isMatch(urlPart string) bool {
 func (nvma nodeVMatchAll) paramValue(urlPart string, paramMap map[string]string) {
 }
 func (nvma nodeVMatchAll) getOrigin() string {
-	return nvma.origin
+	return nvma.Origin
+}
+
+func (nvma nodeVMatchAll) String() string {
+	return nvma.Origin
 }

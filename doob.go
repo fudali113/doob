@@ -70,7 +70,7 @@ func AddMiddlerware(fs ...middleware.Middleware) {
 
 func AddStaticPrefix(prefixs ...string) {
 	for _, prefixUrl := range prefixs {
-		prefixUrl = prefixUrl + "/**"
+		prefixUrl = prefixUrl + "/*"
 		DefaultRouter().AddHandlerFunc(prefixUrl, staticPrefixFileHandlerFunc, GET)
 	}
 }

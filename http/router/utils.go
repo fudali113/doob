@@ -10,6 +10,7 @@ import (
 const (
 	urlSplitSymbol    = "/"
 	pathVarRegStr     = "{\\S+}"
+	allMatchStr       = "\\S+"
 	suffixMatchSymbol = "*"
 )
 
@@ -31,6 +32,7 @@ func splitURL(URL string) (string, string) {
 // 用于寻找路径是做匹配
 // bug  当初先`/d/s*`情况时将出现bug
 func createNodeValue(urlPart string) nodeV {
+
 	if strings.HasSuffix(urlPart, suffixMatchSymbol) {
 		prefixStr := strings.Replace(urlPart, suffixMatchSymbol, "", 1)
 		if strings.HasSuffix(prefixStr, suffixMatchSymbol) {
@@ -44,29 +46,73 @@ func createNodeValue(urlPart string) nodeV {
 			`)
 		}
 		return &nodeVMatchAll{
-			origin: urlPart,
+			Origin: urlPart,
 			prefix: prefixStr,
 		}
 	}
 
-	if matchStr := pathVarReg.FindAllString(urlPart, -1); len(matchStr) > 0 {
-		pathVarStr := strings.TrimPrefix(matchStr[0], "{")
-		pathVarStr = strings.TrimSuffix(pathVarStr, "}")
-		if paramNameAndReg := utils.Split(pathVarStr, ":"); len(paramNameAndReg) > 1 {
-			paraLen := len(paramNameAndReg)
-			paraRegStr := strings.Join(paramNameAndReg[1:paraLen], "")
-			return &nodeVPathReg{
-				origin:    urlPart,
-				paramName: paramNameAndReg[0],
-				paramReg:  utils.GetRegexp(paraRegStr),
+	otherIsEnpty := func(others []string) bool {
+		for i := 0; i < len(others); i++ {
+			if others[i] != "" {
+				return false
 			}
 		}
-		return &nodeVPathVar{
-			origin:    urlPart,
-			paramName: pathVarStr,
+		return true
+	}
+
+	// 处理匹配相关value
+	matchs, others := getMatchsAndOtehrs(urlPart)
+	log.Print("==========", matchs, others)
+	matchsLen := len(matchs)
+	switch {
+	case matchsLen == 1 && otherIsEnpty(others):
+		name, regStr := getNameAndRegstr(matchs[0])
+		if regStr == "" {
+			return &nodeVPathVar{
+				Origin:    urlPart,
+				paramName: name,
+			}
+		}
+		return &nodeVPathReg{
+			Origin:    urlPart,
+			paramName: name,
+			ParamReg:  utils.GetRegexp(regStr),
+		}
+	default:
+		finallyRegStr := ""
+		names := []string{}
+		regs := []string{}
+		for _, v := range matchs {
+			name, reg := getNameAndRegstr(v)
+			if reg == "" {
+				reg = allMatchStr
+			}
+			names = append(names, name)
+			regs = append(regs, reg)
+		}
+		for i := 0; i < len(regs); i++ {
+			finallyRegStr += others[i]
+			finallyRegStr += regs[i]
+		}
+		return &nodeVPathReg{
+			Origin:    urlPart,
+			paramName: strings.Join(names, ","),
+			ParamReg:  utils.GetRegexp(finallyRegStr),
 		}
 	}
-	return &nodeVNormal{origin: urlPart}
+	return &nodeVNormal{Origin: urlPart}
+}
+
+// getNameAndRegstr matchStr需要以`{`开始以`}`结尾
+func getNameAndRegstr(originStr string) (name, reg string) {
+	pathVarStr := strings.TrimPrefix(originStr, "{")
+	pathVarStr = strings.TrimSuffix(pathVarStr, "}")
+	paramNameAndReg := utils.Split(pathVarStr, ":")
+	name = paramNameAndReg[0]
+	if len(paramNameAndReg) > 1 {
+		reg = paramNameAndReg[1]
+	}
+	return
 }
 
 // getClass 根据参数获取参数类别
@@ -74,12 +120,13 @@ func getClass(s string) int {
 	if s == suffixMatchSymbol {
 		return matchAll
 	}
-	if matchStr := pathVarReg.FindAllString(s, -1); len(matchStr) > 0 {
-		pathVarStr := matchStr[0]
-		if strings.Contains(pathVarStr, ":") {
-			return pathReg
-		}
+	matchs, others := getMatchsAndOtehrs(s)
+	totalLen := len(matchs) + len(others)
+	switch {
+	case totalLen == 1:
 		return pathVar
+	case totalLen > 1:
+		return pathReg
 	}
 	return normal
 }
@@ -89,4 +136,8 @@ func addValueToPathParam(paramMap map[string]string, k, v string) {
 	if paramMap != nil {
 		paramMap[k] = v
 	}
+}
+
+func getMatchsAndOtehrs(origin string) (matchs, others []string) {
+	return utils.GetGroupMatch(origin, '{', '}')
 }
