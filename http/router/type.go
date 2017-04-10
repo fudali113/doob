@@ -97,6 +97,9 @@ func (srh *SimpleRestHandler) GetSigninHandler() register.RegisterHandlerType {
 
 // Joint 合并另外一个RestHandler
 func (srh *SimpleRestHandler) Joint(restHandler RestHandler) {
+	if restHandler == nil {
+		return
+	}
 	methods := restHandler.GetMethods()
 	for _, method := range methods {
 		srh.PutMethod(method, restHandler.GetSigninHandler())

@@ -12,8 +12,9 @@ import (
 	"github.com/fudali113/doob/errors"
 	"github.com/fudali113/doob/middleware/session"
 
-	. "github.com/fudali113/doob/http/const"
 	"net/url"
+
+	. "github.com/fudali113/doob/http/const"
 )
 
 // 对 ResponseWriter 和 request 封装的上下文
@@ -102,7 +103,7 @@ func (this *Context) WriteJson(jsonStruct interface{}) {
 // @panic DoobError
 func (this *Context) Forward(forwardUrl string) {
 
-	url,err := url.Parse(forwardUrl)
+	url, err := url.Parse(forwardUrl)
 	if err != nil {
 		return
 	}
@@ -154,5 +155,3 @@ func (this *Context) Forward(forwardUrl string) {
 func (this *Context) Redirect(redirectUrl string, code int) {
 	http.Redirect(this.Response, this.Request, redirectUrl, code)
 }
-
-

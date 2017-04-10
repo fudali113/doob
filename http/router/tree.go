@@ -33,8 +33,15 @@ type conflictRTDealFunc func(old, new ReserveType) ReserveType
 
 var (
 	crtdf conflictRTDealFunc = func(old, new ReserveType) ReserveType {
-		old.Joint(new)
-		return old
+		switch {
+		case old == nil && new == nil:
+			return nil
+		case old == nil && new != nil:
+			return new
+		default:
+			old.Joint(new)
+			return old
+		}
 	}
 )
 
@@ -135,12 +142,13 @@ func (n *Node) GetNode(url string) *Node {
 	if url == "" {
 		return n
 	}
-	_, err := n.GetRT(url, nil)
-	if err != nil {
+	isMatch := true
+	node := n.getNode(url, nil, &isMatch)
+	if node == nil {
 		n.InsertChild(url, nil)
+		node = n.getNode(url, nil, &isMatch)
 	}
-	_true := true
-	return n.getNode(url, nil, &_true)
+	return node
 }
 
 // String 打印内容

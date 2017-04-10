@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/fudali113/doob"
-	// . "github.com/fudali113/doob/http/const"
+	. "github.com/fudali113/doob/http/const"
 )
 
 // 开始http服务
@@ -29,10 +29,10 @@ func origin(w http.ResponseWriter, r *http.Request) {
 }
 
 // 根据doob 里的context 进行获取参数或者返回
-func ctx(ctx *doob.Context) interface{} {
-	return map[string]interface{}{
+func ctx(ctx *doob.Context) (string, interface{}) {
+	return "json", map[string]interface{}{
 		"haha": ctx.ParamInt("haha"),
-		"test": ctx.Seesion().Get("test"),
+		"test": ctx.Seesion().Get("doob_id"),
 	}
 }
 
@@ -54,12 +54,12 @@ func returnHTML(ctx *doob.Context) (string, interface{}) {
 // init router
 func init() {
 	doob.AddStaticPrefix("/static")
-	// router := doob.DefaultRouter()
-	// router.AddHandlerFunc("/doob/origin/{who}/{do}", origin, GET, POST, PUT, DELETE)
-	// router.Get("forward", testForward)
-	// router.Get("redirect1", testRedirect)
-	// router.Get("/test", returnHTML)
+	router := doob.DefaultRouter()
+	router.AddHandlerFunc("/doob/origin/{who}/{do}", origin, GET, POST, PUT, DELETE)
+	router.Get("forward", testForward)
+	router.Get("redirect1", testRedirect)
+	router.Get("/test", returnHTML)
 	doobRouter := doob.GetRouter("doob")
 	doobRouter.Get("/di/{name}-{aa}/{value}", di)
-	//doobRouter.Get("/ctx/{haha:[0-9]{3,4}}", ctx)
+	doobRouter.Get("/ctx/{haha:[0-9]{3,4}}", ctx)
 }

@@ -1,7 +1,6 @@
 package router
 
 import (
-	"log"
 	"strings"
 
 	"github.com/fudali113/doob/utils"
@@ -36,7 +35,7 @@ func createNodeValue(urlPart string) nodeV {
 	if strings.HasSuffix(urlPart, suffixMatchSymbol) {
 		prefixStr := strings.Replace(urlPart, suffixMatchSymbol, "", 1)
 		if strings.HasSuffix(prefixStr, suffixMatchSymbol) {
-			log.Panic(`
+			panic(`
 			"*" 字符只允许出现在路由的最末端
 			right: 
 				- a/b/cap/*
@@ -62,7 +61,6 @@ func createNodeValue(urlPart string) nodeV {
 
 	// 处理匹配相关value
 	matchs, others := getMatchsAndOtehrs(urlPart)
-	log.Print("==========", matchs, others)
 	matchsLen := len(matchs)
 	switch {
 	case matchsLen == 1 && otherIsEnpty(others):
@@ -121,14 +119,23 @@ func getClass(s string) int {
 		return matchAll
 	}
 	matchs, others := getMatchsAndOtehrs(s)
-	totalLen := len(matchs) + len(others)
-	switch {
-	case totalLen == 1:
-		return pathVar
-	case totalLen > 1:
+	matchsLen := len(matchs)
+	othersLen := len(others)
+	switch matchsLen {
+	case 0:
+		return normal
+	case 1:
+		if othersLen == 0 && !strings.ContainsRune(matchs[0], ':') {
+			return pathVar
+		}
+		return pathReg
+
+	default:
+		if othersLen < matchsLen {
+			panic("---")
+		}
 		return pathReg
 	}
-	return normal
 }
 
 // addValueToPathParam 将参数值添加到map中
